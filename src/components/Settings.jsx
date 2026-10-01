@@ -435,6 +435,16 @@ function AppearanceTab({ status, refresh }) {
 
 function AboutTab({ status }) {
   useI18n();
+  const [updState, setUpdState] = useState(null); // null | 'checking' | {ok, data} | {err, msg}
+  const doCheck = async () => {
+    setUpdState('checking');
+    try {
+      const data = await window.ck.updateCheck();
+      setUpdState({ ok: true, data });
+    } catch (e) {
+      setUpdState({ err: e.message || String(e) });
+    }
+  };
   return (
     <div className="stack gap-3">
       <p><b>{t('set.aboutName')}</b> v{status.version} · {t('set.aboutLic')}</p>
@@ -443,6 +453,22 @@ function AboutTab({ status }) {
         <div><dt>{t('set.aboutNet')}</dt><dd>{t('set.aboutNetVal')}</dd></div>
         <div><dt>{t('set.aboutDataDir')}</dt><dd><code className="break">{status.dataDir}</code>{status.portable && ` ${t('set.portable')}`}</dd></div>
       </dl>
+      {updState === null && (
+        <Button variant="ghost" onClick={doCheck}>{t('set.updCheckBtn')}</Button>
+      )}
+      {updState === 'checking' && (
+        <p className="field-hint">{t('set.updChecking')}</p>
+      )}
+      {updState && updState.ok && !updState.data.updateAvailable && (
+        <p className="field-hint ok">{t('set.updUpToDate', { v: updState.data.latest })}</p>
+      )}
+      {updState && updState.ok && updState.data.updateAvailable && (
+        <a className="link" href="#" onClick={(e) => { e.preventDefault(); window.ck.openExternal(updState.data.url); }}
+           dangerouslySetInnerHTML={{ __html: t('set.updNew', { v: updState.data.latest }) }} />
+      )}
+      {updState && updState.err && (
+        <p className="field-hint warn">{t('set.updError')}: {updState.err}</p>
+      )}
       <p className="field-hint" dangerouslySetInnerHTML={{ __html: t('set.portableNote') }} />
       <p className="field-hint">{t('set.wordlistNote')}</p>
     </div>

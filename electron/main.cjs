@@ -239,6 +239,33 @@ function registerIpc() {
     return { name: path.basename(p), content: fs.readFileSync(p, 'utf8') };
   });
 
+  handle('update:check', async () => {
+    const https = require('node:https');
+    const LATEST_URL = 'https://github.com/JiuYue0820/ChronoKey/releases/latest/download/latest.json';
+    const raw = await new Promise((resolve, reject) => {
+      const req = https.get(LATEST_URL, { timeout: 10000, headers: { 'User-Agent': 'ChronoKey' } }, (res) => {
+        if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (d) => { body += d; });
+        res.on('end', () => resolve(body));
+      });
+      req.on('timeout', () => { req.destroy(); reject(new Error('超时')); });
+      req.on('error', reject);
+    });
+    const json = JSON.parse(raw);
+    const current = app.getVersion();
+    const latest = String(json.version || '');
+    const cmp = (a, b) => a.split('.').map(Number).reduce((p, v, i) => p + (v - (b.split('.').map(Number)[i] || 0)) * Math.pow(1000, 2 - i), 0);
+    const updateAvailable = cmp(latest, current) > 0;
+    return {
+      current,
+      latest,
+      updateAvailable,
+      url: json.file ? 'https://github.com/JiuYue0820/ChronoKey/releases' : 'https://github.com/JiuYue0820/ChronoKey/releases',
+    };
+  });
+
   handle('win:minimize', () => win.minimize());
   handle('win:toggleMaximize', () => (win.isMaximized() ? win.unmaximize() : win.maximize()));
   handle('win:close', () => win.close());

@@ -134,6 +134,10 @@ export function installMock() {
       input.click();
     }),
     openExternal: async (url) => window.open(url, '_blank', 'noopener'),
+    updateCheck: async () => {
+      // 浏览器预览无法访问 GitHub,返回"已是最新"
+      return { current: '0.2.0', latest: '0.2.0', updateAvailable: false, url: 'https://github.com/JiuYue0820/ChronoKey/releases' };
+    },
     win: { minimize: async () => {}, toggleMaximize: async () => {}, close: async () => {} },
     onLocked: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
     onWinState: () => () => {},

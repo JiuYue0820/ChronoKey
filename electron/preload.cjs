@@ -52,6 +52,8 @@ contextBridge.exposeInMainWorld('ck', {
   openFile: (opts) => call('file:open', opts),
   openExternal: (url) => call('shell:openExternal', url),
 
+  updateCheck: () => call('update:check'),
+
   win: {
     minimize: () => call('win:minimize'),
     toggleMaximize: () => call('win:toggleMaximize'),
