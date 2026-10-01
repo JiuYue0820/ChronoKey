@@ -422,8 +422,8 @@ export const I18N = {
   },
 };
 
-let _lang = 'zh';
-try { _lang = localStorage.getItem('ck-site-lang') || 'zh'; } catch {}
+let _lang = 'en';
+try { _lang = localStorage.getItem('ck-site-lang') || 'en'; } catch {}
 
 export function getSiteLang() { return _lang; }
 

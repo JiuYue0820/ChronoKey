@@ -2,7 +2,8 @@
 .pipe { padding: var(--space-4); }
 @media (min-width: 768px) { .pipe { padding: var(--space-5); } }
 .pipe-row { display: flex; gap: var(--space-2); }
-.pipe-row .input { font-family: var(--font-mono); }
+.pipe-row .input { font-family: var(--font-mono); flex: 1; min-width: 0; }
+.pipe-row .btn { flex-shrink: 0; white-space: nowrap; }
 .pipe-steps { list-style: none; margin: var(--space-5) 0 0; padding: 0; display: grid; gap: 0; }
 .step { position: relative; display: grid; grid-template-columns: 40px 1fr; gap: var(--space-3); padding-bottom: var(--space-4); }
 .step:not(:last-child)::before {
