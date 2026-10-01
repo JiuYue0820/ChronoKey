@@ -2,6 +2,8 @@
 
 A fully local, offline password manager.
 
+[中文](README.md) | [English](README.en.md)
+
 <p align="center">
   <img src="build/icon.png" width="128" alt="ChronoKey">
 </p>

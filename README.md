@@ -2,6 +2,8 @@
 
 纯本地、离线的密码管理器。
 
+[中文](README.md) | [English](README.en.md)
+
 <p align="center">
   <img src="build/icon.png" width="128" alt="ChronoKey">
 </p>
