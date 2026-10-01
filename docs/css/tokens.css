@@ -1,0 +1,96 @@
+/*
+ * ChronoKey 官网设计令牌 —— 与应用同源的"和纸 × 苔"(Washi & Moss)
+ * 色源:日本传统色 柳染 #91AD70 · 苔 #838A2D · 紅樺 #B54434 · 朽葉 #E2943B · 墨 #1C1C1C
+ * 不使用蓝 / 紫;文字对比度 ≥ 4.5:1(WCAG AA)。
+ * UIDesigner:8px 间距网格;字号 14 / 16 / 24 / 32 / 40;行高 1.25 / 1.5 / 1.75。
+ */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --section: 64px;
+
+  --text-sm: 0.875rem;   /* 14 说明、标签 */
+  --text-base: 1rem;     /* 16 正文 */
+  --text-lg: 1.5rem;     /* 24 H3 */
+  --text-xl: 2rem;       /* 32 H2 */
+  --text-2xl: 2.5rem;    /* 40 H1 */
+
+  --lh-tight: 1.25;
+  --lh-normal: 1.5;
+  --lh-relaxed: 1.75;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-mono: "Cascadia Mono", "SF Mono", ui-monospace, "JetBrains Mono", Consolas, monospace;
+
+  /* 浅色:和纸 */
+  --bg: #F6F3EC;
+  --bg-2: #ECE7DC;
+  --surface: #FFFDF8;
+  --surface-2: #F1EDE4;
+  --border: #DDD6C8;
+  --border-strong: #C9C0AE;
+  --text: #1C1C1C;      /* 15.4:1 */
+  --text-2: #5A554B;    /*  6.7:1 */
+  --text-3: #6B665C;    /*  5.2:1 */
+  --accent: #5E6420;    /* 深苔 5.7:1,白字 6.3:1 */
+  --accent-hover: #4F5A1E;
+  --accent-soft: rgba(131, 138, 45, 0.14);
+  --accent-fg: #FFFFFF;
+  --hot: #8A5410;       /* 深朽葉(文字用) */
+  --hot-soft: rgba(226, 148, 59, 0.18);
+  --danger: #9A3528;
+  --danger-soft: rgba(181, 68, 52, 0.12);
+  --ok: #4A6B2E;
+  --matrix: #838A2D;
+  --matrix-hot: #C9782A;
+  --focus: rgba(94, 100, 32, 0.5);
+  --shadow-md: 0 4px 16px rgba(60, 50, 30, 0.10), 0 1px 3px rgba(60, 50, 30, 0.08);
+  --shadow-lg: 0 32px 80px rgba(40, 32, 18, 0.22), 0 4px 16px rgba(40, 32, 18, 0.10);
+  --nav-bg: rgba(246, 243, 236, 0.82);
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #1F1E1B;
+  --bg-2: #191816;
+  --surface: #292724;
+  --surface-2: #2F2D29;
+  --border: #3A3833;
+  --border-strong: #4A4740;
+  --text: #EDE8DD;      /* 13.3:1 */
+  --text-2: #BFB8A8;    /*  8.4:1 */
+  --text-3: #A8A294;    /*  6.6:1 */
+  --accent: #91AD70;    /* 柳染 6.8:1 */
+  --accent-hover: #A2BD80;
+  --accent-soft: rgba(145, 173, 112, 0.16);
+  --accent-fg: #1A1B14;
+  --hot: #E2A65A;
+  --hot-soft: rgba(226, 148, 59, 0.16);
+  --danger: #E07A63;
+  --danger-soft: rgba(224, 122, 99, 0.14);
+  --ok: #A2BD80;
+  --matrix: #91AD70;
+  --matrix-hot: #E2943B;
+  --focus: rgba(145, 173, 112, 0.55);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 32px 80px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.35);
+  --nav-bg: rgba(31, 30, 27, 0.82);
+  color-scheme: dark;
+}
+
+@media (min-width: 1024px) {
+  :root { --section: 96px; }
+}
