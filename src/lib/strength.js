@@ -86,6 +86,8 @@ export function crackTime(bits) {
   const units = [[60, '秒'], [60, '分钟'], [24, '小时'], [365, '天'], [100, '年'], [Infinity, '世纪']];
   let v = sec;
   for (const [n, u] of units) {
+    // 宇宙年龄约 1.38 亿个世纪;再往上的数字已无意义
+    if (u === '世纪' && v >= 1.38e8) break;
     if (v < n) return `约 ${Math.round(v)} ${u}`;
     v /= n;
   }
