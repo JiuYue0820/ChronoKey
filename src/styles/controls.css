@@ -1,0 +1,110 @@
+/* 按钮、输入、开关、分段控件 */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  height: var(--control-h); padding: 0 var(--space-3);
+  border-radius: var(--radius-md); font-weight: 500; white-space: nowrap;
+  transition: background var(--dur) var(--ease), border-color var(--dur), color var(--dur), transform 80ms;
+}
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:disabled { opacity: 0.5; }
+.btn kbd { background: transparent; border-color: currentColor; color: inherit; opacity: 0.7; }
+.btn-sm { height: 28px; padding: 0 var(--space-2); font-size: var(--text-sm); }
+.btn-lg { height: var(--control-h-lg); padding: 0 var(--space-4); font-size: var(--text-base); }
+.btn-primary { background: var(--accent); color: var(--accent-fg); box-shadow: var(--shadow-sm); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+/* 次要按钮:无描边,用 Mac 式细阴影 + 底色区分 */
+.btn-secondary { background: var(--surface); color: var(--text); box-shadow: 0 0 0 0.5px var(--border-strong), var(--shadow-sm); }
+.btn-secondary:hover:not(:disabled) { background: var(--surface-2); }
+.btn-ghost { color: var(--text-2); }
+.btn-ghost:hover:not(:disabled) { background: var(--selection-idle); color: var(--text); }
+.btn-danger { background: var(--danger); color: var(--danger-fg); }
+.btn-danger:hover:not(:disabled) { filter: brightness(1.08); }
+.btn-danger-ghost { color: var(--danger); }
+.btn-danger-ghost:hover:not(:disabled) { background: var(--danger-soft); }
+
+.icon-btn {
+  width: var(--control-h); height: var(--control-h); flex-shrink: 0;
+  display: inline-grid; place-items: center; border-radius: var(--radius-sm);
+  color: var(--text-2); transition: background var(--dur), color var(--dur);
+}
+.icon-btn:hover:not(:disabled) { background: var(--selection-idle); color: var(--text); }
+.icon-btn.tone-warning { color: var(--warning); }
+.icon-btn.tone-accent { color: var(--accent); }
+.link-btn { color: var(--accent); font-size: var(--text-sm); font-weight: 500; text-align: left; }
+.link-btn:hover { text-decoration: underline; }
+
+/* 输入框 */
+.input {
+  width: 100%; min-height: var(--control-h); padding: 6px 10px;
+  font-size: var(--text-base); line-height: 1.4;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  transition: border-color var(--dur), box-shadow var(--dur);
+}
+.input::placeholder { color: var(--text-3); }
+.input:hover { border-color: var(--border-strong); }
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus); outline: none; }
+.input-sm { min-height: 28px; padding: 3px 8px; font-size: var(--text-sm); }
+.input-lg { min-height: var(--control-h-lg); font-size: var(--text-lg); font-weight: 600; }
+textarea.input { resize: vertical; }
+select.input { appearance: auto; }
+.input.mono { font-size: var(--text-sm); }
+.input-wrap { position: relative; display: flex; flex: 1; }
+.input-wrap .input { padding-right: 40px; }
+.input-adorn { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: var(--text-sm); font-weight: 500; color: var(--text-2); }
+.field-hint { font-size: var(--text-sm); color: var(--text-3); line-height: 1.45; }
+.field-error, .field-ok { display: flex; align-items: center; gap: 6px; font-size: var(--text-sm); color: var(--danger); }
+.field-ok { color: var(--ok); }
+.has-error .input { border-color: var(--danger); }
+.with-gen { display: flex; gap: var(--space-1); align-items: center; }
+.mini-field { display: flex; flex-direction: column; gap: 4px; font-size: var(--text-sm); color: var(--text-2); }
+.check-row { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; }
+.check-row input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+/* 开关 */
+.toggle-row { display: flex; align-items: center; gap: var(--space-3); justify-content: space-between; min-height: 36px; }
+.toggle-text { display: flex; flex-direction: column; gap: 2px; }
+.toggle-text label { font-size: var(--text-sm); }
+.switch {
+  width: 38px; height: 22px; flex-shrink: 0; border-radius: 11px; position: relative;
+  background: var(--border-strong); transition: background var(--dur) var(--ease);
+}
+.switch[aria-checked="true"] { background: var(--accent); }
+.switch:disabled { opacity: 0.55; }
+.switch-knob {
+  position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: #FFFFFF; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform var(--dur) var(--ease);
+}
+.switch[aria-checked="true"] .switch-knob { transform: translateX(16px); }
+
+/* 分段控件 */
+.segmented {
+  display: inline-flex; padding: 2px; gap: 2px; align-self: flex-start;
+  background: var(--surface-3); border-radius: var(--radius-md);
+}
+.segmented button {
+  height: 28px; padding: 0 var(--space-3); border-radius: var(--radius-sm);
+  font-size: var(--text-sm); color: var(--text-2); transition: background var(--dur), color var(--dur);
+}
+.segmented button:hover { color: var(--text); }
+.segmented button.on { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: var(--shadow-sm); }
+
+/* 强度条 */
+.strength { display: flex; align-items: center; gap: var(--space-2); }
+.strength-bars { display: flex; gap: 3px; flex: 1; max-width: 180px; }
+.strength-bars span { flex: 1; height: 4px; border-radius: 2px; background: var(--surface-3); }
+.strength-bars .on.danger { background: var(--danger); }
+.strength-bars .on.warning { background: var(--warning); }
+.strength-bars .on.ok { background: var(--ok); }
+.strength-label { font-size: var(--text-sm); font-weight: 500; }
+.strength-label.danger { color: var(--danger); }
+.strength-label.warning { color: var(--warning); }
+.strength-label.ok { color: var(--ok); }
+
+.range-row { display: flex; align-items: center; gap: var(--space-3); font-size: var(--text-sm); color: var(--text-2); }
+.range-row input { flex: 1; accent-color: var(--accent); }
+.range-row b { min-width: 2.5em; text-align: right; color: var(--text); font-variant-numeric: tabular-nums; }

@@ -1,0 +1,65 @@
+{
+  "name": "chronokey",
+  "productName": "ChronoKey",
+  "version": "0.1.0",
+  "description": "时钥 · 纯本地、离线的密码管理器",
+  "main": "electron/main.cjs",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "dist": "vite build && electron-builder --win zip --x64",
+    "start": "vite build && electron .",
+    "electron": "electron .",
+    "electron:dev": "electron . --dev-url=http://localhost:5173",
+    "test": "node --test tests/*.test.cjs tests/*.test.mjs",
+    "test:electron": "vite build && electron tests/electron-smoke.cjs"
+  },
+  "dependencies": {
+    "hash-wasm": "4.12.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.1",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "jsqr": "1.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "vite": "8.3.1"
+  },
+  "build": {
+    "appId": "com.chronokey.app",
+    "productName": "ChronoKey",
+    "files": [
+      "dist/**",
+      "electron/**",
+      "build/icon.png"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "ChronoKey-${version}-win-x64.${ext}"
+    },
+    "electronLanguages": [
+      "zh-CN",
+      "en-US"
+    ]
+  },
+  "author": "JiuYue0820",
+  "homepage": "https://jiuyue0820.github.io/ChronoKey/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JiuYue0820/ChronoKey.git"
+  }
+}

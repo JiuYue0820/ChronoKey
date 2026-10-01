@@ -1,0 +1,126 @@
+/*
+ * ChronoKey 设计令牌 —— "和纸 × 苔" (Washi & Moss)
+ * 色源:日本传统色 nipponcolors.com
+ *   柳染 YANAGIZOME #91AD70 · 苔 KOKE #838A2D · 紅樺 BENIKABA #B54434
+ *   朽葉 KUCHIBA #E2943B · 利休白茶 #B4A582 · 砥粉 TONOKO #D7B98E · 墨 SUMI #1C1C1C
+ * 刻意避开蓝 / 紫系。所有文字对比度 ≥ 4.5:1 (WCAG AA)。
+ * 间距遵循 8px 网格(UIDesigner)。
+ */
+
+:root {
+  /* ---- 间距 (8px 基准) ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+
+  /* ---- 字号(桌面密度:正文 14px 为下限) ---- */
+  --text-xs: 0.75rem;     /* 12px 仅用于徽标/快捷键提示 */
+  --text-sm: 0.875rem;    /* 14px 列表、标签、正文 */
+  --text-base: 1rem;      /* 16px 表单值、详情字段 */
+  --text-lg: 1.25rem;     /* 20px 详情标题 */
+  --text-xl: 1.5rem;      /* 24px 页面标题 */
+  --text-2xl: 2rem;       /* 32px 大号数字(TOTP) */
+  --text-3xl: 2.5rem;     /* 40px 解锁页标题 */
+
+  --lh-tight: 1.25;
+  --lh-normal: 1.5;
+
+  /* ---- 圆角 / 阴影 / 动效 ---- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur: 160ms;
+
+  /* ---- 控件尺寸(鼠标指针目标 ≥ 24px, WCAG 2.2 SC 2.5.8) ---- */
+  --control-h: 32px;
+  --control-h-lg: 40px;
+  --titlebar-h: 48px;           /* Win11 规范:含搜索框的标题栏 48px */
+  --sidebar-w: 232px;
+  --list-w: 320px;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "Cascadia Mono", "JetBrains Mono", Consolas, "Microsoft YaHei Mono", monospace;
+
+  /* ---- 浅色:和纸 ---- */
+  --bg: #F6F3EC;              /* 窗体 / 内容区 */
+  --bg-sidebar: #ECE7DC;      /* 侧栏(比内容更深一层,仿 macOS 源列表) */
+  --surface: #FFFDF8;         /* 卡片、输入框 */
+  --surface-2: #F1EDE4;       /* 次级面板、悬停 */
+  --surface-3: #E6E0D3;       /* 按下 */
+  --border: #DDD6C8;
+  --border-strong: #C9C0AE;
+  --text: #1C1C1C;            /* 墨   15.4:1 on bg */
+  --text-2: #5A554B;          /*      6.7:1 */
+  --text-3: #6B665C;          /*      5.2:1 —— 最弱的可读文字 */
+  --accent: #5E6420;          /* 深苔 5.7:1 on bg / 白字 6.3:1 */
+  --accent-hover: #4F5A1E;
+  --accent-soft: rgba(131, 138, 45, 0.14);
+  --accent-fg: #FFFFFF;
+  --danger: #9A3528;          /* 深紅樺 6.5:1 */
+  --danger-soft: rgba(181, 68, 52, 0.12);
+  --danger-fg: #FFFFFF;
+  --warning: #8A5410;         /* 深朽葉 */
+  --warning-soft: rgba(226, 148, 59, 0.16);
+  --ok: #4A6B2E;
+  --focus: rgba(94, 100, 32, 0.45);
+  --selection: #5E6420;
+  --selection-fg: #FFFFFF;
+  --selection-idle: rgba(28, 28, 28, 0.08);
+  --shadow-sm: 0 1px 2px rgba(60, 50, 30, 0.08);
+  --shadow-md: 0 4px 16px rgba(60, 50, 30, 0.10), 0 1px 3px rgba(60, 50, 30, 0.08);
+  --shadow-lg: 0 24px 64px rgba(40, 32, 18, 0.22), 0 2px 8px rgba(40, 32, 18, 0.10);
+  --scrim: rgba(40, 34, 24, 0.28);
+  --matrix: #838A2D;          /* 苔 —— 背景矩阵 */
+  --matrix-hot: #C9782A;      /* 朽葉 —— 指针附近 */
+  --traffic-close: #E0605A;
+  --traffic-min: #E2A23B;
+  --traffic-max: #7FA05A;
+  color-scheme: light;
+}
+
+/* ---- 深色:墨 ---- */
+:root[data-theme="dark"] {
+  --bg: #1F1E1B;
+  --bg-sidebar: #191816;
+  --surface: #292724;
+  --surface-2: #2F2D29;
+  --surface-3: #3A3732;
+  --border: #3A3833;
+  --border-strong: #4A4740;
+  --text: #EDE8DD;            /* 13.3:1 */
+  --text-2: #BFB8A8;          /*  8.4:1 */
+  --text-3: #A8A294;          /*  6.6:1 */
+  --accent: #91AD70;          /* 柳染 6.8:1 on bg */
+  --accent-hover: #A2BD80;
+  --accent-soft: rgba(145, 173, 112, 0.16);
+  --accent-fg: #1A1B14;
+  --danger: #E07A63;
+  --danger-soft: rgba(224, 122, 99, 0.14);
+  --danger-fg: #1C1410;
+  --warning: #D8A04A;
+  --warning-soft: rgba(216, 160, 74, 0.14);
+  --ok: #A2BD80;
+  --focus: rgba(145, 173, 112, 0.5);
+  --selection: #5E7040;
+  --selection-fg: #FFFFFF;
+  --selection-idle: rgba(237, 232, 221, 0.08);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --scrim: rgba(0, 0, 0, 0.45);
+  --matrix: #91AD70;
+  --matrix-hot: #E2943B;
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur: 0ms; }
+  *, *::before, *::after { animation-duration: 0ms !important; transition-duration: 0ms !important; }
+}

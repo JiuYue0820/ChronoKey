@@ -1,0 +1,8 @@
+node_modules/
+dist/
+release/
+*.ckv
+*.cksk
+ChronoKeyData/
+installer/*.exe
+.claude/

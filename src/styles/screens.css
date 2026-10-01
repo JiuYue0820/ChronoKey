@@ -1,0 +1,108 @@
+/* 解锁页、工具页、设置 */
+.lock-screen {
+  flex: 1; min-height: 0; overflow-y: auto; display: flex; align-items: flex-start; justify-content: center;
+  padding: var(--space-6) var(--space-4); position: relative; background: var(--bg);
+}
+/* 变焦方块矩阵固定在视口,表单浮在上面 */
+.matrix { position: fixed; left: 0; right: 0; bottom: 0; top: var(--titlebar-h); width: 100%; height: calc(100% - var(--titlebar-h)); pointer-events: none; z-index: 0; }
+.lock-card {
+  width: 440px; max-width: 100%; margin: auto 0;
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-4) var(--space-2); position: relative; z-index: 1;
+  background: transparent;   /* 无边框、无卡片:内容直接浮在矩阵留白处 */
+}
+.lock-brand { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); text-align: center; }
+.lock-mark { display: grid; place-items: center; margin-bottom: var(--space-1); }
+.lock-mark .brand-mark { color: var(--accent); }
+.lock-lede { color: var(--text-2); text-align: center; line-height: 1.7; }
+.lock-brand h1 { font-size: var(--text-3xl); letter-spacing: -0.03em; }
+.lock-brand p { color: var(--text-2); }
+.recovery-code {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-2);
+  padding: var(--space-3); border-radius: var(--radius-md); background: var(--surface-2);
+  font-family: var(--font-mono); font-size: var(--text-base); font-weight: 600; letter-spacing: 0.06em; text-align: center; user-select: text;
+}
+.sk-input, .sk-output { font-size: var(--text-xs) !important; line-height: 1.5; word-break: break-all; }
+
+/* ---------- 工具页 ---------- */
+.tool { max-width: 860px; margin: 0 auto; padding: var(--space-4) var(--space-5) var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
+.tool-head h1 { font-size: var(--text-xl); }
+.tool-head p { margin-top: 4px; color: var(--text-2); }
+
+.gen-hero {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-4); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm);
+}
+.gen-output { flex: 1; min-width: 0; font-size: var(--text-lg); line-height: 1.5; word-break: break-all; }
+.gen-output .c-digit { color: var(--accent); }
+.gen-output .c-sym { color: var(--danger); }
+.gen-actions { display: flex; gap: var(--space-2); }
+.gen-meta { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-top: calc(var(--space-2) * -1); }
+.gen-history li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: 4px 0; }
+.gen-history li + li { border-top: 1px solid var(--border); }
+.gen-history .mono { font-size: var(--text-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.warn-list { display: flex; flex-direction: column; gap: 4px; color: var(--warning); font-size: var(--text-sm); }
+.warn-list li { display: flex; align-items: center; gap: 6px; }
+
+/* 审计:一个大号分数 + 一句话 + 问题清单(不做仪表盘) */
+.audit-hero { display: flex; flex-direction: column; gap: var(--space-2); padding-bottom: var(--space-4); border-bottom: 1px solid var(--border); }
+.audit-score { display: flex; align-items: baseline; gap: var(--space-2); }
+.audit-score b { font-size: 4rem; line-height: 1; font-weight: 600; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.audit-score span { color: var(--text-2); font-size: var(--text-base); }
+.audit-score.ok b { color: var(--ok); }
+.audit-score.warning b { color: var(--warning); }
+.audit-score.danger b { color: var(--danger); }
+.audit-lede { font-size: var(--text-base); max-width: 60ch; }
+.audit-hero .link-btn { margin-left: var(--space-2); }
+.issue-list > li { border-bottom: 1px solid var(--border); }
+.issue-head { width: 100%; display: flex; align-items: center; gap: var(--space-3); height: 44px; padding: 0 var(--space-1); text-align: left; }
+.issue-head:hover:not(:disabled) { background: var(--selection-idle); }
+.issue-head:disabled { cursor: default; }
+.issue-label { flex: 1; }
+.issue-count { font-variant-numeric: tabular-nums; color: var(--text-2); min-width: 2em; text-align: right; }
+.sq { width: 8px; height: 8px; border-radius: 1px; background: var(--border-strong); flex-shrink: 0; }
+.issue-list .danger .sq { background: var(--danger); }
+.issue-list .warning .sq { background: var(--warning); }
+.issue-list .danger .issue-count { color: var(--danger); font-weight: 600; }
+.issue-list .warning .issue-count { color: var(--warning); font-weight: 600; }
+.issue-list .clean { color: var(--text-3); }
+.issue-items { padding: 0 0 var(--space-2) var(--space-4); }
+.audit-item { width: 100%; display: flex; align-items: center; gap: var(--space-2); padding: 6px var(--space-2); border-radius: var(--radius-sm); text-align: left; }
+.audit-item .list-name { flex: 1; min-width: 0; }
+.audit-item:hover { background: var(--selection-idle); }
+.audit-log { max-height: 260px; overflow-y: auto; }
+.audit-log li { display: grid; grid-template-columns: 150px 110px minmax(0, 1fr); gap: var(--space-2); padding: 6px 0; font-size: var(--text-sm); }
+.audit-log li + li { border-top: 1px solid var(--border); }
+.audit-log li.warn { color: var(--warning); }
+.audit-log .mono { color: var(--text-3); }
+
+/* 验证码:单列清单,像系统"身份验证器" */
+.clock-check { font-size: var(--text-sm); color: var(--text-2); }
+.totp-list { border-top: 1px solid var(--border); }
+.totp-row { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-1); border-bottom: 1px solid var(--border); }
+.totp-row-name { text-align: left; }
+.totp-row-name:hover .list-name { text-decoration: underline; }
+
+/* 规格说明:dt/dd 两列 */
+.spec { display: flex; flex-direction: column; border-top: 1px solid var(--border); }
+.spec > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border); font-size: var(--text-sm); }
+.spec dt { color: var(--text-3); }
+
+/* 设置 */
+.settings { display: grid; grid-template-columns: 184px minmax(0, 1fr); gap: var(--space-4); min-height: 460px; }
+.settings-nav { display: flex; flex-direction: column; gap: 2px; padding-right: var(--space-3); border-right: 1px solid var(--border); }
+.settings-body { min-width: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+.settings-title { font-size: var(--text-lg); }
+.settings-group { display: flex; flex-direction: column; gap: var(--space-3); }
+.settings-group + .settings-group { padding-top: var(--space-4); border-top: 1px solid var(--border); }
+.settings-group h3 { font-size: var(--text-base); }
+.backup-list li { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) 0; }
+.backup-list li + li { border-top: 1px solid var(--border); }
+.backup-list > li > .icon { color: var(--text-3); }
+.swatches { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.swatch { display: flex; align-items: center; gap: 6px; font-size: var(--text-sm); color: var(--text-2); }
+.swatch i { width: 20px; height: 20px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12); }
+.shortcuts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2) var(--space-4); }
+.shortcuts div { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.shortcuts dd { color: var(--text-2); }
+
