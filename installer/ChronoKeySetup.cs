@@ -908,21 +908,184 @@ namespace ChronoKeySetup
         length = fs.Length;
         return fs;
       }
-      var req = (HttpWebRequest)WebRequest.Create(source.TrimEnd('/') + "/" + name);
-      req.UserAgent = "ChronoKeySetup/" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
-      req.AllowAutoRedirect = true;
-      req.Timeout = 30000;
-      req.ReadWriteTimeout = 30000;
       HttpWebResponse resp;
-      try { resp = (HttpWebResponse)req.GetResponse(); }
-      catch (WebException ex)
-      {
-        var r = ex.Response as HttpWebResponse;
-        if (r != null && r.StatusCode == HttpStatusCode.NotFound) throw new Exception("没有在 GitHub Releases 找到安装包(" + name + ")。请稍后再试,或到官网手动下载。");
-        throw new Exception("无法连接到 GitHub:" + ex.Message + "\n请检查网络后重试。");
-      }
+      try { resp = (HttpWebResponse)Request(source.TrimEnd('/') + "/" + name).GetResponse(); }
+      catch (WebException ex) { throw ConnectError(ex, name); }
       length = resp.ContentLength;
       return resp.GetResponseStream();
+    }
+
+    static HttpWebRequest Request(string url)
+    {
+      var req = (HttpWebRequest)WebRequest.Create(url);
+      req.UserAgent = "ChronoKeySetup/" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+      req.AllowAutoRedirect = true; // GitHub 会重定向到带签名的下载地址,Range 头随重定向保留
+      req.Timeout = 30000;
+      req.ReadWriteTimeout = 20000;
+      return req;
+    }
+
+    static Exception ConnectError(WebException ex, string name)
+    {
+      var r = ex.Response as HttpWebResponse;
+      if (r != null && r.StatusCode == HttpStatusCode.NotFound) return new Exception("没有在 GitHub Releases 找到安装包(" + name + ")。请稍后再试,或到官网手动下载。");
+      return new Exception("无法连接到 GitHub:" + ex.Message + "\n请检查网络后重试。");
+    }
+
+    // 下载进度:每 0.25 秒刷新一次,速度做指数平滑,避免数字乱跳
+    Stopwatch dlWatch; double dlSpeed, dlLastT; long dlLastGot;
+    void ReportDownload(long got, long total)
+    {
+      double t = dlWatch.Elapsed.TotalSeconds;
+      if (t - dlLastT < 0.25) return;
+      double inst = (got - dlLastGot) / (t - dlLastT);
+      dlSpeed = dlSpeed <= 0 ? inst : dlSpeed * 0.75 + inst * 0.25;
+      dlLastGot = got; dlLastT = t;
+      double sp = dlSpeed;
+      Ui(() =>
+      {
+        if (total > 0) bar.Value = (float)got / total;
+        stats.L.Text = total > 0 ? Util.Bytes(got) + " / " + Util.Bytes(total) : Util.Bytes(got);
+        stats.R.Text = Util.Bytes(sp) + "/s" + (total > 0 && sp > 0 ? " · 剩余 " + Util.Eta((total - got) / sp) : "");
+      });
+    }
+
+    void DownloadSingle(string name, string path, long expected)
+    {
+      long total;
+      using (var src = Open(name, out total))
+      using (var dst = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+      {
+        if (total <= 0) total = expected;
+        var buf = new byte[81920];
+        long got = 0;
+        int n;
+        while ((n = src.Read(buf, 0, buf.Length)) > 0)
+        {
+          if (cancel) throw new CancelledException();
+          dst.Write(buf, 0, n);
+          got += n;
+          ReportDownload(got, total);
+        }
+        if (total > 0 && got != total) throw new Exception("下载不完整(" + Util.Bytes(got) + " / " + Util.Bytes(total) + "),请重试。");
+      }
+    }
+
+    // 文件被短暂占用(杀毒扫描、索引)时重试,最多约 10 秒
+    static void Retry(Action a)
+    {
+      for (int i = 0; ; i++)
+      {
+        try { a(); return; }
+        catch (Exception ex)
+        {
+          if (!(ex is IOException || ex is UnauthorizedAccessException) || i >= 9) throw;
+          Thread.Sleep(1000);
+        }
+      }
+    }
+
+    static void CopyTree(string from, string to)
+    {
+      foreach (var d in Directory.GetDirectories(from, "*", SearchOption.AllDirectories))
+        Directory.CreateDirectory(Path.Combine(to, d.Substring(from.Length + 1)));
+      Directory.CreateDirectory(to);
+      foreach (var f in Directory.GetFiles(from, "*", SearchOption.AllDirectories))
+      {
+        string dest = Path.Combine(to, f.Substring(from.Length + 1));
+        Retry(() => File.Copy(f, dest, true));
+      }
+    }
+
+    const int ChunkSize = 2 * 1024 * 1024, Workers = 8, ChunkRetries = 6;
+
+    // 返回 false 表示服务器不支持 Range(调用方改用单连接下载)
+    bool DownloadParallel(string name, string path, long total)
+    {
+      string url = source.TrimEnd('/') + "/" + name;
+      // 先探测:请求第一个字节,确认返回 206
+      try
+      {
+        var probe = Request(url);
+        probe.AddRange(0L, 0L);
+        using (var r = (HttpWebResponse)probe.GetResponse())
+          if (r.StatusCode != HttpStatusCode.PartialContent) return false;
+      }
+      catch (WebException ex) { throw ConnectError(ex, name); }
+
+      int chunks = (int)((total + ChunkSize - 1) / ChunkSize);
+      int next = -1;
+      long got = 0;
+      Exception failure = null;
+      ServicePointManager.DefaultConnectionLimit = Math.Max(ServicePointManager.DefaultConnectionLimit, Workers * 2);
+      using (var init = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite)) init.SetLength(total);
+
+      var threads = new List<Thread>();
+      for (int w = 0; w < Workers; w++)
+      {
+        var th = new Thread(() =>
+        {
+          var buf = new byte[65536];
+          using (var fs = new FileStream(path, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+            while (failure == null && !cancel)
+            {
+              int c = Interlocked.Increment(ref next);
+              if (c >= chunks) return;
+              long start = (long)c * ChunkSize, end = Math.Min(total, start + ChunkSize) - 1;
+              long pos = start;
+              for (int attempt = 0; ; attempt++)
+              {
+                try
+                {
+                  var req = Request(url);
+                  req.AddRange(pos, end);
+                  using (var resp = (HttpWebResponse)req.GetResponse())
+                  {
+                    if (resp.StatusCode != HttpStatusCode.PartialContent) throw new Exception("服务器不支持分段下载");
+                    using (var s = resp.GetResponseStream())
+                    {
+                      fs.Position = pos;
+                      int n;
+                      while (pos <= end && (n = s.Read(buf, 0, (int)Math.Min(buf.Length, end - pos + 1))) > 0)
+                      {
+                        if (cancel || failure != null) return;
+                        fs.Write(buf, 0, n);
+                        pos += n;
+                        Interlocked.Add(ref got, n);
+                      }
+                    }
+                  }
+                  if (pos > end) break;
+                  throw new IOException("连接中断");
+                }
+                catch (Exception ex)
+                {
+                  // 已收到的部分保留,从断点继续;多次失败才放弃
+                  if (cancel) return;
+                  if (attempt >= ChunkRetries) { failure = ex; return; }
+                  Thread.Sleep(1000 * (attempt + 1));
+                }
+              }
+            }
+        }) { IsBackground = true };
+        threads.Add(th);
+        th.Start();
+      }
+
+      while (threads.Any(t => t.IsAlive))
+      {
+        Thread.Sleep(250);
+        ReportDownload(Interlocked.Read(ref got), total);
+      }
+      if (cancel) throw new CancelledException();
+      if (failure != null)
+      {
+        var we = failure as WebException;
+        throw we != null ? ConnectError(we, name) : new Exception("下载失败:" + failure.Message + "\n请检查网络后重试。");
+      }
+      if (Interlocked.Read(ref got) != total) throw new Exception("下载不完整(" + Util.Bytes(got) + " / " + Util.Bytes(total) + "),请重试。");
+      ReportDownload(total, total);
+      return true;
     }
 
     void DoInstall(bool desktop, bool start)
@@ -940,54 +1103,21 @@ namespace ChronoKeySetup
         throw new Exception("版本信息格式不正确。");
       Ui(() => side.Version = "正在安装 v" + version);
 
-      // 2. 下载(边下载边算 SHA-256)
+      // 2. 下载:GitHub 对单个连接常被限速,按 2 MB 分块、8 个连接并行;断线自动续传重试
       string zipPath = Path.Combine(tempDir, file);
       Status("正在下载", "ChronoKey " + version + " · " + file);
-      string actual;
-      using (var sha256 = SHA256.Create())
-      {
-        long total;
-        using (var src = Open(file, out total))
-        using (var dst = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None))
-        {
-          long size;
-          if (total <= 0 && long.TryParse(Util.Json(manifest, "size"), out size)) total = size;
-          Ui(() => bar.Indeterminate = total <= 0);
-          var buf = new byte[81920];
-          long got = 0, lastGot = 0;
-          var sw = Stopwatch.StartNew();
-          double speed = 0, lastT = 0;
-          int n;
-          while ((n = src.Read(buf, 0, buf.Length)) > 0)
-          {
-            if (cancel) throw new CancelledException();
-            dst.Write(buf, 0, n);
-            sha256.TransformBlock(buf, 0, n, null, 0);
-            got += n;
-            double t = sw.Elapsed.TotalSeconds;
-            if (t - lastT >= 0.25)
-            {
-              double inst = (got - lastGot) / (t - lastT);
-              speed = speed <= 0 ? inst : speed * 0.75 + inst * 0.25; // 平滑,避免数字乱跳
-              lastGot = got; lastT = t;
-              long g = got; double sp = speed;
-              Ui(() =>
-              {
-                if (total > 0) bar.Value = (float)g / total;
-                stats.L.Text = total > 0 ? Util.Bytes(g) + " / " + Util.Bytes(total) : Util.Bytes(g);
-                stats.R.Text = Util.Bytes(sp) + "/s · " + (total > 0 ? "剩余 " + Util.Eta((total - g) / sp) : "");
-              });
-            }
-          }
-          if (total > 0 && got != total) throw new Exception("下载不完整(" + Util.Bytes(got) + " / " + Util.Bytes(total) + "),请重试。");
-          sha256.TransformFinalBlock(buf, 0, 0);
-          actual = Util.Hex(sha256.Hash);
-        }
-      }
+      long total;
+      long.TryParse(Util.Json(manifest, "size"), out total);
+      dlWatch = Stopwatch.StartNew(); dlSpeed = 0; dlLastT = 0; dlLastGot = 0;
+      Ui(() => bar.Indeterminate = total <= 0);
+      if (IsLocalSource || total <= 0 || !DownloadParallel(file, zipPath, total)) DownloadSingle(file, zipPath, total);
 
-      // 3. 校验
+      // 3. 校验(读回整个文件计算 SHA-256)
       Ui(() => { bar.Value = 1; stats.R.Text = "下载完成"; });
       Status("正在校验", "核对 SHA-256,确保文件完整且未被篡改…");
+      string actual;
+      using (var sha256 = SHA256.Create())
+      using (var fs = File.OpenRead(zipPath)) actual = Util.Hex(sha256.ComputeHash(fs));
       if (!actual.Equals(sha.Trim(), StringComparison.OrdinalIgnoreCase))
         throw new Exception("安装包校验失败:SHA-256 与发布信息不一致。文件可能损坏或被篡改,已停止安装。");
       Thread.Sleep(300);
@@ -996,7 +1126,7 @@ namespace ChronoKeySetup
       Ui(() => { cancellable = false; pWork.Primary.Enabled = false; Step(2); bar.Value = 0; stats.L.Text = ""; stats.R.Text = ""; });
       Status("正在安装", "正在解压文件…");
       string staging = installDir + ".installing";
-      if (Directory.Exists(staging)) Directory.Delete(staging, true);
+      if (Directory.Exists(staging)) Retry(() => Directory.Delete(staging, true));
       Directory.CreateDirectory(staging);
       string stagingFull = Path.GetFullPath(staging) + Path.DirectorySeparatorChar;
       using (var zip = ZipFile.OpenRead(zipPath))
@@ -1023,11 +1153,15 @@ namespace ChronoKeySetup
       {
         // 覆盖安装:保留便携数据目录
         string portable = Path.Combine(installDir, "ChronoKeyData");
-        if (Directory.Exists(portable)) Directory.Move(portable, Path.Combine(staging, "ChronoKeyData"));
-        Directory.Delete(installDir, true);
+        if (Directory.Exists(portable)) Retry(() => Directory.Move(portable, Path.Combine(staging, "ChronoKeyData")));
+        Retry(() => Directory.Delete(installDir, true));
       }
       Directory.CreateDirectory(Path.GetDirectoryName(installDir));
-      Directory.Move(staging, installDir);
+      // 杀毒软件常在解压后短暂锁定新文件:先重试整体改名,仍失败则逐个复制
+      try { Retry(() => Directory.Move(staging, installDir)); }
+      catch (IOException) { CopyTree(staging, installDir); }
+      catch (UnauthorizedAccessException) { CopyTree(staging, installDir); }
+      try { if (Directory.Exists(staging)) Directory.Delete(staging, true); } catch { }
 
       // 5. 卸载程序、快捷方式、"已安装的应用"条目
       Status(null, "正在创建快捷方式…");
