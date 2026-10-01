@@ -1,128 +1,126 @@
-# ChronoKey（时钥）
+# ChronoKey
 
-纯本地、离线的密码管理器。
+A fully local, offline password manager.
 
-[中文](README.md) | [English](README.en.md)
+[English](README.md) · [中文](README.zh.md)
 
 <p align="center">
   <img src="build/icon.png" width="128" alt="ChronoKey">
 </p>
 
-## 特性
+## Features
 
-### <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7-8" fill="none" stroke="#4c9a63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 已完成
+### <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7-8" fill="none" stroke="#4c9a63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Implemented
 
-- **纯本地加密存储** — 所有数据存储在本地，使用 Argon2id + AES-256-GCM 加密
-- **历史超密钥** — 将整个密码库和设置导出为一个密钥字符串，可在新电脑上粘贴导入
-- **双因素认证 (2FA/TOTP)** — 内置 RFC 6238 TOTP 生成器，支持 QR 码扫描和 otpauth URI
-- **密码生成器** — 随机密码、口令短语、PIN 码，使用密码学安全的随机源
-- **强度评估** — 实时检测弱密码、字典词、键盘序列和常见模式
-- **安全审计** — 扫描弱密码、重复密码、缺少 2FA 的账户
-- **多种条目类型** — 登录、TOTP、信用卡、身份、地址、笔记、API 密钥、SSH 密钥
-- **SSH 密钥生成** — 生成 OpenSSH ed25519 密钥对
-- **版本历史** — 每个条目保留最多 15 个历史版本，可回滚
-- **废纸篓** — 软删除，可恢复或一键清空
-- **文件夹组织** — 自定义文件夹，右键或双击重命名
-- **标签系统** — 多标签分类
-- **全文搜索** — 快速查找（密钥字段不参与搜索，保护隐私）
-- **导入导出** — 支持 CSV、Bitwarden JSON、KeePass XML、ChronoKey JSON
-- **恢复代码** — 25 字符 Crockford base32 编码的恢复密钥
-- **自动锁定** — 闲置、睡眠、锁屏时自动锁定
-- **剪贴板保护** — 敏感内容复制后自动清除（默认 20 秒）
-- **便携模式** — 程序旁放置 `ChronoKeyData` 文件夹即可实现数据便携
-- **重置保险库** — 忘记主密码和恢复代码时，可删除当前保险库重新开始
-- **深浅色主题** — 跟随系统或手动切换
-- **多语言界面 (i18n)** — 简体中文与英文两套文案，在「设置 → 外观」中切换，界面与提示即时更新并持久化保存
-- **Window Controls Overlay** — Windows 11 原生标题栏按钮，支持贴靠布局
-- **完全离线** — 程序不请求任何网络权限，防火墙完全断网运行
+- **Fully Local Encryption** — All data stored locally, encrypted with Argon2id + AES-256-GCM
+- **History Super Key** — Export your entire vault and settings as a single key string for manual migration to a new computer
+- **2FA/TOTP** — Built-in RFC 6238 TOTP generator with QR code scanning and otpauth URI support
+- **Password Generator** — Random passwords, passphrases, and PINs using cryptographically secure random sources
+- **Strength Estimation** — Real-time detection of weak passwords, dictionary words, keyboard patterns, and common patterns
+- **Security Audit** — Scan for weak passwords, duplicate passwords, and accounts missing 2FA
+- **Multiple Item Types** — Login, TOTP, credit card, identity, address, note, API key, SSH key
+- **SSH Key Generation** — Generate OpenSSH ed25519 key pairs
+- **Version History** — Each item retains up to 15 historical versions, with rollback
+- **Trash** — Soft delete; restore items or empty the trash
+- **Folder Organization** — Custom folders; right-click or double-click to rename
+- **Tag System** — Multi-tag classification
+- **Full-text Search** — Fast search (secret fields excluded for privacy)
+- **Import/Export** — CSV, Bitwarden JSON, KeePass XML, ChronoKey JSON
+- **Recovery Code** — 25-character Crockford base32 encoded recovery key
+- **Auto-lock** — Locks on idle, sleep, or screen lock
+- **Clipboard Protection** — Auto-clear sensitive clipboard content (default 20s)
+- **Portable Mode** — Place a `ChronoKeyData` folder next to the executable for portable data
+- **Vault Reset** — If you forget both the master password and recovery code, delete the current vault and start over
+- **Light/Dark Theme** — Follow system or toggle manually
+- **Multi-language UI (i18n)** — Simplified Chinese and English catalogs, switchable under *Settings → Appearance*; the interface and all messages update instantly and the choice is persisted
+- **Window Controls Overlay** — Windows 11 native titlebar buttons with snap layouts
+- **Fully Offline** — Zero network permissions; works completely offline behind a firewall
 
-### <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="#E2943B" stroke-width="1.5"/><path d="M8 4.5v3.5l2.2 1.6" fill="none" stroke="#E2943B" stroke-width="1.5" stroke-linecap="round"/></svg> 计划中
+### <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="#E2943B" stroke-width="1.5"/><path d="M8 4.5v3.5l2.2 1.6" fill="none" stroke="#E2943B" stroke-width="1.5" stroke-linecap="round"/></svg> Planned (Not Yet Implemented)
 
-以下功能暂未实现：
-
-- 浏览器扩展自动填充
-- 全局快捷键
-- Windows Hello / Touch ID / 生物识别解锁
-- YubiKey / 硬件密钥支持
-- Shamir 秘密共享恢复
-- 命令行工具 (CLI)
-- 插件系统
+- Browser extension autofill
+- Global hotkeys
+- Windows Hello / Touch ID / biometric unlock
+- YubiKey / hardware key support
+- Shamir secret sharing recovery
+- Command-line interface (CLI)
+- Plugin system
 - Passkey (WebAuthn)
 
-## 设计理念
+## Design Philosophy
 
-### 无服务器架构
+### No Server Architecture
 
-ChronoKey **不需要**也**不提供**任何服务器功能：
+ChronoKey **does not need** and **does not provide** any server functionality:
 
-- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> 无云同步
-- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> 无多设备自动同步
-- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> 无在线泄露监控 (HIBP)
-- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> 无共享密码库
-- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> 无团队协作
-- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> 无账号系统
-- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> 无订阅验证
-- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> 无在线更新检查
+- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> No cloud sync
+- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> No automatic multi-device sync
+- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> No online breach monitoring (HIBP)
+- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> No shared vaults
+- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> No team collaboration
+- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> No account system
+- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> No subscription validation
+- <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> No online update checks
 
-多设备使用通过**手动文件同步**实现：
+Multi-device use is achieved through **manual file syncing**:
 
-- USB 闪存盘
+- USB flash drive
 - Syncthing
-- 云盘文件夹 (OneDrive/iCloud/Dropbox)
-- 历史超密钥复制粘贴
+- Cloud drive folder (OneDrive/iCloud/Dropbox)
+- History Super Key copy-paste
 
-### 安全设计
+### Security Design
 
-**加密方案：**
+**Encryption Scheme:**
 
-- **密钥派生**: Argon2id (m=65536 KiB, t=3, p=1)
-- **主密码**: 最低 10 字符，强度分数 ≥ 2/4
-- **数据加密**: AES-256-GCM + AAD 绑定上下文
-- **密钥包装**: 随机 32 字节 DEK，分别用主密码和恢复代码包装
-- **恢复代码**: 25 字符 Crockford base32，离线存储
+- **Key Derivation**: Argon2id (m=65536 KiB, t=3, p=1)
+- **Master Password**: Minimum 10 characters, strength score ≥ 2/4
+- **Data Encryption**: AES-256-GCM + AAD context binding
+- **Key Wrapping**: Random 32-byte DEK, wrapped separately by the master password and the recovery code
+- **Recovery Code**: 25-character Crockford base32, offline storage
 
-**Electron 安全：**
+**Electron Security:**
 
 - `contextIsolation`: true
 - `sandbox`: true
 - `nodeIntegration`: false
 - CSP: `connect-src 'none'`
-- 所有网络请求被 `webRequest.onBeforeRequest` 拦截
-- 内容保护 (截屏录屏保护)
-- 主进程持有 DEK，渲染进程永远看不到
+- All network requests blocked by `webRequest.onBeforeRequest`
+- Content protection (screenshot / screen-recording protection)
+- The main process holds the DEK; the renderer never sees it
 
-**威胁模型边界（诚实安全声明）：**
+**Threat Model Boundaries (Honest Security Claims):**
 
-<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7-8" fill="none" stroke="#4c9a63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> **保护：**
+<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7-8" fill="none" stroke="#4c9a63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> **Protects Against:**
 
-- 磁盘窃取 (文件已加密)
-- 网络窃听 (无网络通信)
-- 恶意网站 / 浏览器漏洞 (沙箱隔离)
-- 剪贴板残留 (自动清除)
-- 屏幕截图 / 录屏 (内容保护)
+- Disk theft (files are encrypted)
+- Network eavesdropping (no network communication)
+- Malicious websites / browser exploits (sandbox isolation)
+- Clipboard residue (auto-clear)
+- Screenshots / screen recording (content protection)
 
-<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> **不保护：**
+<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="#b54434" stroke-width="2" stroke-linecap="round"/></svg> **Does Not Protect Against:**
 
-- 操作系统级别的恶意软件 (键盘记录器、内存扫描)
-- 物理访问时的冷启动攻击
-- 用户选择弱主密码
-- 恢复代码物理泄露
-- 未经审计的代码 (本项目未经第三方安全审计)
+- OS-level malware (keyloggers, memory scanning)
+- Cold-boot attacks on physical access
+- Users choosing a weak master password
+- Physical disclosure of the recovery code
+- Unaudited code (this project has not undergone a third-party security audit)
 
-### 历史超密钥格式
+### History Super Key Format
 
-格式： `CK1.<base64url(header + iv + tag + ciphertext)>.<crc32>`
+Format: `CK1.<base64url(header + iv + tag + ciphertext)>.<crc32>`
 
-**头部 (27 字节)：**
+**Header (27 bytes):**
 
 ```
-CKSK             魔数 (4 字节)
-0x01             版本 (1 字节)
-m,t,p            Argon2id 参数 (6 字节 u32 + u8 + u8)
-salt             盐 (16 字节)
+CKSK             Magic (4 bytes)
+0x01             Version (1 byte)
+m,t,p            Argon2id params (6 bytes: u32 + u8 + u8)
+salt             Salt (16 bytes)
 ```
 
-**载荷 (gzip)：**
+**Payload (gzip):**
 
 ```json
 {
@@ -134,73 +132,73 @@ salt             盐 (16 字节)
 }
 ```
 
-**合并规则：**
+**Merge Rules:**
 
-- 同 ID 条目： 较新 `updatedAt` 胜出
-- 旧版本进入 `versions` 数组
-- 文件夹、标签并集
-- 审计日志追加
+- Same-ID item: newer `updatedAt` wins
+- Old version enters the `versions` array
+- Folders, tags: union
+- Audit log: append
 
-## 快捷键
+## Keyboard Shortcuts
 
-| 按键 | 功能 |
+| Key | Function |
 |------|------|
-| `Ctrl/⌘ + F` | 聚焦搜索框 |
-| `Ctrl/⌘ + K` | 聚焦搜索框 (备选) |
-| `Ctrl/⌘ + N` | 新建条目 |
-| `Ctrl/⌘ + L` | 锁定密码库 |
-| `Ctrl/⌘ + ,` | 打开设置 |
-| `Ctrl/⌘ + G` | 打开密码生成器 |
-| `Ctrl/⌘ + S` | 保存条目 (编辑器中) |
-| `Esc` | 关闭模态框 |
-| `↑/↓` | 列表导航 |
+| `Ctrl/⌘ + F` | Focus search box |
+| `Ctrl/⌘ + K` | Focus search box (alternative) |
+| `Ctrl/⌘ + N` | New item |
+| `Ctrl/⌘ + L` | Lock vault |
+| `Ctrl/⌘ + ,` | Open settings |
+| `Ctrl/⌘ + G` | Open password generator |
+| `Ctrl/⌘ + S` | Save item (in editor) |
+| `Esc` | Close modal |
+| `↑/↓` | List navigation |
 
-## 构建与运行
+## Build & Run
 
-### 开发模式
+### Development Mode
 
 ```bash
 npm install
-npm run dev        # 启动 Vite 开发服务器 (http://localhost:5173)
+npm run dev        # Start Vite dev server (http://localhost:5173)
 ```
 
-在另一个终端：
+In another terminal:
 
 ```bash
 npm run electron:dev
 ```
 
-或在浏览器中访问 http://localhost:5173 （使用演示数据，密码 "demo"）。
+Or visit http://localhost:5173 in a browser (uses demo data, password "demo").
 
-### 测试
-
-```bash
-npm test           # 运行所有单元测试
-npm run test:electron  # Electron 集成测试
-```
-
-### 打包
+### Testing
 
 ```bash
-npm run dist       # 构建 Windows x64 便携 zip: release/ChronoKey-<版本>-win-x64.zip
+npm test           # Run all unit tests
+npm run test:electron  # Electron integration test
 ```
 
-### 安装程序 (ChronoKeySetup.exe)
+### Packaging
 
-`installer/` 是一个小型在线安装 / 卸载程序（WinForms，.NET Framework 4.8，Windows 10/11 自带）：
+```bash
+npm run dist       # Build the Windows x64 portable zip: release/ChronoKey-<version>-win-x64.zip
+```
 
-1. 选择安装位置（默认 `%LOCALAPPDATA%\Programs\ChronoKey`，无需管理员权限）
-2. 从 GitHub Releases 下载 `latest.json` 指向的 zip，显示进度、速度与剩余时间
-3. 校验 SHA-256，解压，创建开始菜单 / 桌面快捷方式，写入"已安装的应用"卸载项
-4. 点击"完成"后安装程序删除自身；安装目录中的 `Uninstall.exe` 用于卸载（可选择保留保险库数据）
+### Installer (ChronoKeySetup.exe)
 
-构建： 运行 `installer\build.cmd`（使用系统自带的 csc，无需 SDK）。图标由 `installer/MakeIcon.cs` 生成。
+`installer/` holds a small online installer / uninstaller (WinForms, .NET Framework 4.8, built into Windows 10/11):
 
-### 便携模式
+1. Choose an install location (default `%LOCALAPPDATA%\Programs\ChronoKey`, no admin rights needed)
+2. Download the zip named in `latest.json` from GitHub Releases, with progress, speed and time remaining
+3. Verify SHA-256, extract, create Start Menu / desktop shortcuts, and register in Installed Apps
+4. Clicking Done deletes the installer itself; `Uninstall.exe` in the install folder removes the app (vault data can be kept)
 
-在程序同目录下创建 `ChronoKeyData` 文件夹，数据将保存在该文件夹而非用户目录。适合 USB 闪存盘使用。
+Build by running `installer\build.cmd` (uses the csc that ships with Windows, no SDK). Icons are generated by `installer/MakeIcon.cs`.
 
-## 技术栈
+### Portable Mode
+
+Create a `ChronoKeyData` folder in the same directory as the executable, and data will be saved there instead of the user directory. Suitable for USB flash drives.
+
+## Tech Stack
 
 - **Electron** 44.5.1
 - **React** 19.3.0
@@ -209,40 +207,40 @@ npm run dist       # 构建 Windows x64 便携 zip: release/ChronoKey-<版本>-w
 - **jsQR** 1.4.0
 - **electron-builder** 26.15.3
 
-## 配色方案
+## Color Palette
 
-"Washi × Moss" 来自 [NIPPON COLORS](https://nipponcolors.com)：
+"Washi × Moss" from [NIPPON COLORS](https://nipponcolors.com):
 
-- 柳染 #91AD70 (主色)
-- 苔 #838A2D
-- 紅樺 #B54434 (危险/警告)
-- 朽葉 #E2943B
-- 利休白茶 #B4A582
-- 砥粉 #D7B98E
-- 墨 #1C1C1C
+- Willow #91AD70 (primary)
+- Moss #838A2D
+- Birch #B54434 (danger/warning)
+- Withered Leaf #E2943B
+- Matcha #B4A582
+- Toishi #D7B98E
+- Ink #1C1C1C
 
-所有文字对比度 ≥ 4.5:1 (WCAG AA)
+All text contrast ≥ 4.5:1 (WCAG AA)
 
-## 关于开源加密代码
+## Why the Crypto Code Is Open Source
 
-加密部分（`electron/crypto.cjs`、`electron/vault.cjs`）**完整开源**，这是有意为之：
+The encryption code (`electron/crypto.cjs`, `electron/vault.cjs`) is **fully open source**, on purpose:
 
-- 只使用公开、经过审计的标准算法： Argon2id (RFC 9106)、AES-256-GCM、系统 CSPRNG，没有自创算法
-- 代码中不含任何密钥、后门或"秘密参数"；保险库的安全只取决于你的主密码和恢复代码
-- 依据 Kerckhoffs 原则，公开实现不会降低安全性，反而让任何人都能审查是否存在漏洞；闭源的密码管理器无法被验证
+- It uses only public, audited standard algorithms: Argon2id (RFC 9106), AES-256-GCM, and the OS CSPRNG. Nothing home-grown.
+- The code contains no keys, backdoors, or secret parameters. Vault security depends only on your master password and recovery code.
+- Per Kerckhoffs's principle, publishing the implementation does not weaken it; it lets anyone check it for flaws. A closed-source password manager cannot be verified.
 
-需要保密的只有你的主密码、恢复代码和超密钥口令，它们从不离开你的电脑。发现安全问题请通过 GitHub 私下报告（Security → Report a vulnerability），不要公开提 issue。
+The only secrets are your master password, recovery code, and super-key passphrase — and they never leave your computer. Please report security issues privately via GitHub (Security → Report a vulnerability), not as public issues.
 
-## 许可证
+## License
 
-MIT License — 详见 [LICENSE](LICENSE)
+MIT License — see [LICENSE](LICENSE)
 
-## 鸣谢
+## Credits
 
-- [EFF Large Wordlist](https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases) (口令短语)
-- [NIPPON COLORS](https://nipponcolors.com) (配色灵感)
-- Electron 团队与 Anthropic Claude
+- [EFF Large Wordlist](https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases) (passphrases)
+- [NIPPON COLORS](https://nipponcolors.com) (color inspiration)
+- The Electron team & Anthropic Claude
 
 ---
 
-**安全声明**: 本项目未经第三方安全审计。密码管理器应在理解其威胁模型的前提下使用。如发现安全问题，请负责任地披露。
+**Security Disclaimer**: This project has not undergone third-party security audits. Password managers should be used with an understanding of their threat model. If you discover a security issue, please disclose it responsibly.
