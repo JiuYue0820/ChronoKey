@@ -1,16 +1,18 @@
 import { Avatar, Button, EmptyState, useTick } from './ui.jsx';
 import { TotpCode, safeParseTotp } from './TotpCode.jsx';
 import { TYPES } from '../lib/model.js';
+import { t, getLang } from '../i18n-react.js';
 
 function ClockCheck() {
   const now = useTick();
   const d = new Date(now);
   const off = -d.getTimezoneOffset();
   const tz = `UTC${off >= 0 ? '+' : '-'}${String(Math.floor(Math.abs(off) / 60)).padStart(2, '0')}:${String(Math.abs(off) % 60).padStart(2, '0')}`;
+  const locale = getLang() === 'en' ? 'en-US' : 'zh-CN';
   return (
     <p className="clock-check">
-      本机时间 <b className="mono">{d.toLocaleTimeString('zh-CN', { hour12: false })}</b> {tz}。
-      验证码依赖系统时钟,网站提示验证码错误时,先在系统设置里同步时间。
+      {t('totp.clockLabel')} <b className="mono">{d.toLocaleTimeString(locale, { hour12: false })}</b> {tz}。
+      {t('totp.clockHint')}
     </p>
   );
 }
@@ -21,11 +23,11 @@ export function TotpBoard({ items, query, onOpen, onAdd }) {
     <div className="tool">
       <header className="tool-head row">
         <div>
-          <h1>验证码</h1>
-          <p>点击数字复制。按 RFC 6238 在本机计算。</p>
+          <h1>{t('totp.title')}</h1>
+          <p>{t('totp.subtitle')}</p>
         </div>
         <div className="spacer" />
-        <Button variant="primary" icon="plus" onClick={onAdd}>添加两步验证</Button>
+        <Button variant="primary" icon="plus" onClick={onAdd}>{t('totp.add')}</Button>
       </header>
       <ClockCheck />
       {list.length ? (
@@ -35,7 +37,7 @@ export function TotpBoard({ items, query, onOpen, onAdd }) {
             return (
               <li key={i.id} className="totp-row">
                 <Avatar type={TYPES[i.type].icon} size={32} />
-                <button type="button" className="list-text totp-row-name" onClick={() => onOpen(i.id)} title="打开条目">
+                <button type="button" className="list-text totp-row-name" onClick={() => onOpen(i.id)} title={t('otp.openItem')} aria-label={t('otp.openItem')}>
                   <span className="list-name">{i.title}</span>
                   <span className="list-sub">{cfg.account || i.fields.username || i.fields.account || cfg.issuer}</span>
                 </button>
@@ -45,8 +47,8 @@ export function TotpBoard({ items, query, onOpen, onAdd }) {
           })}
         </ul>
       ) : (
-        <EmptyState title={query ? `没有匹配"${query}"的验证码` : '还没有两步验证'}>
-          <p>在任意登录条目中粘贴网站给出的设置密钥或二维码截图即可。</p>
+        <EmptyState title={query ? t('totp.noneMatch', { q: query }) : t('otp.none')}>
+          <p>{t('totp.hint')}</p>
         </EmptyState>
       )}
     </div>

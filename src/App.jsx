@@ -10,6 +10,7 @@ import { AuditView } from './components/AuditView.jsx';
 import { TotpBoard } from './components/TotpBoard.jsx';
 import { Settings } from './components/Settings.jsx';
 import { ToastProvider, useToast, EmptyState, Button } from './components/ui.jsx';
+import { t, initLang, getLang } from './i18n-react.js';
 import { matches, newItem, updateItem, appendAudit, normalizeVault } from './lib/model.js';
 
 function applyTheme(theme) {
@@ -36,10 +37,10 @@ class ErrorBoundary extends Component {
 
   static getDerivedStateFromError(error) { return { error }; }
 
-  componentDidCatch(error, info) { console.error('[ChronoKey] 界面错误', error, info?.componentStack); }
+  componentDidCatch(error, info) { console.error('[ChronoKey] UI error', error, info?.componentStack); }
 
   recover = async (lock) => {
-    if (lock) { try { await window.ck.lock(); } catch { /* 已锁定 */ } }
+    if (lock) { try { await window.ck.lock(); } catch { /* already locked */ } }
     this.setState({ error: null });
   };
 
@@ -48,13 +49,13 @@ class ErrorBoundary extends Component {
     return (
       <div className="app">
         <div className="crash" role="alert">
-          <h1>界面出错了</h1>
-          <p>保险库文件没有受影响,已保存的数据都在。可以先重试;如果反复出现,锁定后重新解锁。</p>
+          <h1>{t('app.crashTitle')}</h1>
+          <p>{t('app.crashBody')}</p>
           <pre className="crash-msg mono">{String(this.state.error?.message || this.state.error)}</pre>
           <div className="row gap-2 center">
-            <Button variant="primary" onClick={() => this.recover(false)}>重试</Button>
-            <Button icon="lock" onClick={() => this.recover(true)}>锁定并返回</Button>
-            <Button variant="ghost" onClick={() => location.reload()}>重新载入窗口</Button>
+            <Button variant="primary" onClick={() => this.recover(false)}>{t('app.crashRetry')}</Button>
+            <Button icon="lock" onClick={() => this.recover(true)}>{t('app.crashLock')}</Button>
+            <Button variant="ghost" onClick={() => location.reload()}>{t('app.crashReload')}</Button>
           </div>
         </div>
       </div>
@@ -71,6 +72,9 @@ function Root() {
     const s = await window.ck.status();
     setStatus(s);
     applyTheme(s.prefs.theme);
+    // 启动时应用已持久化的界面语言(不触发订阅通知);同时同步 <html lang> 便于辅助工具
+    initLang(s.prefs.lang || 'zh');
+    document.documentElement.lang = getLang();
     return s;
   }, []);
 
@@ -85,9 +89,15 @@ function Root() {
   useEffect(() => window.ck.onLocked((reason) => {
     setData(null);
     refresh();
-    if (reason === 'reset') { toast('保险库已删除,可以重新创建', 'info', 4000); return; }
-    const why = { idle: '闲置超时', 'screen-lock': '系统锁屏', sleep: '系统休眠', minimize: '窗口最小化', restore: '已恢复备份' }[reason];
-    if (why) toast(`已自动锁定:${why}`, 'info');
+    if (reason === 'reset') { toast(t('app.vaultDeleted'), 'info', 4000); return; }
+    const why = {
+      idle: t('app.idleTimeout'),
+      'screen-lock': t('app.screenLock'),
+      sleep: t('app.sleep'),
+      minimize: t('app.windowMinimized'),
+      restore: t('app.backupRestored'),
+    }[reason];
+    if (why) toast(t('app.autoLocked', { why }), 'info');
   }), [refresh, toast]);
 
   const onReady = useCallback(async (raw) => {
@@ -96,7 +106,7 @@ function Root() {
       await window.ck.save(d, { snapshot: 'none' });
       await window.ck.applySettings(d.settings);
     } catch (e) {
-      toast(`保存失败:${e.message}`, 'danger', 5000);
+      toast(t('app.saveFailed', { msg: e.message }), 'danger', 5000);
     }
     setData(d);
     refresh();
@@ -139,7 +149,7 @@ function Vault({ data, setData, status, refresh }) {
     try {
       await window.ck.save(next, opts);
     } catch (e) {
-      toast(`保存失败:${e.message}`, 'danger', 5000);
+      toast(t('app.saveFailed', { msg: e.message }), 'danger', 5000);
     }
   }, [setData, toast]);
 
@@ -151,7 +161,7 @@ function Vault({ data, setData, status, refresh }) {
     commit(appendAudit({ ...cur, items }, exists ? 'edit' : 'add', item.title));
     setEditing(null);
     setSelectedId(item.id);
-    toast(exists ? '已保存' : '已添加', 'ok');
+    toast(t(exists ? 'app.saved' : 'app.added'), 'ok');
   }, [commit, toast]);
 
   const patchItem = useCallback((id, patch, auditAction) => {
@@ -289,7 +299,7 @@ function Vault({ data, setData, status, refresh }) {
             selectedId={editing ? editing.id : selectedId}
             onSelect={(id) => { setEditing(null); setSelectedId(id); }}
             onNew={startNew}
-            onEmptyTrash={() => commit((cur) => appendAudit({ ...cur, items: cur.items.filter((i) => !i.deletedAt) }, 'purge', '清空废纸篓'), { snapshot: 'force' })}
+            onEmptyTrash={() => commit((cur) => appendAudit({ ...cur, items: cur.items.filter((i) => !i.deletedAt) }, 'purge', t('app.emptyTrash')), { snapshot: 'force' })}
           />
           <main className="detail-pane">
             {editing ? (
@@ -310,21 +320,21 @@ function Vault({ data, setData, status, refresh }) {
                 folders={data.folders}
                 onEdit={() => setEditing(structuredClone(selected))}
                 onFavorite={() => patchItem(selected.id, { favorite: !selected.favorite })}
-                onTrash={() => { patchItem(selected.id, { deletedAt: Date.now() }, 'trash'); toast('已移到废纸篓', 'info'); }}
+                onTrash={() => { patchItem(selected.id, { deletedAt: Date.now() }, 'trash'); toast(t('app.movedTrash'), 'info'); }}
                 onRestore={() => patchItem(selected.id, { deletedAt: null }, 'restore')}
                 onPurge={() => purgeItem(selected.id)}
-                onRestoreVersion={(item) => { replaceItem(item, 'rollback'); toast('已回滚到所选版本', 'ok'); }}
-                onDuplicate={() => setEditing({ ...structuredClone(selected), id: crypto.randomUUID(), title: `${selected.title} 副本`, versions: [] })}
+                onRestoreVersion={(item) => { replaceItem(item, 'rollback'); toast(t('app.rolledBack'), 'ok'); }}
+                onDuplicate={() => setEditing({ ...structuredClone(selected), id: crypto.randomUUID(), title: t('app.copyOf', { title: selected.title }), versions: [] })}
               />
             ) : (
-              <EmptyState title={data.items.length ? '选择一个条目' : '保险库还是空的'}>
+              <EmptyState title={t(data.items.length ? 'app.selectItem' : 'app.emptyVault')}>
                 {!data.items.length && (
                   <div className="stack gap-2 center">
-                    <p>添加第一个登录,或从其他密码管理器导入。</p>
+                    <p>{t('app.emptyHint')}</p>
                     <div className="row gap-2 center">
-                      <Button variant="primary" icon="plus" onClick={() => startNew('login')}>新建登录</Button>
-                      <Button icon="clock" onClick={() => startNew('totp')}>添加两步验证</Button>
-                      <Button icon="upload" onClick={() => setSettingsOpen('data')}>导入</Button>
+                      <Button variant="primary" icon="plus" onClick={() => startNew('login')}>{t('app.newLogin')}</Button>
+                      <Button icon="clock" onClick={() => startNew('totp')}>{t('app.addTotp')}</Button>
+                      <Button icon="upload" onClick={() => setSettingsOpen('data')}>{t('app.import')}</Button>
                     </div>
                   </div>
                 )}

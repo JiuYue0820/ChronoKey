@@ -47,12 +47,14 @@ class Vault {
   }
   writeJson(name, obj) { this.atomicWrite(path.join(this.dir, name), JSON.stringify(obj, null, 2)); }
 
-  // 锁屏前可读的非敏感偏好(主题、自毁阈值等)
-  getPrefs() { return { theme: 'system', contentProtection: true, wipeAfter: 0, ...this.readJson(PREFS_FILE, {}) }; }
+  // 锁屏前可读的非敏感偏好(主题、自毁阈值、界面语言等)
+  getPrefs() { return { theme: 'system', contentProtection: true, wipeAfter: 0, lang: 'zh', ...this.readJson(PREFS_FILE, {}) }; }
   setPrefs(patch) {
-    const allowed = ['theme', 'contentProtection', 'wipeAfter', 'bounds'];
+    const allowed = ['theme', 'contentProtection', 'wipeAfter', 'lang', 'bounds'];
     const next = this.getPrefs();
     for (const k of allowed) if (k in patch) next[k] = patch[k];
+    // 语言只允许已实现的语言,防止把无效值写进 prefs
+    if ('lang' in patch && !['zh', 'en'].includes(patch.lang)) delete next.lang;
     this.writeJson(PREFS_FILE, next);
     return next;
   }

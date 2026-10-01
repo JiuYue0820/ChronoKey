@@ -55,7 +55,7 @@ export function installMock() {
   let data = exists ? seed() : null;
   let password = DEMO_PASSWORD;
   let failures = 0;
-  const prefs = { contentProtection: true, wipeAfter: 0 };
+  const prefs = { contentProtection: true, wipeAfter: 0, lang: 'zh' };
   const backups = [
     { name: 'vault-2026-09-30T10-00-00-000Z.ckv', size: 48213, time: Date.now() - 3600000 },
     { name: 'vault-2026-09-29T18-20-00-000Z.ckv', size: 47102, time: Date.now() - 86400000 },
@@ -69,7 +69,7 @@ export function installMock() {
   window.ck = {
     isElectron: false,
     status: async () => ({
-      exists, unlocked, guard: { failures }, prefs: { ...prefs, theme: localStorage.getItem('ck-theme') || 'system' },
+      exists, unlocked, guard: { failures }, prefs: { ...prefs, theme: localStorage.getItem('ck-theme') || 'system', lang: localStorage.getItem('ck-lang') || prefs.lang || 'zh' },
       dataDir: '(浏览器预览 · 内存)', portable: false, platform: 'browser', version: '0.1.0',
     }),
     create: async (pw, d) => { await wait(400); password = pw; data = d; exists = true; unlocked = true; return { recoveryCode: 'DEMO0-RECOV-ERYC0-DE123-45678' }; },
@@ -100,7 +100,7 @@ export function installMock() {
     backupOpenFolder: async () => {},
     applySettings: async (s) => s,
     // 返回完整偏好(与主进程一致),否则调用方会丢掉其他字段
-    setPrefs: async (p) => { if (p.theme) localStorage.setItem('ck-theme', p.theme); Object.assign(prefs, p); return { ...prefs, theme: localStorage.getItem('ck-theme') || 'system' }; },
+    setPrefs: async (p) => { if (p.theme) localStorage.setItem('ck-theme', p.theme); if (p.lang) localStorage.setItem('ck-lang', p.lang); Object.assign(prefs, p); return { ...prefs, theme: localStorage.getItem('ck-theme') || 'system', lang: localStorage.getItem('ck-lang') || prefs.lang || 'zh' }; },
     copy: async (text, { sensitive = true } = {}) => {
       await navigator.clipboard?.writeText(text).catch(() => {});
       clearTimeout(clipTimer);

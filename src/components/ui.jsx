@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useId, createContext, useContext, useCallback } from 'react';
+import { getLang, relTimeLabel, strengthLabel } from '../i18n-react.js';
 
 export const isMac = /Mac/i.test(navigator.platform || navigator.userAgent);
 export const modKey = isMac ? '⌘' : 'Ctrl+';
@@ -140,7 +141,7 @@ export function SecretInput({ id, value, onChange, placeholder, autoFocus, onKey
         autoComplete={autoComplete}
         aria-label={ariaLabel}
       />
-      <IconButton className="input-adorn" icon={show ? 'eyeOff' : 'eye'} label={show ? '隐藏' : '显示'} onClick={() => setShow((s) => !s)} />
+      <IconButton className="input-adorn" icon={show ? 'eyeOff' : 'eye'} label={t(show ? 'ui.hide' : 'ui.show')} onClick={() => setShow((s) => !s)} />
     </div>
   );
 }
@@ -188,7 +189,7 @@ export function StrengthMeter({ result }) {
       <div className="strength-bars" aria-hidden="true">
         {[0, 1, 2, 3, 4].map((i) => <span key={i} className={i <= result.score ? `on ${tone}` : ''} />)}
       </div>
-      <span className={`strength-label ${tone}`}>{result.label} · {result.bits} bit</span>
+      <span className={`strength-label ${tone}`}>{strengthLabel(result.label)} · {result.bits} bit</span>
     </div>
   );
 }
@@ -222,7 +223,7 @@ export function Modal({ title, onClose, children, width = 560, footer }) {
       <div ref={ref} className="modal" role="dialog" aria-modal="true" aria-label={title} style={{ width }}>
         <header className="modal-head">
           <h2>{title}</h2>
-          {onClose && <IconButton className="modal-close" icon="x" label="关闭" onClick={onClose} />}
+          {onClose && <IconButton className="modal-close" icon="x" label={t('ui.close')} onClick={onClose} />}
         </header>
         <div className="modal-body">{children}</div>
         {footer && <footer className="modal-foot">{footer}</footer>}
@@ -264,7 +265,7 @@ export function Ring({ remaining, period, size = 28 }) {
   const frac = remaining / period;
   const urgent = remaining <= 5;
   return (
-    <svg className={`ring ${urgent ? 'urgent' : ''}`} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={`剩余 ${remaining} 秒`}>
+    <svg className={`ring ${urgent ? 'urgent' : ''}`} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={t('ui.remaining', { n: remaining })}>
       <circle cx={size / 2} cy={size / 2} r={r} className="ring-track" />
       <circle
         cx={size / 2}
@@ -314,14 +315,11 @@ export function EmptyState({ title, children }) {
 
 export function formatTime(t) {
   if (!t) return '—';
-  return new Date(t).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const locale = getLang() === 'en' ? 'en-US' : 'zh-CN';
+  return new Date(t).toLocaleString(locale, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
 export function relTime(t) {
-  const d = (Date.now() - t) / 1000;
-  if (d < 60) return '刚刚';
-  if (d < 3600) return `${Math.floor(d / 60)} 分钟前`;
-  if (d < 86400) return `${Math.floor(d / 3600)} 小时前`;
-  if (d < 86400 * 30) return `${Math.floor(d / 86400)} 天前`;
-  return formatTime(t).slice(0, 10);
+  if (!t) return '—';
+  return relTimeLabel(t);
 }

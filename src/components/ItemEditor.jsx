@@ -4,6 +4,7 @@ import { TotpSetup } from './TotpSetup.jsx';
 import { TYPES, TYPE_ORDER, hostOf, uid } from '../lib/model.js';
 import { estimate } from '../lib/strength.js';
 import { generate, DEFAULT_GEN } from '../lib/generator.js';
+import { t, typeLabel, fieldLabel } from '../i18n-react.js';
 
 function GenPopover({ defaults, onPick, onClose }) {
   const [opts, setOpts] = useState({ ...DEFAULT_GEN, ...(defaults || {}) });
@@ -16,22 +17,22 @@ function GenPopover({ defaults, onPick, onClose }) {
     return () => document.removeEventListener('mousedown', off);
   }, [onClose]);
   return (
-    <div className="popover" ref={ref} role="dialog" aria-label="生成密码" onKeyDown={(e) => e.key === 'Escape' && onClose()}>
-      <Segmented label="类型" value={opts.mode} onChange={(mode) => setOpts({ ...opts, mode })}
-        options={[{ value: 'random', label: '随机' }, { value: 'passphrase', label: '口令短语' }, { value: 'pin', label: 'PIN' }]} />
+    <div className="popover" ref={ref} role="dialog" aria-label={t('editor.genPassword')} onKeyDown={(e) => e.key === 'Escape' && onClose()}>
+      <Segmented label={t('gen.type')} value={opts.mode} onChange={(mode) => setOpts({ ...opts, mode })}
+        options={[{ value: 'random', label: t('gen.mode_random') }, { value: 'passphrase', label: t('gen.mode_passphrase') }, { value: 'pin', label: t('gen.mode_pin') }]} />
       <div className="gen-preview mono small">{pw}</div>
       {opts.mode === 'random' && (
-        <label className="range-row">长度 <input type="range" min="8" max="64" value={opts.length} onChange={(e) => setOpts({ ...opts, length: +e.target.value })} /> <b>{opts.length}</b></label>
+        <label className="range-row">{t('gen.length')} <input type="range" min="8" max="64" value={opts.length} onChange={(e) => setOpts({ ...opts, length: +e.target.value })} /> <b>{opts.length}</b></label>
       )}
       {opts.mode === 'passphrase' && (
-        <label className="range-row">单词 <input type="range" min="3" max="10" value={opts.words} onChange={(e) => setOpts({ ...opts, words: +e.target.value })} /> <b>{opts.words}</b></label>
+        <label className="range-row">{t('gen.words')} <input type="range" min="3" max="10" value={opts.words} onChange={(e) => setOpts({ ...opts, words: +e.target.value })} /> <b>{opts.words}</b></label>
       )}
       {opts.mode === 'pin' && (
-        <label className="range-row">位数 <input type="range" min="4" max="12" value={opts.pinLength} onChange={(e) => setOpts({ ...opts, pinLength: +e.target.value })} /> <b>{opts.pinLength}</b></label>
+        <label className="range-row">{t('gen.pinDigits')} <input type="range" min="4" max="12" value={opts.pinLength} onChange={(e) => setOpts({ ...opts, pinLength: +e.target.value })} /> <b>{opts.pinLength}</b></label>
       )}
       <div className="row gap-2">
-        <Button size="sm" icon="refresh" onClick={() => setPw(generate(opts))}>换一个</Button>
-        <Button size="sm" variant="primary" onClick={() => { onPick(pw); onClose(); }}>使用</Button>
+        <Button size="sm" icon="refresh" onClick={() => setPw(generate(opts))}>{t('gen.regenerate')}</Button>
+        <Button size="sm" variant="primary" onClick={() => { onPick(pw); onClose(); }}>{t('gen.use')}</Button>
       </div>
     </div>
   );
@@ -49,7 +50,7 @@ function TagInput({ tags, onChange, suggestions }) {
       {tags.map((t) => (
         <span key={t} className="tag">
           {t}
-          <button type="button" aria-label={`移除标签 ${t}`} onClick={() => onChange(tags.filter((x) => x !== t))}><Icon name="x" size={10} /></button>
+          <button type="button" aria-label={t('editor.removeTag', { t })} onClick={() => onChange(tags.filter((x) => x !== t))}><Icon name="x" size={10} /></button>
         </span>
       ))}
       <input
@@ -62,8 +63,8 @@ function TagInput({ tags, onChange, suggestions }) {
           if (e.key === 'Backspace' && !draft && tags.length) onChange(tags.slice(0, -1));
         }}
         onBlur={() => draft && add(draft)}
-        placeholder={tags.length ? '' : '输入后回车'}
-        aria-label="添加标签"
+        placeholder={tags.length ? '' : t('editor.tagHint')}
+        aria-label={t('editor.addTag')}
       />
       <datalist id="tag-suggestions">{suggestions.filter((s) => !tags.includes(s)).map((s) => <option key={s} value={s} />)}</datalist>
     </div>
@@ -82,7 +83,7 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
     e?.preventDefault();
     let title = draft.title.trim();
     if (!title) title = draft.fields.issuer || hostOf(draft.fields.url) || draft.fields.service || '';
-    if (!title) { setErr('请填写标题'); return; }
+    if (!title) { setErr(t('editor.needTitle')); return; }
     onSave({ ...draft, title, custom: draft.custom.filter((c) => c.label || c.value) });
   };
 
@@ -98,31 +99,31 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
   const genSsh = async () => {
     const k = await window.ck.sshGenerate(draft.title || 'chronokey');
     setDraft((d) => ({ ...d, fields: { ...d.fields, publicKey: k.publicKey, privateKey: k.privateKey, fingerprint: k.fingerprint } }));
-    toast('已生成 Ed25519 密钥对', 'ok');
+    toast(t('editor.sshGenerated'), 'ok');
   };
 
   return (
-    <form className="editor" onSubmit={save} aria-label={isNew ? '新建条目' : '编辑条目'}>
+    <form className="editor" onSubmit={save} aria-label={isNew ? t('editor.newTitle') : t('editor.editTitle')}>
       <header className="editor-head">
-        <h1>{isNew ? `新建${def.label}` : `编辑 · ${item.title}`}</h1>
+        <h1>{isNew ? t('editor.newType', { label: typeLabel(draft.type) }) : t('editor.editType', { title: item.title })}</h1>
         <div className="row gap-2">
-          <Button onClick={onCancel}>取消</Button>
-          <Button variant="primary" type="submit" icon="check">保存 <kbd>{modKey}S</kbd></Button>
+          <Button onClick={onCancel}>{t('editor.cancel')}</Button>
+          <Button variant="primary" type="submit" icon="check">{t('editor.save')} <kbd>{modKey}S</kbd></Button>
         </div>
       </header>
 
       {isNew && (
-        <div className="type-picker" role="radiogroup" aria-label="条目类型">
+        <div className="type-picker" role="radiogroup" aria-label={t('editor.itemType')}>
           {TYPE_ORDER.map((t) => (
             <button key={t} type="button" role="radio" aria-checked={draft.type === t} className={draft.type === t ? 'on' : ''} onClick={() => setDraft({ ...draft, type: t })}>
-              <Icon name={TYPES[t].icon} /><span>{TYPES[t].label}</span>
+              <Icon name={TYPES[t].icon} /><span>{typeLabel(t)}</span>
             </button>
           ))}
         </div>
       )}
 
       <div className="form-card">
-        <Field label="标题" error={err}>
+        <Field label={t('editor.title')} error={err}>
           {(id) => <input id={id} className="input input-lg" value={draft.title} onChange={(e) => { setDraft({ ...draft, title: e.target.value }); setErr(''); }} autoFocus placeholder={def.label} />}
         </Field>
 
@@ -130,7 +131,7 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
           const v = draft.fields[f.key] || '';
           if (f.kind === 'totp') {
             return (
-              <Field key={f.key} label={f.label}>
+              <Field key={f.key} label={fieldLabel(f.key)}>
                 <TotpSetup
                   value={v}
                   onChange={(val) => setField('totp', val)}
@@ -144,7 +145,7 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
             );
           }
           return (
-            <Field key={f.key} label={f.label}>
+            <Field key={f.key} label={fieldLabel(f.key)}>
               {(id) => (f.multiline ? (
                 <textarea id={id} className={`input ${f.mono ? 'mono' : ''}`} rows={f.key === 'privateKey' ? 6 : 3} value={v} onChange={(e) => setField(f.key, e.target.value)} placeholder={f.placeholder} spellCheck={false} />
               ) : f.secret ? (
@@ -152,7 +153,7 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
                   <SecretInput id={id} value={v} onChange={(val) => setField(f.key, val)} mono={f.mono} placeholder={f.placeholder} autoComplete="new-password" />
                   {f.generate && (
                     <div className="menu-anchor">
-                      <IconButton icon="dice" label="生成" onClick={() => setGenFor(f.key)} />
+                      <IconButton icon="dice" label={t('editor.generate')} onClick={() => setGenFor(f.key)} />
                       {genFor === f.key && <GenPopover defaults={generatorDefaults} onPick={(p) => setField(f.key, p)} onClose={() => setGenFor(null)} />}
                     </div>
                   )}
@@ -165,44 +166,44 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
         })}
 
         {draft.type === 'login' && draft.fields.password && <StrengthMeter result={estimate(draft.fields.password)} />}
-        {draft.type === 'ssh' && <Button icon="terminal" onClick={genSsh}>生成 Ed25519 密钥对</Button>}
+        {draft.type === 'ssh' && <Button icon="terminal" onClick={genSsh}>{t('editor.sshGen')}</Button>}
       </div>
 
       <div className="form-card">
         <div className="card-head">
-          <h3 className="section-title">自定义字段</h3>
-          <Button size="sm" variant="ghost" icon="plus" onClick={() => setDraft({ ...draft, custom: [...draft.custom, { id: uid(), label: '', value: '', hidden: false }] })}>添加</Button>
+          <h3 className="section-title">{t('editor.customFields')}</h3>
+          <Button size="sm" variant="ghost" icon="plus" onClick={() => setDraft({ ...draft, custom: [...draft.custom, { id: uid(), label: '', value: '', hidden: false }] })}>{t('editor.addCustom')}</Button>
         </div>
-        {!draft.custom.length && <p className="field-hint">例如:安全问题、账户 ID、客户经理电话…</p>}
+        {!draft.custom.length && <p className="field-hint">{t('editor.customHint')}</p>}
         {draft.custom.map((c, i) => {
           const set = (patch) => setDraft({ ...draft, custom: draft.custom.map((x, j) => (j === i ? { ...x, ...patch } : x)) });
           return (
             <div key={c.id} className="custom-row">
-              <input className="input" value={c.label} onChange={(e) => set({ label: e.target.value })} placeholder="字段名" aria-label="字段名" />
+              <input className="input" value={c.label} onChange={(e) => set({ label: e.target.value })} placeholder={t('editor.fieldName')} aria-label={t('editor.fieldName')} />
               {c.hidden
-                ? <SecretInput value={c.value} onChange={(v) => set({ value: v })} ariaLabel="字段值" />
-                : <input className="input" value={c.value} onChange={(e) => set({ value: e.target.value })} placeholder="值" aria-label="字段值" />}
-              <IconButton icon={c.hidden ? 'lock' : 'unlock'} label={c.hidden ? '已设为隐藏字段' : '设为隐藏字段'} className={c.hidden ? 'tone-accent' : ''} onClick={() => set({ hidden: !c.hidden })} />
-              <IconButton icon="x" label="删除字段" onClick={() => setDraft({ ...draft, custom: draft.custom.filter((_, j) => j !== i) })} />
+                ? <SecretInput value={c.value} onChange={(v) => set({ value: v })} ariaLabel={t('editor.fieldValue')} />
+                : <input className="input" value={c.value} onChange={(e) => set({ value: e.target.value })} placeholder={t('editor.valuePlaceholder')} aria-label={t('editor.fieldValue')} />}
+              <IconButton icon={c.hidden ? 'lock' : 'unlock'} label={t('editor.hideFieldLabel')} className={c.hidden ? 'tone-accent' : ''} onClick={() => set({ hidden: !c.hidden })} />
+              <IconButton icon="x" label={t('editor.deleteField')} onClick={() => setDraft({ ...draft, custom: draft.custom.filter((_, j) => j !== i) })} />
             </div>
           );
         })}
       </div>
 
       <div className="form-card grid-2">
-        <Field label="文件夹">
+        <Field label={t('editor.folder')}>
           {(id) => (
             <select id={id} className="input" value={draft.folderId || ''} onChange={(e) => setDraft({ ...draft, folderId: e.target.value || null })}>
-              <option value="">无</option>
+              <option value="">{t('editor.none')}</option>
               {folders.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
           )}
         </Field>
-        <Field label="标签">
+        <Field label={t('editor.tags')}>
           <TagInput tags={draft.tags} onChange={(tags) => setDraft({ ...draft, tags })} suggestions={allTags} />
         </Field>
         <div className="span-2">
-          <Field label="备注">
+          <Field label={t('editor.notes')}>
             {(id) => <textarea id={id} className="input" rows={3} value={draft.notes} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />}
           </Field>
         </div>
