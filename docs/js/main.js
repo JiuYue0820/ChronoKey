@@ -5,6 +5,7 @@ import { initCrypto } from './crypto-demo.js';
 import { initGenerator } from './gen-demo.js';
 import { initTotp } from './totp-demo.js';
 import { initHeroMock, initSuperKey, initSetupWin } from './scenes.js';
+import { setSiteLang, getSiteLang, t, applyI18n } from './i18n.js';
 
 function initTheme() {
   const btn = document.getElementById('theme-toggle');
@@ -91,12 +92,29 @@ function initSpotlight() {
   });
 }
 
+function initLang() {
+  const btn = document.getElementById('lang-toggle');
+  if (!btn) return;
+  const label = document.getElementById('lang-label');
+  const sync = () => {
+    const lang = getSiteLang();
+    if (label) label.textContent = lang === 'zh' ? '中' : 'EN';
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  };
+  sync();
+  btn.addEventListener('click', () => {
+    setSiteLang(getSiteLang() === 'zh' ? 'en' : 'zh');
+    sync();
+  });
+}
+
 function safe(name, fn) {
   try { const r = fn(); if (r && r.catch) r.catch((e) => console.error(name, e)); }
   catch (e) { console.error(name, e); }
 }
 
 safe('theme', initTheme);
+safe('lang', initLang);
 safe('nav', initNav);
 safe('reveal', initReveal);
 safe('counters', initCounters);

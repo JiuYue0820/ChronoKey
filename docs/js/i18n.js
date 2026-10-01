@@ -17,6 +17,7 @@ export const I18N = {
     'nav.faq': '问答',
     'nav.open': '打开菜单',
     'nav.close': '关闭菜单',
+    'nav.lang': '切换语言',
     // theme
     'theme.light': '切换到浅色',
     'theme.dark': '切换到深色',
@@ -227,6 +228,7 @@ export const I18N = {
     'nav.faq': 'FAQ',
     'nav.open': 'Open menu',
     'nav.close': 'Close menu',
+    'nav.lang': 'Switch language',
     // theme
     'theme.light': 'Switch to light',
     'theme.dark': 'Switch to dark',
