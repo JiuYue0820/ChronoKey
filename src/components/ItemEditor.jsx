@@ -47,10 +47,10 @@ function TagInput({ tags, onChange, suggestions }) {
   };
   return (
     <div className="tag-input">
-      {tags.map((t) => (
-        <span key={t} className="tag">
-          {t}
-          <button type="button" aria-label={t('editor.removeTag', { t })} onClick={() => onChange(tags.filter((x) => x !== t))}><Icon name="x" size={10} /></button>
+      {tags.map((tag) => (
+        <span key={tag} className="tag">
+          {tag}
+          <button type="button" aria-label={t('editor.removeTag', { t: tag })} onClick={() => onChange(tags.filter((x) => x !== tag))}><Icon name="x" size={10} /></button>
         </span>
       ))}
       <input
@@ -124,7 +124,7 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
 
       <div className="form-card">
         <Field label={t('editor.title')} error={err}>
-          {(id) => <input id={id} className="input input-lg" value={draft.title} onChange={(e) => { setDraft({ ...draft, title: e.target.value }); setErr(''); }} autoFocus placeholder={def.label} />}
+          {(id) => <input id={id} className="input input-lg" value={draft.title} onChange={(e) => { setDraft({ ...draft, title: e.target.value }); setErr(''); }} autoFocus placeholder={typeLabel(draft.type)} />}
         </Field>
 
         {def.fields.map((f) => {

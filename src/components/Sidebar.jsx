@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Icon, IconButton } from './ui.jsx';
-import { t } from '../i18n-react.js';
+import { t, typeLabel } from '../i18n-react.js';
 import { TYPES, TYPE_ORDER, uid } from '../lib/model.js';
 
 function Row({ active, icon, label, count, onClick, onContext, onDoubleClick, tone }) {
@@ -71,8 +71,8 @@ export function Sidebar({ view, setView, counts, folders, onFolders }) {
         </ul>
 
         <Section title={t('side.categories')} >
-          {TYPE_ORDER.map((t) => (
-            <Row key={t} active={is('type', { type: t })} icon={TYPES[t].icon} label={TYPES[t].label} count={counts.type[t] || 0} onClick={() => setView({ kind: 'type', type: t })} />
+          {TYPE_ORDER.map((typeId) => (
+            <Row key={typeId} active={is('type', { type: typeId })} icon={TYPES[typeId].icon} label={typeLabel(typeId)} count={counts.type[typeId] || 0} onClick={() => setView({ kind: 'type', type: typeId })} />
           ))}
         </Section>
 

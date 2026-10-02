@@ -483,14 +483,14 @@ export function Settings({ initialTab = 'security', data, status, commit, refres
     <Modal title={t('set.settingsTitle')} onClose={onClose} width={820}>
       <div className="settings">
         <nav className="settings-nav" aria-label={t('set.settingsNavLabel')}>
-          {TABS.map((t) => (
-            <button key={t.id} type="button" className={`side-row ${tab === t.id ? 'active' : ''}`} aria-current={tab === t.id ? 'page' : undefined} onClick={() => setTab(t.id)}>
-              <span className="side-label">{t.label}</span>
+          {TABS.map((item) => (
+            <button key={item.id} type="button" className={`side-row ${tab === item.id ? 'active' : ''}`} aria-current={tab === item.id ? 'page' : undefined} onClick={() => setTab(item.id)}>
+              <span className="side-label">{item.label()}</span>
             </button>
           ))}
         </nav>
         <div className="settings-body">
-          <h2 className="settings-title">{TABS.find((t) => t.id === tab).label}</h2>
+          <h2 className="settings-title">{TABS.find((item) => item.id === tab).label()}</h2>
           {tab === 'security' && <SecurityTab {...props} />}
           {tab === 'superkey' && <SuperKeyTab {...props} />}
           {tab === 'backup' && <BackupTab {...props} />}
