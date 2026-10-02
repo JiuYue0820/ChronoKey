@@ -1,5 +1,9 @@
 // ChronoKey English strings (mirror of zh.js; falls back to zh for missing keys).
 export default {
+  ui: {
+    close: 'Close',
+    remaining: '{n} s remaining',
+  },
   rel: {
     just: 'just now',
     min: '{n} min ago',

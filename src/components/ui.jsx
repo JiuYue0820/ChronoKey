@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useId, createContext, useContext, useCallback } from 'react';
-import { getLang, relTimeLabel, strengthLabel } from '../i18n-react.js';
+import { t, getLang, relTimeLabel, strengthLabel } from '../i18n-react.js';
 
 export const isMac = /Mac/i.test(navigator.platform || navigator.userAgent);
 export const modKey = isMac ? '⌘' : 'Ctrl+';

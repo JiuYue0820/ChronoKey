@@ -2,6 +2,10 @@
 // 键为「域.键」两级(个别域用嵌套对象),与 i18n.js 的 resolve() 对应。
 // 注意:lib/strength、lib/audit 的纯函数仍输出中文,此处 _lib 只作回退区(zh 恒为空)。
 export default {
+  ui: {
+    close: '关闭',
+    remaining: '剩余 {n} 秒',
+  },
   rel: {
     just: '刚刚',
     min: '{n} 分钟前',
