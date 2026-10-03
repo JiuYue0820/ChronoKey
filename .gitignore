@@ -6,3 +6,10 @@ release/
 ChronoKeyData/
 installer/*.exe
 .claude/
+verify/
+promo.gif
+dev/_shots/
+dev/shots*/
+dev/_*.json
+dev/_*.png
+dev/_*.txt

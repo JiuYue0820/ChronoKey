@@ -1,0 +1,42 @@
+[11:48:13] >>> s01 setup-welcome
+[11:48:13] <<< s01 PASS undefined
+[11:48:13] >>> s02 setup-create-page
+[11:48:14] <<< s02 PASS undefined
+[11:48:14] >>> s03 create-vault
+[11:48:15] <<< s03 PASS undefined
+[11:48:15] >>> s04 enter-vault
+[11:48:16] <<< s04 PASS undefined
+[11:48:16] >>> s05 new-login-editor
+[11:48:17] <<< s05 PASS undefined
+[11:48:17] >>> s06 save-login-item
+[11:48:18] <<< s06 PASS undefined
+[11:48:18] >>> s07 new-totp-item
+[11:48:19] <<< s07 PASS undefined
+[11:48:19] >>> s08 save-totp-item
+[11:48:20] <<< s08 PASS undefined
+[11:48:20] >>> s09 item-detail
+[11:48:21] <<< s09 PASS undefined
+[11:48:21] >>> s10 to-trash
+[11:48:21] <<< s10 PASS undefined
+[11:48:21] >>> s11 trash-view-restore
+[11:48:22] <<< s11 PASS undefined
+[11:48:22] >>> s12 search
+[11:48:23] <<< s12 PASS undefined
+[11:48:23] >>> s13 settings-sidebar
+[11:48:24] <<< s13 PASS undefined
+[11:48:24] >>> s14 switch-language-en
+[11:48:25] <<< s14 PASS undefined
+[11:48:25] >>> s15 about-check-update
+[11:48:32] <<< s15 PASS undefined
+[11:48:32] >>> s16 close-settings
+[11:48:33] <<< s16 PASS undefined
+[11:48:33] >>> s17 generator
+[11:48:34] <<< s17 PASS undefined
+[11:48:34] >>> s18 audit
+[11:48:35] <<< s18 PASS undefined
+[11:48:35] >>> s19 totp-board
+[11:48:36] <<< s19 PASS undefined
+[11:48:36] >>> s20 lock-and-unlock
+[11:48:37] <<< s20 PASS undefined
+[11:48:37] >>> s21 back-to-zh
+[11:48:38] <<< s21 PASS undefined

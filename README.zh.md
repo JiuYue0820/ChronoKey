@@ -128,7 +128,7 @@ salt             盐 (16 字节)
 {
   "app": "ChronoKey",
   "kind": "history-super-key",
-  "version": "0.1.0",
+  "version": 1,
   "exportedAt": "2026-10-01T00:00:00.000Z",
   "data": { ... }
 }

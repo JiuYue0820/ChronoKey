@@ -154,7 +154,7 @@ export function initSetupWin() {
       mode = 0; setStep(0); bar.style.width = '0'; l.textContent = ''; r.textContent = '';
       title.textContent = '选择安装位置'; sub.textContent = '%LOCALAPPDATA%\\Programs\\ChronoKey'; btn.textContent = '开始安装'; btn.style.opacity = 1;
       await sleep(1800); await press();
-      mode = 1; setStep(1); title.textContent = '正在下载'; sub.textContent = 'ChronoKey 0.1.0 · 8 线程'; btn.textContent = '取消';
+      mode = 1; setStep(1); title.textContent = '正在下载'; sub.textContent = 'ChronoKey 0.2.0 · 8 线程'; btn.textContent = '取消';
       for (let p = 0; p <= 100 && visible; p += 2) {
         bar.style.width = p + '%';
         const speed = 2.1 + Math.sin(p / 9) * 0.3;

@@ -242,16 +242,27 @@ function registerIpc() {
   handle('update:check', async () => {
     const https = require('node:https');
     const LATEST_URL = 'https://github.com/JiuYue0820/ChronoKey/releases/latest/download/latest.json';
+    // GitHub 的 /releases/latest/download/ 返回 302,需要手动跟随(最多 5 跳)
     const raw = await new Promise((resolve, reject) => {
-      const req = https.get(LATEST_URL, { timeout: 10000, headers: { 'User-Agent': 'ChronoKey' } }, (res) => {
-        if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
-        let body = '';
-        res.setEncoding('utf8');
-        res.on('data', (d) => { body += d; });
-        res.on('end', () => resolve(body));
-      });
-      req.on('timeout', () => { req.destroy(); reject(new Error('超时')); });
-      req.on('error', reject);
+      const get = (url, redirects) => {
+        if (redirects > 5) { reject(new Error('重定向次数过多')); return; }
+        const req = https.get(url, { timeout: 10000, headers: { 'User-Agent': 'ChronoKey' } }, (res) => {
+          if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
+            const next = new URL(res.headers.location, url).href;
+            res.resume();
+            get(next, redirects + 1);
+            return;
+          }
+          if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
+          let body = '';
+          res.setEncoding('utf8');
+          res.on('data', (d) => { body += d; });
+          res.on('end', () => resolve(body));
+        });
+        req.on('timeout', () => { req.destroy(); reject(new Error('超时')); });
+        req.on('error', reject);
+      };
+      get(LATEST_URL, 0);
     });
     const json = JSON.parse(raw);
     const current = app.getVersion();
@@ -262,7 +273,7 @@ function registerIpc() {
       current,
       latest,
       updateAvailable,
-      url: json.file ? 'https://github.com/JiuYue0820/ChronoKey/releases' : 'https://github.com/JiuYue0820/ChronoKey/releases',
+      url: 'https://github.com/JiuYue0820/ChronoKey/releases',
     };
   });
 
