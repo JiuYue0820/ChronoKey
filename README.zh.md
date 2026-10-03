@@ -8,6 +8,10 @@
   <img src="build/icon.png" width="128" alt="ChronoKey">
 </p>
 
+<p align="center">
+  <img src="promo.gif" width="720" alt="ChronoKey 演示">
+</p>
+
 ## 特性
 
 ### <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7-8" fill="none" stroke="#4c9a63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 已完成
