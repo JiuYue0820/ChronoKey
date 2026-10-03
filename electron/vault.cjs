@@ -53,8 +53,8 @@ class Vault {
     const allowed = ['theme', 'contentProtection', 'wipeAfter', 'lang', 'bounds'];
     const next = this.getPrefs();
     for (const k of allowed) if (k in patch) next[k] = patch[k];
-    // 语言只允许已实现的语言,防止把无效值写进 prefs
-    if ('lang' in patch && !['zh', 'en'].includes(patch.lang)) delete next.lang;
+    // 语言:内置(zh/en/ru)或语言包代码(如 de、pt-BR),防止把任意值写进 prefs
+    if ('lang' in patch && !/^(zh|en|ru|[a-z]{2,3}(-[A-Za-z]{2,4})?)$/.test(String(patch.lang))) delete next.lang;
     this.writeJson(PREFS_FILE, next);
     return next;
   }

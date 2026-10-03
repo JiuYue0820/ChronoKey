@@ -23,8 +23,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("ChronoKey Setup")]
 [assembly: AssemblyProduct("ChronoKey")]
 [assembly: AssemblyCompany("JiuYue0820")]
-[assembly: AssemblyVersion("0.2.0.0")]
-[assembly: AssemblyFileVersion("0.2.0.0")]
+[assembly: AssemblyVersion("0.3.0.0")]
+[assembly: AssemblyFileVersion("0.3.0.0")]
 
 namespace ChronoKeySetup
 {
@@ -656,6 +656,17 @@ namespace ChronoKeySetup
     Txt workTitle, workStatus, workDetail, doneBody, errBody, keepHint, locHint;
     Progress bar;
     Row stats;
+    // 语言选择:应用界面语言。zh/en/ru 内置,其余语言在安装时从 Releases 一起下载语言包
+    ComboBox langBox;
+    string langManifest;   // languages.json 原文;null 表示清单没拿到(只提供内置语言)
+    readonly List<LangOpt> langOpts = new List<LangOpt>();
+
+    class LangOpt { public string Code, Label; public bool Builtin; }
+
+    // languages.json 里单个语言条目(键序固定:code,label,file,sha256)
+    static readonly Regex LangEntry = new Regex(
+      @"\{\s*""code""\s*:\s*""(?<code>[a-z]{2,3}(?:-[A-Za-z]{2,4})?)""\s*,\s*""label""\s*:\s*""(?<label>(?:[^""\\]|\\.)*)""\s*,\s*""file""\s*:\s*""(?<file>[^""/\\]+)""\s*,\s*""sha256""\s*:\s*""(?<sha>[0-9a-fA-F]{64})""\s*\}",
+      RegexOptions.Compiled);
 
     public SetupForm(bool uninstall, string source)
     {
@@ -754,6 +765,11 @@ namespace ChronoKeySetup
       pLocation.Add(new Txt("需要约 400 MB 可用空间,下载约 140 MB。", 14, false, Theme.Text3), 8);
       chkDesktop = pLocation.Add(new Check("创建桌面快捷方式", true), 16);
       chkStart = pLocation.Add(new Check("添加到开始菜单", true), 4);
+      pLocation.Add(new Txt("应用界面语言 (App language)", 14, true, Theme.Text2), 24);
+      langBox = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Flat, Font = Theme.F(14, false) };
+      pLocation.Add(langBox, 6);
+      pLocation.Add(new Txt("内置:简体中文 · English · Русский。选择其他语言会在安装时从 GitHub 自动下载。\nBuilt-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", 12, false, Theme.Text3), 6);
+      InitLangList();
       pLocation.Foot(new FlatButton("取消", false)).Click += (s, e) => Close();
       pLocation.Foot(new FlatButton("开始安装", true)).Click += (s, e) => StartInstall();
 
@@ -877,6 +893,118 @@ namespace ChronoKeySetup
       return null;
     }
 
+    // ---------- 应用界面语言 ----------
+    void InitLangList()
+    {
+      langOpts.Add(new LangOpt { Code = "zh", Label = "简体中文", Builtin = true });
+      langOpts.Add(new LangOpt { Code = "en", Label = "English", Builtin = true });
+      langOpts.Add(new LangOpt { Code = "ru", Label = "Русский", Builtin = true });
+      // 按系统界面语言预选(zh-CN → zh,de-AT → de)
+      string ui = "";
+      try { ui = System.Globalization.CultureInfo.CurrentUICulture.Name; } catch { }
+      string baseCode = ui.Length > 0 ? ui.Split('-')[0].ToLowerInvariant() : "";
+      int def = langOpts.FindIndex(o => o.Code == baseCode);
+      foreach (var o in langOpts) langBox.Items.Add(o.Label);
+      langBox.SelectedIndex = def >= 0 ? def : 0;
+
+      // 后台拉取语言清单(languages.json 与 latest.json 同源);失败只影响可选语言数量,不阻塞安装
+      if (IsLocalSource)
+      {
+        try
+        {
+          long _;
+          using (var s = Open("languages.json", out _))
+          using (var r = new StreamReader(s, Encoding.UTF8)) langManifest = r.ReadToEnd();
+          ParseLangManifest(langManifest);
+          RepopulateLangList();
+        }
+        catch { }
+        return;
+      }
+      new Thread(() =>
+      {
+        try
+        {
+          ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | (SecurityProtocolType)12288; // TLS 1.2 / 1.3
+          long _;
+          using (var s = Open("languages.json", out _))
+          using (var r = new StreamReader(s, Encoding.UTF8)) langManifest = r.ReadToEnd();
+          if (!string.IsNullOrEmpty(langManifest) && langManifest.IndexOf("\"languages\"") >= 0)
+          {
+            ParseLangManifest(langManifest);
+            Ui(() => RepopulateLangList());
+          }
+        }
+        catch { /* 清单拿不到就只列内置语言 */ }
+      }) { IsBackground = true }.Start();
+    }
+
+    void ParseLangManifest(string json)
+    {
+      if (string.IsNullOrEmpty(json)) return;
+      foreach (Match m in LangEntry.Matches(json))
+      {
+        string code = m.Groups["code"].Value;
+        if (code == "zh" || code == "en" || code == "ru") continue;
+        if (langOpts.Any(o => o.Code == code)) continue;
+        string label = m.Groups["label"].Value;
+        try { label = Regex.Unescape(label); } catch { }
+        langOpts.Add(new LangOpt { Code = code, Label = string.IsNullOrEmpty(label) ? code : label, Builtin = false });
+      }
+    }
+
+    void RepopulateLangList()
+    {
+      if (langBox == null || langBox.IsDisposed) return;
+      string sel = SelectedLangCode();
+      langBox.Items.Clear();
+      foreach (var o in langOpts) langBox.Items.Add(o.Label);
+      int idx = langOpts.FindIndex(o => o.Code == sel);
+      langBox.SelectedIndex = idx >= 0 ? idx : 0;
+    }
+
+    string SelectedLangCode()
+    {
+      if (langBox == null || langBox.SelectedIndex < 0 || langBox.SelectedIndex >= langOpts.Count) return "zh";
+      return langOpts[langBox.SelectedIndex].Code;
+    }
+
+    // 选择内置三种之外的语言时,把对应语言包装进 <安装目录>\locales\<code>.json。
+    // 任何失败都只跳过语言包(应用仍有 zh/en/ru),不影响安装本身。
+    void WriteLangPack(string code)
+    {
+      if (code == "zh" || code == "en" || code == "ru") return;
+      if (!Regex.IsMatch(code, "^[a-z]{2,3}(-[A-Za-z]{2,4})?$")) return;
+      string manifest = langManifest;
+      if (string.IsNullOrEmpty(manifest))
+      {
+        try
+        {
+          long _;
+          using (var s = Open("languages.json", out _))
+          using (var r = new StreamReader(s, Encoding.UTF8)) manifest = r.ReadToEnd();
+        }
+        catch { return; }
+      }
+      var m = LangEntry.Matches(manifest ?? "").Cast<Match>().FirstOrDefault(x => x.Groups["code"].Value == code);
+      if (m == null) return;
+      string file = m.Groups["file"].Value, sha = m.Groups["sha"].Value;
+      if (file.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) return;
+
+      Status(null, "正在下载语言包 (" + code + ")…");
+      string packPath = Path.Combine(tempDir, code + ".pack");
+      DownloadSingle(file, packPath, 0);
+      string actual;
+      using (var h = SHA256.Create())
+      using (var fs = File.OpenRead(packPath)) actual = Util.Hex(h.ComputeHash(fs));
+      if (!actual.Equals(sha.Trim(), StringComparison.OrdinalIgnoreCase)) return; // 校验失败跳过
+      string content = File.ReadAllText(packPath, Encoding.UTF8);
+      if (content.IndexOf("\"dict\"") < 0) return; // 不是语言包格式
+      string dir = Path.Combine(installDir, "locales");
+      Directory.CreateDirectory(dir);
+      Retry(() => File.Copy(packPath, Path.Combine(dir, code + ".json"), true));
+    }
+
     void StartInstall()
     {
       var err = ValidateDir(pathRow.Input.Box.Text);
@@ -891,9 +1019,10 @@ namespace ChronoKeySetup
       Step(1); Show(pWork);
       side.Anim.Mode = 1;
       bool desktop = chkDesktop.Checked, start = chkStart.Checked;
+      string langCode = SelectedLangCode();
       new Thread(() =>
       {
-        try { DoInstall(desktop, start); }
+        try { DoInstall(desktop, start, langCode); }
         catch (Exception ex) { Fail(ex); }
       }) { IsBackground = true }.Start();
     }
@@ -1088,7 +1217,7 @@ namespace ChronoKeySetup
       return true;
     }
 
-    void DoInstall(bool desktop, bool start)
+    void DoInstall(bool desktop, bool start, string langCode)
     {
       ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | (SecurityProtocolType)12288; // TLS 1.2 / 1.3
       Directory.CreateDirectory(tempDir);
@@ -1187,6 +1316,8 @@ namespace ChronoKeySetup
         k.SetValue("NoModify", 1, RegistryValueKind.DWord);
         k.SetValue("NoRepair", 1, RegistryValueKind.DWord);
       }
+      // 6. 应用语言包(选择内置三种之外的语言时,随安装一起下载并写入 locales\)
+      try { WriteLangPack(langCode); } catch { /* 语言包失败不影响安装 */ }
       try { Directory.Delete(tempDir, true); } catch { }
 
       Ui(() =>

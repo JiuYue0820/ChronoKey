@@ -36,7 +36,7 @@
 - **便携模式** — 程序旁放置 `ChronoKeyData` 文件夹即可实现数据便携
 - **重置保险库** — 忘记主密码和恢复代码时，可删除当前保险库重新开始
 - **深浅色主题** — 跟随系统或手动切换
-- **多语言界面 (i18n)** — 简体中文与英文两套文案，在「设置 → 外观」中切换，界面与提示即时更新并持久化保存
+- **多语言界面 (i18n)** — 内置简体中文、English、Русский；另有 13 种语言包（Deutsch、Français、Español、Português、Italiano、Nederlands、Polski、Українська、Türkçe、日本語、한국어、Tiếng Việt、Bahasa Indonesia）放在仓库 `locales/` 目录：在安装程序里选好语言即可与程序一起下载，也可手动把语言包放进程序旁的 `locales/` 文件夹。在「设置 → 外观」中切换，已安装的语言都会列在那里
 - **Window Controls Overlay** — Windows 11 原生标题栏按钮，支持贴靠布局
 - **完全离线** — 程序不请求任何网络权限，防火墙完全断网运行
 
@@ -196,7 +196,8 @@ npm run dist       # 构建 Windows x64 便携 zip: release/ChronoKey-<版本>-w
 1. 选择安装位置（默认 `%LOCALAPPDATA%\Programs\ChronoKey`，无需管理员权限）
 2. 从 GitHub Releases 下载 `latest.json` 指向的 zip，显示进度、速度与剩余时间
 3. 校验 SHA-256，解压，创建开始菜单 / 桌面快捷方式，写入"已安装的应用"卸载项
-4. 点击"完成"后安装程序删除自身；安装目录中的 `Uninstall.exe` 用于卸载（可选择保留保险库数据）
+4. 在首屏选择应用界面语言：内置简体中文 / English / Русский，其他语言按 `languages.json` 清单与程序一起下载，装入 `locales\`
+5. 点击"完成"后安装程序删除自身；安装目录中的 `Uninstall.exe` 用于卸载（可选择保留保险库数据）
 
 构建： 运行 `installer\build.cmd`（使用系统自带的 csc，无需 SDK）。图标由 `installer/MakeIcon.cs` 生成。
 

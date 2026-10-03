@@ -1,0 +1,83 @@
+{
+  "version": "0.3.0",
+  "languages": [
+    {
+      "code": "de",
+      "label": "Deutsch",
+      "file": "de.json",
+      "sha256": "ce8ca5f03f0e6a273df5612550df9a59a2e1125a3da591887a73bf12c68f6beb"
+    },
+    {
+      "code": "es",
+      "label": "Español",
+      "file": "es.json",
+      "sha256": "04ea75b95c0cb9055ce3a21034c14c0af39b792143c59f0536578eed9fb92938"
+    },
+    {
+      "code": "fr",
+      "label": "Français",
+      "file": "fr.json",
+      "sha256": "a1424f09ef0302670076d5eb1ba91466f2a5fa801cd6eb7df077a3243c9f6c79"
+    },
+    {
+      "code": "id",
+      "label": "Bahasa Indonesia",
+      "file": "id.json",
+      "sha256": "6f9d624a30ae2cc939618eaa48410ad80b60c0a54262cddc8153cc723c3c9aea"
+    },
+    {
+      "code": "it",
+      "label": "Italiano",
+      "file": "it.json",
+      "sha256": "4b9d9525766e8a04e56e2103b57b4c81fa55d0cbdbc385c32dddcd457a34f75f"
+    },
+    {
+      "code": "ja",
+      "label": "日本語",
+      "file": "ja.json",
+      "sha256": "dbb9705b1af1ed3c70fc8fdb8d1571b510d45e761440711d984dcf017b27433f"
+    },
+    {
+      "code": "ko",
+      "label": "한국어",
+      "file": "ko.json",
+      "sha256": "76ed932a6f5de64d80abc25e4fc9f8d082787cfb8ac14f9085d69e50e65e99b0"
+    },
+    {
+      "code": "nl",
+      "label": "Nederlands",
+      "file": "nl.json",
+      "sha256": "2252520d8115eddfbdf694bb4e2a69ca1284f5ec46341356b272e591ca26d5db"
+    },
+    {
+      "code": "pl",
+      "label": "Polski",
+      "file": "pl.json",
+      "sha256": "ad71829aa4e22905624cea5fb3d796653c932aa67aa4859b2cfd41c9743e2310"
+    },
+    {
+      "code": "pt",
+      "label": "Português",
+      "file": "pt.json",
+      "sha256": "517ac1831adf8970258e5d81a5f0cc787d365700fbd6474f91a49557f714eb49"
+    },
+    {
+      "code": "tr",
+      "label": "Türkçe",
+      "file": "tr.json",
+      "sha256": "0149fbe933b207f5ee94434f8446f2387a5f247d7c4b8ca16b79d12b5a5466e0"
+    },
+    {
+      "code": "uk",
+      "label": "Українська",
+      "file": "uk.json",
+      "sha256": "fee40566321c5e3e0d5e5ca6c4386d817ba214da0129dfc2b7040f85a9ae3832"
+    },
+    {
+      "code": "vi",
+      "label": "Tiếng Việt",
+      "file": "vi.json",
+      "sha256": "5ff4e4841b024f93c8f7a6dec6e8f26a868ae72b95e5c8b491970c3e5053584c"
+    }
+  ]
+}

@@ -8,6 +8,8 @@ export function useI18n() {
     lang,
     setLang: core.setLang,
     initLang: core.initLang,
+    registerLocale: core.registerLocale,
+    getLangs: core.getLangs,
     t: core.t,
     tr: core.tr,
     typeLabel: core.typeLabel,
@@ -18,7 +20,7 @@ export function useI18n() {
     auditDetail: core.auditDetail,
     auditGrade: core.auditGrade,
     relTimeLabel: core.relTimeLabel,
-    LANGS: core.LANGS,
+    LANGS: core.BASE_LANGS,
   };
 }
 
@@ -26,5 +28,5 @@ export {
   t, tr, typeLabel, fieldLabel,
   strengthLabel, strengthWarning, crackTimeLabel,
   auditDetail, auditGrade, relTimeLabel,
-  setLang, getLang, initLang, subscribe, LANGS,
+  setLang, getLang, initLang, subscribe, registerLocale, getLangs, BASE_LANGS as LANGS,
 } from './i18n.js';

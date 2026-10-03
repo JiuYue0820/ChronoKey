@@ -139,10 +139,62 @@ function lockDownNetwork() {
   });
 }
 
+// ---------- 语言包 ----------
+// 扫描目录(exe 旁 → 资源目录 → 数据目录 → 用户目录):安装器把可选语言包装在
+// <安装目录>\locales\;便携用户可放进 ChronoKeyData\locales(随 U 盘走);普通用户
+// 也可手动放到 userData\locales。同 code 后扫描的覆盖先扫描的(用户目录优先)。
+function localeDirs() {
+  const dirs = [];
+  // 退出阶段 app 可能已销毁:单目录取值失败就跳过,不影响其余目录
+  const add = (p) => { try { if (p) dirs.push(p); } catch { } };
+  try { add(path.join(path.dirname(app.getPath('exe')), 'locales')); } catch { }
+  if (app.isPackaged) add(path.join(process.resourcesPath, 'locales'));
+  add(path.join(DATA_DIR, 'locales'));
+  try { add(path.join(app.getPath('userData'), 'locales')); } catch { }
+  if (!app.isPackaged) add(path.join(__dirname, '..', 'locales'));
+  return [...new Set(dirs)];
+}
+
+function listLocalePacks() {
+  const byCode = new Map();
+  for (const dir of localeDirs()) {
+    let names = [];
+    try { names = fs.readdirSync(dir); } catch { continue; }
+    for (const name of names) {
+      if (!/^[a-z]{2,3}(-[A-Za-z]{2,4})?\.json$/.test(name)) continue;
+      try {
+        const p = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+        if (p && p.code && p.dict && typeof p.dict === 'object') {
+          byCode.set(p.code, { code: p.code, label: String(p.label || p.code) });
+        }
+      } catch { /* 单个损坏的语言包不影响其他 */ }
+    }
+  }
+  return [...byCode.values()];
+}
+
+function readLocalePack(code) {
+  const id = String(code || '');
+  if (!/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(id)) throw new Error('非法语言代码');
+  for (const dir of localeDirs()) {
+    try {
+      const p = JSON.parse(fs.readFileSync(path.join(dir, id + '.json'), 'utf8'));
+      if (p && p.code === id && p.dict && typeof p.dict === 'object') {
+        return { code: id, label: String(p.label || id), dict: p.dict };
+      }
+    } catch { /* 换下一个目录 */ }
+  }
+  throw new Error('语言包不存在: ' + id);
+}
+
 // ---------- IPC ----------
 function handle(channel, fn) {
   ipcMain.handle(channel, async (event, ...args) => {
-    if (!win || event.sender !== win.webContents) throw new Error('非法来源');
+    // 退出阶段 win/event.sender 可能已销毁(访问属性会抛 Object has been destroyed)。
+    // 此时安静拒绝,不打错误日志;渲染进程拿到的结果与抛错时一致(preload 会转成 Error)。
+    let okSender = false;
+    try { okSender = !!win && !win.isDestroyed() && event.sender === win.webContents; } catch { }
+    if (!okSender) return { ok: false, error: '非法来源' };
     try {
       return { ok: true, value: await fn(...args) };
     } catch (e) {
@@ -238,6 +290,9 @@ function registerIpc() {
     if (fs.statSync(p).size > 64 * 1024 * 1024) throw new Error('文件过大(>64MB)');
     return { name: path.basename(p), content: fs.readFileSync(p, 'utf8') };
   });
+
+  handle('locales:list', () => listLocalePacks());
+  handle('locales:read', (code) => readLocalePack(code));
 
   handle('update:check', async () => {
     const https = require('node:https');

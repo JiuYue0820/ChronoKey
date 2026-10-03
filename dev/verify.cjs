@@ -191,10 +191,11 @@ app.on('browser-window-created', () => {
       if (rows !== 7 || cs.display === 'none' || w < 100) throw new Error('sidebar broken: rows=' + rows + ' display=' + cs.display + ' w=' + w);
       ok(nav.textContent.includes('安全'))`, '13-settings-zh');
 
-    // 14 外观页切英文
+    // 14 外观页切英文(语言选择为下拉框)
     await step('s14', 'switch-language-en', `
       H_.byText('.settings-nav button', ['外观']).click(); await H_.sleep(300);
-      H_.byText('.settings-body button', ['English']).click(); await H_.sleep(500);
+      const sel = [...document.querySelectorAll('.settings-body select')].find((s) => [...s.options].some((o) => o.value === 'en'));
+      ok(sel); sel.value = 'en'; sel.dispatchEvent(new Event('change', { bubbles: true })); await H_.sleep(500);
       ok(getComputedStyle(document.querySelector('.settings-nav')).display !== 'none'
         && document.querySelector('.titlebar').textContent.match(/ChronoKey/))`, '14-settings-en');
 
@@ -239,12 +240,13 @@ app.on('browser-window-created', () => {
       H_.byText('.lock-card button', ['解锁', 'Unlock', 'Enter']).click();
       ok(await H_.waitFor('.list-pane'))`, '20-unlock-again');
 
-    // 21 切回中文收尾
+    // 21 切回中文收尾(语言选择为下拉框)
     await step('s21', 'back-to-zh', `
       const gear = [...document.querySelectorAll('.titlebar button')].find((b) => /设置|settings/i.test(b.getAttribute('aria-label') || ''));
       gear.click(); await H_.waitFor('.settings-nav');
       H_.byText('.settings-nav button', ['外观', 'Appearance']).click(); await H_.sleep(300);
-      H_.byText('.settings-body button', ['简体中文', 'Chinese']).click(); await H_.sleep(400);
+      const sel = [...document.querySelectorAll('.settings-body select')].find((s) => [...s.options].some((o) => o.value === 'zh'));
+      ok(sel); sel.value = 'zh'; sel.dispatchEvent(new Event('change', { bubbles: true })); await H_.sleep(400);
       const m = document.querySelector('.modal-close'); if (m) m.click();
       ok(await H_.waitFor('.list-pane'))`, '21-back-zh');
 

@@ -1,7 +1,7 @@
 {
   "name": "chronokey",
   "productName": "ChronoKey",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "时钥 · 纯本地、离线的密码管理器",
   "main": "electron/main.cjs",
   "private": true,

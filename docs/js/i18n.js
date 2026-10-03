@@ -6,6 +6,7 @@ export const ZH = {
   // nav / brand
   'page.title': 'ChronoKey 时钥 · 离线密码管理器',
   'nav.skip': '跳到正文',
+  'nav.main': '主导航',
   'brand.zh': '时钥',
   'nav.crypto': '加密',
   'nav.generator': '生成器',
@@ -18,6 +19,8 @@ export const ZH = {
   'nav.lang': '切换语言',
   'nav.github': 'GitHub 仓库',
   'theme.toggle': '切换深浅色',
+  'theme.toLight': '切换到浅色',
+  'theme.toDark': '切换到深色',
   // hero
   'hero.badge': '离线 · 开源 · 免费',
   'hero.t1': '你的密码,',
@@ -36,6 +39,8 @@ export const ZH = {
   'hero.c3d': '零网络',
   'hero.c4t': '加密',
   'hero.c4d': '开源可审',
+  'hero.factsAria': '关键数据',
+  'hero.scrollAria': '向下滚动',
   'mock.pw': '密码',
   'mock.otp': '两步验证',
   // 加密演示
@@ -124,11 +129,12 @@ export const ZH = {
   'feat.f8t': '便携模式',
   'feat.f8d': '程序旁放一个 <code>ChronoKeyData</code> 文件夹,数据就跟着 U 盘走。',
   // 下载
-  'dl.badge': '下载 · v{v}',
+  'dl.badge': '下载 · v',
   'dl.title': '三步装好,装完安装程序自己消失',
   'dl.s1': '选择安装位置(默认用户目录,无需管理员权限)',
   'dl.s2': '多线程从 GitHub 下载,自动校验 SHA-256',
   'dl.s3': '创建快捷方式;安装程序删除自身,卸载程序留在安装目录',
+  'dl.s4': '在安装程序里选择应用界面语言,与程序一起下载(内置简体中文 / English / Русский)',
   'dl.setupBtn': '下载安装程序',
   'dl.zipBtn': '便携版 zip',
   'dl.req': 'Windows 10 / 11 x64。程序未做代码签名,SmartScreen 若提示"未知发布者",点"更多信息 → 仍要运行"。',
@@ -149,6 +155,13 @@ export const ZH = {
   'sw.ver': '正在校验',
   'sw.inst': '正在安装',
   'sw.done': '安装完成',
+  'sw.cancel': '取消',
+  'sw.verifyDone': '下载完成',
+  'sw.extracting': '正在解压文件…',
+  'sw.doneSub': '关闭后安装程序会自动删除自身',
+  'sw.threads': '{n} 线程',
+  'sw.remaining': '剩余 {n} 秒',
+  'sw.files': '{n} / 21 个文件',
   // 问答
   'faq.badge': '问答',
   'faq.title': '常见问题',
@@ -178,21 +191,68 @@ export const ZH = {
 };
 
 // ---- 运行时 ----
+// 语言注册表:zh(本文件)与 en 为内置;其余语言在 ./lang/<code>.js,首次切换时动态加载。
+// 新增语言 = 加一个 lang 文件 + 在 LANGUAGES 里登记一行。
+
+export const LANGUAGES = [
+  { code: 'en', label: 'English', short: 'EN' },
+  { code: 'ru', label: 'Русский', short: 'RU' },
+  { code: 'de', label: 'Deutsch', short: 'DE' },
+  { code: 'fr', label: 'Français', short: 'FR' },
+  { code: 'es', label: 'Español', short: 'ES' },
+  { code: 'pt', label: 'Português', short: 'PT' },
+  { code: 'it', label: 'Italiano', short: 'IT' },
+  { code: 'nl', label: 'Nederlands', short: 'NL' },
+  { code: 'pl', label: 'Polski', short: 'PL' },
+  { code: 'uk', label: 'Українська', short: 'UK' },
+  { code: 'tr', label: 'Türkçe', short: 'TR' },
+  { code: 'ja', label: '日本語', short: 'JA' },
+  { code: 'ko', label: '한국어', short: 'KO' },
+  { code: 'vi', label: 'Tiếng Việt', short: 'VI' },
+  { code: 'id', label: 'Bahasa Indonesia', short: 'ID' },
+];
+
+const REGISTRY = { zh: ZH, en: EN };
+const loaded = new Set(['zh', 'en']);
+const LANG_TAGS = { zh: 'zh-CN' };
+
+// 初始语言:已保存的选择 → 浏览器语言(若可用)→ en
 let _lang = 'en';
-try { _lang = localStorage.getItem('ck-site-lang') || 'en'; } catch {}
+try {
+  const saved = localStorage.getItem('ck-site-lang');
+  const first = (navigator.language || 'en').slice(0, 2).toLowerCase();
+  _lang = saved || (LANGUAGES.some((l) => l.code === first) ? first : 'en');
+} catch { _lang = 'en'; }
 
 export function getSiteLang() { return _lang; }
 
-export function setSiteLang(lang) {
+async function ensureLoaded(lang) {
+  if (loaded.has(lang)) return true;
+  if (!LANGUAGES.some((l) => l.code === lang)) return false;
+  try {
+    const mod = await import(`./lang/${lang}.js`);
+    const dict = mod[lang.toUpperCase()];
+    if (!dict) throw new Error('missing export');
+    REGISTRY[lang] = dict;
+    loaded.add(lang);
+    return true;
+  } catch (e) {
+    console.error('[i18n] failed to load language', lang, e);
+    return false;
+  }
+}
+
+export async function setSiteLang(lang) {
+  if (!(await ensureLoaded(lang))) return;
   _lang = lang;
   try { localStorage.setItem('ck-site-lang', lang); } catch {}
   applyI18n();
-  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.documentElement.lang = LANG_TAGS[lang] || lang;
   dispatchEvent(new CustomEvent('ck-lang-change', { detail: lang }));
 }
 
 export function t(key, vars) {
-  const dict = _lang === 'en' ? EN : ZH;
+  const dict = REGISTRY[_lang] || ZH;
   let s = dict[key] ?? ZH[key] ?? key;
   if (vars) for (const [k, v] of Object.entries(vars)) s = s.split('{' + k + '}').join(v);
   return s;
@@ -214,8 +274,19 @@ export function applyI18n() {
   document.title = t('page.title');
 }
 
-// 页面加载时应用(浏览器环境)
+// 页面加载时应用(浏览器环境)。初始语言不是内置的 zh/en 时,等动态加载完再应用,
+// 期间短暂显示 HTML 里的中文原文。
 if (typeof document !== 'undefined') {
-  applyI18n();
-  document.documentElement.lang = _lang === 'zh' ? 'zh-CN' : 'en';
+  if (loaded.has(_lang)) {
+    applyI18n();
+    document.documentElement.lang = LANG_TAGS[_lang] || _lang;
+  } else {
+    ensureLoaded(_lang).then((ok) => {
+      if (ok) {
+        applyI18n();
+        document.documentElement.lang = LANG_TAGS[_lang] || _lang;
+        dispatchEvent(new CustomEvent('ck-lang-change', { detail: _lang }));
+      }
+    });
+  }
 }

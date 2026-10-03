@@ -2,32 +2,62 @@
 //
 // 设计:
 //   - 词表嵌套,键用点号路径,如 nav.all / type.login / gen.length。
-//   - 默认语言 zh;缺键先回落到 zh,再回落到键本身(永不返回 undefined)。
-//   - lib 层(strength/audit/model/totp/importers)的纯函数保持中文默认输出以兼容
-//     Node 测试;UI 通过 strengthLabel/auditDetail/typeLabel/fieldLabel/trError
-//     在渲染边界把中文输出翻译成当前语言(zh 时原样返回,不经过词表)。
+//   - 内置语言:zh(默认)/ en / ru;其他语言来自语言包(registerLocale 运行时注册,
+//     安装器可把 locales/<code>.json 装到程序旁或数据目录,主进程经 IPC 读出)。
+//   - 缺键回落:当前语言 → en(非 en/zh 时)→ zh → 键本身(永不返回 undefined)。
 //   - 语言偏好持久化在主进程 prefs(electron/vault.cjs 的 allowed 列表 + getPrefs 默认),
 //     浏览器预览走 mock.js 的 setPrefs;切换时 setLang 通知订阅者,React 端据此重渲染。
+//   - 若偏好的语言是语言包且尚未加载,先记下 preferred,等 registerLocale 到位后自动切过去。
 import zh from './i18n/zh.js';
 import en from './i18n/en.js';
+import ru from './i18n/ru.js';
 
-export const LANGS = [
+// 内置语言的菜单项(语言包的菜单项由 getLangs() 动态拼出,名字用语言包自带的本族语 label)
+export const BASE_LANGS = [
   { value: 'zh', label: '简体中文' },
   { value: 'en', label: 'English' },
+  { value: 'ru', label: 'Русский' },
 ];
 
-const dicts = { zh, en };
+const dicts = { zh, en, ru };
+const packCodes = new Set();   // 已注册的语言包 code
+const packLabels = new Map();  // code -> 本族语名字(菜单显示用)
 let current = 'zh';
+let preferred = 'zh';          // 用户想要的语言(即使语言包还没加载)
 const listeners = new Set();
+
+// 注册一个语言包(缺键自动回落,同 code 重复注册则覆盖)。注册后通知订阅者,
+// 让语言选择菜单和当前界面即时刷新(比如启动时偏好的语言包此刻才加载完)。
+export function registerLocale(code, label, dict) {
+  if (typeof code !== 'string' || !/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(code)) return false;
+  if (!dict || typeof dict !== 'object') return false;
+  dicts[code] = dict;
+  packCodes.add(code);
+  packLabels.set(code, typeof label === 'string' && label ? label : code);
+  if (preferred === code && current !== code) current = code;
+  listeners.forEach((l) => l());
+  return true;
+}
+
+export function getLangs() {
+  const builtin = ['zh', 'en', 'ru'];
+  const packs = [...packCodes]
+    .filter((c) => !builtin.includes(c))
+    .map((c) => ({ value: c, label: packLabels.get(c) || c }))
+    .sort((a, b) => a.label.localeCompare(b.label, 'en'));
+  return [...BASE_LANGS, ...packs];
+}
 
 // 启动时用:应用已持久化的语言(不触发订阅通知,避免重复渲染)
 export function initLang(lang) {
-  current = dicts[lang] ? lang : 'zh';
+  preferred = lang || 'zh';
+  current = dicts[preferred] ? preferred : 'zh';
 }
 
 // 运行时切换:更新并通知所有订阅者(React 的 useSyncExternalStore 会重渲染)
 export function setLang(lang) {
-  current = dicts[lang] ? lang : 'zh';
+  preferred = lang || 'zh';
+  current = dicts[preferred] ? preferred : 'zh';
   listeners.forEach((l) => l());
 }
 
@@ -50,9 +80,10 @@ function resolve(dict, key) {
   return v;
 }
 
-// 取译文(缺键回落 zh 再回落键本身),支持 {var} 占位
+// 取译文(缺键:非 zh 先回落 en,再回落 zh,最后回落键本身),支持 {var} 占位
 export function t(key, vars) {
   let s = resolve(dicts[current], key);
+  if (s == null && current !== 'zh') s = resolve(en, key);
   if (s == null) s = resolve(zh, key);
   if (s == null) s = key;
   if (vars && typeof s === 'string') {
@@ -147,5 +178,6 @@ export function relTimeLabel(ts) {
   if (d < 3600) return t('rel.min', { n: Math.floor(d / 60) });
   if (d < 86400) return t('rel.hour', { n: Math.floor(d / 3600) });
   if (d < 86400 * 30) return t('rel.day', { n: Math.floor(d / 86400) });
-  return new Date(ts).toLocaleDateString(current === 'en' ? 'en-US' : 'zh-CN');
+  const tag = { zh: 'zh-CN', en: 'en-US' }[current] || current;
+  try { return new Date(ts).toLocaleDateString(tag); } catch { return new Date(ts).toLocaleDateString(); }
 }

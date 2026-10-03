@@ -596,8 +596,6 @@ export default {
     aboutCancel: '取消 / 关闭',
     language: '界面语言',
     languageHint: '切换后界面与提示文字会立即更新',
-    langZh: '简体中文',
-    langEn: 'English',
     superkeyFileName: 'ChronoKey-超密钥-{date}.cksk',
     superkeyFilter: 'ChronoKey 超密钥',
     secAutoLock: '自动锁定',

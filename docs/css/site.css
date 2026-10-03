@@ -255,3 +255,21 @@ code { font-size: max(0.875rem, 0.9em); padding: 1px 6px; border-radius: 4px; ba
   transform: translate(-50%, 24px); opacity: 0; pointer-events: none; transition: all 0.3s var(--ease);
 }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+/* ---------- 语言菜单 ---------- */
+.lang-wrap { position: relative; }
+.lang-menu {
+  position: absolute; top: calc(100% + 10px); right: 0; z-index: 70; min-width: 200px; max-height: min(70vh, 480px); overflow: auto;
+  padding: 6px; display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+}
+.lang-menu[hidden] { display: none; }
+.lang-menu button {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  min-height: 40px; padding: 0 var(--space-3); border: 0; border-radius: var(--radius-md);
+  background: none; color: var(--text); font: inherit; font-size: var(--text-sm); text-align: left; cursor: pointer; white-space: nowrap;
+}
+.lang-menu button:hover { background: var(--surface-2); }
+.lang-menu button .chk { opacity: 0; }
+.lang-menu button[aria-checked="true"] { color: var(--accent); font-weight: 600; }
+.lang-menu button[aria-checked="true"] .chk { opacity: 1; }

@@ -1,5 +1,6 @@
 // 场景动画:首屏样机、超密钥迁移、安装程序复刻
 import { reduceMotion, sleep, scramble, whenVisible } from './util.js';
+import { t } from './i18n.js';
 
 // ---------- 首屏样机:3D 跟随指针倾斜 + 条目轮播 ----------
 const ENTRIES = [
@@ -144,7 +145,8 @@ export function initSetupWin() {
 
   const setStep = (i) => steps.forEach((s, k) => { s.className = k < i ? 'done' : k === i ? 'cur' : ''; });
   const press = async () => { btn.classList.add('press'); await sleep(150); btn.classList.remove('press'); };
-  const MB = 135.2;
+  const MB = 135.3;
+  const ver = (document.getElementById('dl-version') || {}).textContent || '';
   let running = false;
 
   async function play() {
@@ -152,22 +154,22 @@ export function initSetupWin() {
     running = true;
     while (visible) {
       mode = 0; setStep(0); bar.style.width = '0'; l.textContent = ''; r.textContent = '';
-      title.textContent = '选择安装位置'; sub.textContent = '%LOCALAPPDATA%\\Programs\\ChronoKey'; btn.textContent = '开始安装'; btn.style.opacity = 1;
+      title.textContent = t('sw.t1'); sub.textContent = '%LOCALAPPDATA%\\Programs\\ChronoKey'; btn.textContent = t('sw.b1'); btn.style.opacity = 1;
       await sleep(1800); await press();
-      mode = 1; setStep(1); title.textContent = '正在下载'; sub.textContent = 'ChronoKey 0.2.0 · 8 线程'; btn.textContent = '取消';
+      mode = 1; setStep(1); title.textContent = t('sw.dl'); sub.textContent = `ChronoKey ${ver} · ${t('sw.threads', { n: 8 })}`; btn.textContent = t('sw.cancel');
       for (let p = 0; p <= 100 && visible; p += 2) {
         bar.style.width = p + '%';
         const speed = 2.1 + Math.sin(p / 9) * 0.3;
         l.textContent = `${(MB * p / 100).toFixed(1)} MB / ${MB} MB`;
-        r.textContent = `${speed.toFixed(1)} MB/s · 剩余 ${Math.max(1, Math.ceil(MB * (100 - p) / 100 / speed))} 秒`;
+        r.textContent = `${speed.toFixed(1)} MB/s · ${t('sw.remaining', { n: Math.max(1, Math.ceil(MB * (100 - p) / 100 / speed)) })}`;
         await sleep(70);
       }
-      title.textContent = '正在校验'; sub.textContent = 'SHA-256 ✓'; r.textContent = '下载完成';
+      title.textContent = t('sw.ver'); sub.textContent = 'SHA-256 ✓'; r.textContent = t('sw.verifyDone');
       await sleep(700);
-      setStep(2); title.textContent = '正在安装'; sub.textContent = '正在解压文件…'; btn.style.opacity = 0.4;
+      setStep(2); title.textContent = t('sw.inst'); sub.textContent = t('sw.extracting'); btn.style.opacity = 0.4;
       bar.style.width = '0'; await sleep(60);
-      for (let p = 0; p <= 21 && visible; p++) { bar.style.width = (p / 21 * 100) + '%'; l.textContent = `${p} / 21 个文件`; r.textContent = ''; await sleep(60); }
-      mode = 2; setStep(3); title.textContent = '安装完成'; sub.textContent = '关闭后安装程序会自动删除自身'; btn.textContent = '完成'; btn.style.opacity = 1;
+      for (let p = 0; p <= 21 && visible; p++) { bar.style.width = (p / 21 * 100) + '%'; l.textContent = t('sw.files', { n: p }); r.textContent = ''; await sleep(60); }
+      mode = 2; setStep(3); title.textContent = t('sw.done'); sub.textContent = t('sw.doneSub'); btn.textContent = t('dl.sw4'); btn.style.opacity = 1;
       l.textContent = ''; await sleep(2600); await press();
       await sleep(600);
     }

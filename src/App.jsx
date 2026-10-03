@@ -10,7 +10,7 @@ import { AuditView } from './components/AuditView.jsx';
 import { TotpBoard } from './components/TotpBoard.jsx';
 import { Settings } from './components/Settings.jsx';
 import { ToastProvider, useToast, EmptyState, Button } from './components/ui.jsx';
-import { t, initLang, getLang } from './i18n-react.js';
+import { t, initLang, getLang, registerLocale } from './i18n-react.js';
 import { matches, newItem, updateItem, appendAudit, normalizeVault } from './lib/model.js';
 
 function applyTheme(theme) {
@@ -76,6 +76,20 @@ function Root() {
     initLang(s.prefs.lang || 'zh');
     document.documentElement.lang = getLang();
     return s;
+  }, []);
+
+  // 加载安装器/用户放置的语言包(失败静默:语言包缺失只是少几个可选项)
+  useEffect(() => {
+    (async () => {
+      if (!window.ck?.listLocales || !window.ck?.readLocale) return;
+      try {
+        for (const { code, label } of await window.ck.listLocales()) {
+          if (code === 'zh' || code === 'en' || code === 'ru') continue;
+          const pack = await window.ck.readLocale(code);
+          registerLocale(pack.code, pack.label || label, pack.dict);
+        }
+      } catch (e) { console.warn('[ChronoKey] locale packs unavailable:', e?.message); }
+    })();
   }, []);
 
   useEffect(() => {

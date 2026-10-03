@@ -5,13 +5,15 @@ import { initCrypto } from './crypto-demo.js';
 import { initGenerator } from './gen-demo.js';
 import { initTotp } from './totp-demo.js';
 import { initHeroMock, initSuperKey, initSetupWin } from './scenes.js';
-import { setSiteLang, getSiteLang, t, applyI18n } from './i18n.js';
+import { setSiteLang, getSiteLang, t, applyI18n, LANGUAGES } from './i18n.js';
 
 function initTheme() {
   const btn = document.getElementById('theme-toggle');
   const root = document.documentElement;
-  const sync = () => btn.setAttribute('aria-label', root.dataset.theme === 'dark' ? '切换到浅色' : '切换到深色');
+  const sync = () => btn.setAttribute('aria-label', root.dataset.theme === 'dark' ? t('theme.toLight') : t('theme.toDark'));
   sync();
+  // 语言切换后 aria 文案也要跟上
+  addEventListener('ck-lang-change', sync);
   btn.addEventListener('click', () => {
     const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
     const apply = () => { root.dataset.theme = next; sync(); };
@@ -34,15 +36,15 @@ function initNav() {
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  const close = () => { links.classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); menu.setAttribute('aria-label', '打开菜单'); };
-  menu.addEventListener('click', () => {
-    const open = !links.classList.contains('open');
-    links.classList.toggle('open', open);
-    menu.setAttribute('aria-expanded', String(open));
-    menu.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单');
-  });
+  const close = () => { links.classList.remove('open'); menu.setAttribute('aria-expanded', 'false'); menu.setAttribute('aria-label', t('nav.open')); };
+  const open = () => { links.classList.add('open'); menu.setAttribute('aria-expanded', 'true'); menu.setAttribute('aria-label', t('nav.close')); };
+  menu.addEventListener('click', () => { links.classList.contains('open') ? close() : open(); });
   links.addEventListener('click', (e) => { if (e.target.closest('a')) close(); });
-  addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') { close(); closeLangMenu(); } });
+  addEventListener('ck-lang-change', () => {
+    menu.setAttribute('aria-label', links.classList.contains('open') ? t('nav.close') : t('nav.open'));
+  });
+  addEventListener('click', (e) => { if (!e.target.closest('#lang-wrap')) closeLangMenu(); });
 
   // 当前所在的章节高亮
   const map = new Map([...links.querySelectorAll('a')].map((a) => [a.getAttribute('href').slice(1), a]));
@@ -92,20 +94,61 @@ function initSpotlight() {
   });
 }
 
-function initLang() {
+// ---------- 语言菜单:zh + LANGUAGES 全部列出,点选即切换(首次切换动态加载词典) ----------
+let langMenuOpen = false;
+
+function closeLangMenu() {
+  const menuEl = document.getElementById('lang-menu');
   const btn = document.getElementById('lang-toggle');
-  if (!btn) return;
+  if (!menuEl || !btn) return;
+  langMenuOpen = false;
+  menuEl.hidden = true;
+  btn.setAttribute('aria-expanded', 'false');
+}
+
+function initLang() {
+  const wrap = document.getElementById('lang-wrap');
+  const btn = document.getElementById('lang-toggle');
   const label = document.getElementById('lang-label');
-  const sync = () => {
-    const lang = getSiteLang();
-    if (label) label.textContent = lang === 'zh' ? '中' : 'EN';
-    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  const menuEl = document.getElementById('lang-menu');
+  if (!wrap || !btn || !menuEl) return;
+
+  // 菜单项:简体中文置顶(原生语言),其余按 LANGUAGES 顺序
+  const items = [{ code: 'zh', label: '简体中文', short: '中' }, ...LANGUAGES];
+  for (const { code, label: name } of items) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('role', 'menuitemradio');
+    b.dataset.lang = code;
+    const span = document.createElement('span');
+    span.textContent = name;
+    const chk = document.createElement('span');
+    chk.className = 'chk';
+    chk.textContent = '✓';
+    chk.setAttribute('aria-hidden', 'true');
+    b.append(span, chk);
+    b.addEventListener('click', () => {
+      closeLangMenu();
+      if (getSiteLang() !== code) setSiteLang(code);
+    });
+    menuEl.appendChild(b);
+  }
+
+  const sync = (lang) => {
+    const cur = items.find((l) => l.code === lang);
+    if (label) label.textContent = cur ? cur.short : lang.toUpperCase();
+    menuEl.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.lang === lang)));
   };
-  sync();
-  btn.addEventListener('click', () => {
-    setSiteLang(getSiteLang() === 'zh' ? 'en' : 'zh');
-    sync();
+  sync(getSiteLang());
+  addEventListener('ck-lang-change', (e) => sync(e.detail));
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    langMenuOpen = !langMenuOpen;
+    menuEl.hidden = !langMenuOpen;
+    btn.setAttribute('aria-expanded', String(langMenuOpen));
   });
+  btn.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLangMenu(); });
 }
 
 function safe(name, fn) {

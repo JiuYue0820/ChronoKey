@@ -3,7 +3,7 @@ import { Button, Field, Icon, Modal, SecretInput, Segmented, Toggle, useToast, f
 import { appendAudit, mergeVaults, normalizeItem } from '../lib/model.js';
 import { importAuto, exportCsv, exportBitwardenJson, exportChronoJson } from '../lib/importers.js';
 import { estimate } from '../lib/strength.js';
-import { t, tr, useI18n, setLang, getLang } from '../i18n-react.js';
+import { t, tr, useI18n, setLang, getLang, getLangs } from '../i18n-react.js';
 
 const TABS = [
   { id: 'security', label: () => t('set.tabSecurity') },
@@ -425,8 +425,14 @@ function AppearanceTab({ status, refresh }) {
       </section>
       <section className="settings-group">
         <h3>{t('set.language')}</h3>
-        <Segmented label={t('set.language')} value={getLang()} onChange={async (v) => { setLang(v); await window.ck.setPrefs({ lang: v }); refresh(); }}
-          options={[{ value: 'zh', label: t('set.langZh') }, { value: 'en', label: t('set.langEn') }]} />
+        <Field label={t('set.language')}>
+          {(id) => (
+            <select id={id} className="input" value={getLang()}
+              onChange={async (e) => { const v = e.target.value; setLang(v); document.documentElement.lang = getLang(); await window.ck.setPrefs({ lang: v }); refresh(); }}>
+              {getLangs().map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+            </select>
+          )}
+        </Field>
         <p className="field-hint">{t('set.languageHint')}</p>
       </section>
     </div>
