@@ -666,7 +666,18 @@
       "settingsNav": "Instellingencategorieën",
       "langUpdBtn": "Taalpakketten bijwerken",
       "langUpdDoing": "Taalpakketten worden bijgewerkt…",
-      "langUpdDone": "Bijgewerkt naar v{v} ({n} pakketten)"
+      "langUpdDone": "Bijgewerkt naar v{v} ({n} pakketten)",
+      "integrityBtn": "Programmabestanden controleren",
+      "integrityChecking": "Vergelijken met het GitHub-manifest…",
+      "integrityOk": "Alle {n} programmabestanden komen overeen met de GitHub-release",
+      "integrityIssues": "{n} bestand(en) ontbreken of zijn gewijzigd:",
+      "integrityMissing": "ontbreekt",
+      "integrityModified": "gewijzigd",
+      "integrityRepair": "Herstellen",
+      "integrityRepairing": "Wordt hersteld…",
+      "integrityRepaired": "{n} bestand(en) hersteld",
+      "integrityUnsupported": "In de ontwikkelmodus zijn er geen geïnstalleerde programmabestanden om te controleren",
+      "integrityNoManifest": "Er is geen bestandsmanifest op GitHub voor deze versie (uitgebracht vóór deze functie)"
     },
     "side": {
       "nav": "Kluisnavigatie",

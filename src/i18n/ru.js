@@ -664,7 +664,18 @@ export default {
     "settingsNav": "Категории настроек",
     "langUpdBtn": "Обновить языковые пакеты",
     "langUpdDoing": "Обновление языковых пакетов…",
-    "langUpdDone": "Обновлено до v{v} ({n} пакетов)"
+    "langUpdDone": "Обновлено до v{v} ({n} пакетов)",
+    "integrityBtn": "Проверить целостность файлов программы",
+    "integrityChecking": "Сверка с манифестом на GitHub…",
+    "integrityOk": "Все {n} файлов программы соответствуют публикации на GitHub",
+    "integrityIssues": "Файлов отсутствует или изменено: {n}:",
+    "integrityMissing": "отсутствует",
+    "integrityModified": "изменён",
+    "integrityRepair": "Восстановить",
+    "integrityRepairing": "Восстановление…",
+    "integrityRepaired": "Восстановлено файлов: {n}",
+    "integrityUnsupported": "В режиме разработки нет установленных файлов для проверки",
+    "integrityNoManifest": "На GitHub нет манифеста файлов для этой версии (выпущена до появления этой функции)"
   },
   "side": {
     "nav": "Навигация по хранилищу",

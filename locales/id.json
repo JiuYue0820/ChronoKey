@@ -666,7 +666,18 @@
       "settingsNav": "Kategori pengaturan",
       "langUpdBtn": "Perbarui paket bahasa",
       "langUpdDoing": "Memperbarui paket bahasa…",
-      "langUpdDone": "Diperbarui ke v{v} ({n} paket)"
+      "langUpdDone": "Diperbarui ke v{v} ({n} paket)",
+      "integrityBtn": "Verifikasi keutuhan berkas program",
+      "integrityChecking": "Membandingkan dengan manifest di GitHub…",
+      "integrityOk": "Semua {n} berkas program cocok dengan rilis GitHub",
+      "integrityIssues": "{n} berkas hilang atau diubah:",
+      "integrityMissing": "hilang",
+      "integrityModified": "diubah",
+      "integrityRepair": "Perbaiki",
+      "integrityRepairing": "Memperbaiki…",
+      "integrityRepaired": "{n} berkas diperbaiki",
+      "integrityUnsupported": "Dalam mode pengembangan tidak ada berkas program terinstal untuk diverifikasi",
+      "integrityNoManifest": "Tidak ada manifest berkas di GitHub untuk versi ini (dirilis sebelum fitur ini)"
     },
     "side": {
       "nav": "Navigasi brankas",

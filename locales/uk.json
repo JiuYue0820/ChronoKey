@@ -666,7 +666,18 @@
       "settingsNav": "Категорії налаштувань",
       "langUpdBtn": "Оновити мовні пакети",
       "langUpdDoing": "Оновлення мовних пакетів…",
-      "langUpdDone": "Оновлено до v{v} ({n} пакетів)"
+      "langUpdDone": "Оновлено до v{v} ({n} пакетів)",
+      "integrityBtn": "Перевірити цілісність файлів програми",
+      "integrityChecking": "Звірка з маніфестом на GitHub…",
+      "integrityOk": "Усі {n} файлів програми відповідають публікації на GitHub",
+      "integrityIssues": "{n} файлів відсутні або змінені:",
+      "integrityMissing": "відсутній",
+      "integrityModified": "змінений",
+      "integrityRepair": "Відновити",
+      "integrityRepairing": "Відновлення…",
+      "integrityRepaired": "Відновлено файлів: {n}",
+      "integrityUnsupported": "У режимі розробки немає встановлених файлів програми для перевірки",
+      "integrityNoManifest": "На GitHub немає маніфесту файлів для цієї версії (випущена до цієї функції)"
     },
     "side": {
       "nav": "Навігація сховищем",

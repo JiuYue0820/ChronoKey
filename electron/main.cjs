@@ -369,7 +369,135 @@ function registerIpc() {
     return { version, installed };
   });
 
-  handle('win:minimize', () => win.minimize());
+  // ---------- 程序文件完整性 ----------
+  // 与 GitHub release 附带的 app-manifest.json(逐文件 SHA-256)核对当前安装的程序文件。
+  // 只读程序文件;用户数据(ChronoKeyData、vault、prefs)不在清单里,永不触碰。
+  // 修补时从该版本 zip 按需 Range 下载对应条目(先解中央目录),不必重下整个安装包。
+  const TAG_BASE = (v) => `https://github.com/JiuYue0820/ChronoKey/releases/download/v${v}`;
+
+  const httpsGetBuffer = (url, headers = {}) => new Promise((resolve, reject) => {
+    const https = require('node:https');
+    const get = (u, redirects) => {
+      if (redirects > 5) { reject(new Error('重定向次数过多')); return; }
+      const req = https.get(u, { timeout: 20000, headers: { 'User-Agent': 'ChronoKey', ...headers } }, (res) => {
+        if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
+          const next = new URL(res.headers.location, u).href;
+          res.resume();
+          get(next, redirects + 1);
+          return;
+        }
+        if (res.statusCode !== 200) { res.resume(); reject(Object.assign(new Error('HTTP ' + res.statusCode), { statusCode: res.statusCode })); return; }
+        const chunks = [];
+        res.on('data', (d) => chunks.push(d));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+      req.on('timeout', () => { req.destroy(); reject(new Error('超时')); });
+      req.on('error', reject);
+    };
+    get(url, 0);
+  });
+
+  const sha256Buf = (buf) => require('node:crypto').createHash('sha256').update(buf).digest('hex');
+
+  // zip 中央目录解析(传入文件尾部的缓冲区):EOCD 紧跟中央目录,据此把绝对偏移换算成缓冲区内偏移
+  function zipEntries(tail) {
+    const idx = tail.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
+    if (idx < 0 || tail.readUInt32LE(idx) !== 0x06054b50) throw new Error('不是有效的 zip');
+    const count = tail.readUInt16LE(idx + 10);
+    const cdSize = tail.readUInt32LE(idx + 12);
+    const cdOffset = tail.readUInt32LE(idx + 16);
+    const bufferStart = cdOffset + cdSize - idx;
+    let p = cdOffset - bufferStart;
+    if (p < 0 || p + 46 > tail.length) throw new Error('中央目录超出已获取范围');
+    const entries = new Map();
+    for (let i = 0; i < count; i++) {
+      if (tail.readUInt32LE(p) !== 0x02014b50) break;
+      const method = tail.readUInt16LE(p + 10);
+      const size = tail.readUInt32LE(p + 20);
+      const nameLen = tail.readUInt16LE(p + 28);
+      const extraLen = tail.readUInt16LE(p + 30);
+      const commentLen = tail.readUInt16LE(p + 32);
+      const localOff = tail.readUInt32LE(p + 42);
+      const name = tail.slice(p + 46, p + 46 + nameLen).toString('utf8');
+      entries.set(name, { method, size, localOff });
+      p += 46 + nameLen + extraLen + commentLen;
+    }
+    return entries;
+  }
+
+  const installRoot = () => {
+    if (!app.isPackaged) return null; // 开发模式没有"程序文件"可核对
+    return path.dirname(app.getPath('exe'));
+  };
+
+  handle('repair:list', async () => {
+    const dir = installRoot();
+    if (!dir) return { supported: false };
+    let manifest;
+    try {
+      manifest = JSON.parse(await httpsGetText(`${TAG_BASE(app.getVersion())}/app-manifest.json`));
+    } catch (e) {
+      if (e && e.statusCode === 404) return { supported: true, manifest: false };
+      throw e;
+    }
+    const files = Array.isArray(manifest.files) ? manifest.files : null;
+    if (!files || !files.length) return { supported: true, manifest: false };
+    const issues = [];
+    for (const f of files) {
+      const rel = String(f.path || '');
+      const dest = path.resolve(dir, rel);
+      if (!dest.startsWith(path.resolve(dir) + path.sep)) continue; // 清单路径越界一律忽略
+      let st;
+      try { st = fs.statSync(dest); } catch { issues.push({ path: rel, status: 'missing' }); continue; }
+      if (st.size !== f.size) { issues.push({ path: rel, status: 'modified' }); continue; }
+      if (sha256Buf(fs.readFileSync(dest)) !== String(f.sha256 || '').toLowerCase()) issues.push({ path: rel, status: 'modified' });
+    }
+    return { supported: true, manifest: true, total: files.length, version: String(manifest.version || app.getVersion()), issues };
+  });
+
+  handle('repair:fix', async (paths) => {
+    const dir = installRoot();
+    if (!dir) return { supported: false };
+    const v = app.getVersion();
+    const zipName = `ChronoKey-${v}-win-x64.zip`;
+    const zipBase = `${TAG_BASE(v)}/${zipName}`;
+    const manifest = JSON.parse(await httpsGetText(`${TAG_BASE(v)}/app-manifest.json`));
+    const byPath = new Map((manifest.files || []).map((f) => [f.path, f]));
+    const want = (Array.isArray(paths) ? paths : []).filter((p) => byPath.has(p));
+    if (!want.length) return { fixed: 0, failed: [] };
+
+    // 中央目录在 zip 尾部:先取末尾 64 KB 解出条目表
+    const tail = await httpsGetBuffer(zipBase, { Range: 'bytes=-65536' });
+    const entries = zipEntries(tail);
+
+    let fixed = 0;
+    const failed = [];
+    for (const rel of want) {
+      try {
+        const meta = byPath.get(rel);
+        const e = entries.get(rel);
+        if (!e) throw new Error('zip 里没有该文件');
+        // 本地文件头(30 字节)里才有真正的数据偏移(文件名/extra 长度可能与中央目录不同)
+        const lfh = await httpsGetBuffer(zipBase, { Range: `bytes=${e.localOff}-${e.localOff + 29}` });
+        if (lfh.readUInt32LE(0) !== 0x04034b50) throw new Error('zip 条目头损坏');
+        const dataStart = e.localOff + 30 + lfh.readUInt16LE(26) + lfh.readUInt16LE(28);
+        let data = await httpsGetBuffer(zipBase, { Range: `bytes=${dataStart}-${dataStart + e.size - 1}` });
+        if (e.method === 8) data = require('node:zlib').inflateRawSync(data);
+        // 修补的第一原则:下载内容必须与清单哈希一致才允许落盘
+        if (sha256Buf(data) !== String(meta.sha256 || '').toLowerCase()) throw new Error('SHA-256 校验失败');
+        const dest = path.resolve(dir, rel);
+        if (!dest.startsWith(path.resolve(dir) + path.sep)) throw new Error('非法路径');
+        fs.mkdirSync(path.dirname(dest), { recursive: true });
+        const tmpFile = dest + '.repairing';
+        fs.writeFileSync(tmpFile, data);
+        fs.renameSync(tmpFile, dest);
+        fixed++;
+      } catch (e) {
+        failed.push({ path: rel, error: e.message });
+      }
+    }
+    return { fixed, failed };
+  });
   handle('win:toggleMaximize', () => (win.isMaximized() ? win.unmaximize() : win.maximize()));
   handle('win:close', () => win.close());
   handle('shell:openExternal', (url) => {

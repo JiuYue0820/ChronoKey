@@ -666,7 +666,18 @@
       "settingsNav": "설정 분류",
       "langUpdBtn": "언어 팩 업데이트",
       "langUpdDoing": "언어 팩 업데이트 중…",
-      "langUpdDone": "v{v}(으)로 업데이트됨({n}개 팩)"
+      "langUpdDone": "v{v}(으)로 업데이트됨({n}개 팩)",
+      "integrityBtn": "프로그램 파일 무결성 검사",
+      "integrityChecking": "GitHub 매니페스트와 대조 중…",
+      "integrityOk": "{n}개 프로그램 파일이 모두 GitHub 릴리스와 일치합니다",
+      "integrityIssues": "{n}개 파일이 누락되었거나 변경되었습니다:",
+      "integrityMissing": "누락",
+      "integrityModified": "변경됨",
+      "integrityRepair": "복구",
+      "integrityRepairing": "복구 중…",
+      "integrityRepaired": "{n}개 파일을 복구했습니다",
+      "integrityUnsupported": "개발 모드에서는 검사할 설치된 프로그램 파일이 없습니다",
+      "integrityNoManifest": "이 버전의 파일 매니페스트가 GitHub에 없습니다(이 기능 이전에 릴리스됨)"
     },
     "side": {
       "nav": "볼트 탐색",

@@ -71,6 +71,30 @@ fs.writeFileSync(path.join(root, 'release', 'latest.json'), JSON.stringify({
 step('locales/languages.json');
 run('node', ['dev/gen-languages.cjs']);
 
+step('release/app-manifest.json(应用内完整性校验清单)');
+{
+  const extract = path.join(root, 'release', '_manifest-src');
+  fs.rmSync(extract, { recursive: true, force: true });
+  fs.mkdirSync(extract, { recursive: true });
+  execFileSync('powershell', ['-NoProfile', '-Command', `Expand-Archive -Path '${zipPath}' -DestinationPath '${extract}' -Force`]);
+  const files = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else {
+        const buf = fs.readFileSync(full);
+        files.push({ path: path.relative(extract, full).split(path.sep).join('/'), size: buf.length, sha256: crypto.createHash('sha256').update(buf).digest('hex') });
+      }
+    }
+  };
+  walk(extract);
+  files.sort((a, b) => a.path.localeCompare(b.path));
+  fs.writeFileSync(path.join(root, 'release', 'app-manifest.json'), JSON.stringify({ version: V, files }, null, 2) + '\n');
+  fs.rmSync(extract, { recursive: true, force: true });
+  console.log(`  ${files.length} 个程序文件已编目`);
+}
+
 step('官网静态回退值(docs/)');
 {
   const htmlPath = path.join(root, 'docs', 'index.html');
@@ -125,6 +149,7 @@ const assets = [
   path.join(root, 'release', ZIP_NAME),
   path.join(root, 'installer', 'ChronoKeySetup.exe'),
   path.join(root, 'release', 'latest.json'),
+  path.join(root, 'release', 'app-manifest.json'),
   path.join(root, 'locales', 'languages.json'),
   ...fs.readdirSync(path.join(root, 'locales'))
     .filter((f) => /^[a-z]{2,3}(-[A-Za-z]{2,4})?\.json$/.test(f))

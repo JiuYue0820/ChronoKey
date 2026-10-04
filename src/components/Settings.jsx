@@ -468,6 +468,7 @@ function AppearanceTab({ status, refresh }) {
 function AboutTab({ status }) {
   useI18n();
   const [updState, setUpdState] = useState(null); // null | 'checking' | {ok, data} | {err, msg}
+  const [integ, setInteg] = useState(null); // null | 'checking' | {state, ...}
   const doCheck = async () => {
     setUpdState('checking');
     try {
@@ -475,6 +476,27 @@ function AboutTab({ status }) {
       setUpdState({ ok: true, data });
     } catch (e) {
       setUpdState({ err: e.message || String(e) });
+    }
+  };
+
+  // 程序文件完整性:与 GitHub 上当前版本的清单逐文件核对;只读,不动任何用户数据
+  const doVerify = async () => {
+    setInteg('checking');
+    try {
+      const r = await window.ck.repairList();
+      setInteg({ state: r.supported === false ? 'unsupported' : r.manifest === false ? 'nomanifest' : r.issues.length ? 'issues' : 'ok', data: r });
+    } catch (e) {
+      setInteg({ state: 'error', msg: e.message || String(e) });
+    }
+  };
+  const doRepair = async () => {
+    setInteg((s) => ({ ...s, state: 'repairing' }));
+    try {
+      const r = await window.ck.repairFix(integ.data.issues.map((i) => i.path));
+      const again = await window.ck.repairList();
+      setInteg({ state: again.supported && again.manifest && again.issues.length ? 'issues' : 'ok', data: again, repaired: r.fixed, failed: r.failed || [] });
+    } catch (e) {
+      setInteg({ state: 'error', msg: e.message || String(e) });
     }
   };
   return (
@@ -500,6 +522,34 @@ function AboutTab({ status }) {
       )}
       {updState && updState.err && (
         <p className="field-hint warn">{t('set.updError')}: {updState.err}</p>
+      )}
+
+      {window.ck?.repairList && integ === null && (
+        <Button variant="ghost" onClick={doVerify}>{t('set.integrityBtn')}</Button>
+      )}
+      {integ === 'checking' && <p className="field-hint">{t('set.integrityChecking')}</p>}
+      {integ === 'repairing' && <p className="field-hint">{t('set.integrityRepairing')}</p>}
+      {integ && integ.state === 'unsupported' && <p className="field-hint">{t('set.integrityUnsupported')}</p>}
+      {integ && integ.state === 'nomanifest' && <p className="field-hint">{t('set.integrityNoManifest')}</p>}
+      {integ && integ.state === 'ok' && (
+        <p className="field-hint ok">
+          {t('set.integrityOk', { n: integ.data.total })}
+          {integ.repaired > 0 && ` · ${t('set.integrityRepaired', { n: integ.repaired })}`}
+        </p>
+      )}
+      {integ && integ.state === 'issues' && (
+        <div className="stack gap-2">
+          <p className="field-hint warn">{t('set.integrityIssues', { n: integ.data.issues.length })}</p>
+          <ul className="bullet-list mono">
+            {integ.data.issues.map((i) => (
+              <li key={i.path}><code className="break">{i.path}</code> — {i.status === 'missing' ? t('set.integrityMissing') : t('set.integrityModified')}</li>
+            ))}
+          </ul>
+          <p><Button variant="primary" onClick={doRepair}>{t('set.integrityRepair')}</Button></p>
+        </div>
+      )}
+      {integ && integ.state === 'error' && (
+        <p className="field-hint warn">{t('set.updError')}: {integ.msg}</p>
       )}
       <p className="field-hint" dangerouslySetInnerHTML={{ __html: t('set.portableNote') }} />
       <p className="field-hint">{t('set.wordlistNote')}</p>

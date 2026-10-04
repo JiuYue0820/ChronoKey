@@ -666,7 +666,18 @@
       "settingsNav": "設定カテゴリ",
       "langUpdBtn": "言語パックを更新",
       "langUpdDoing": "言語パックを更新中…",
-      "langUpdDone": "v{v} に更新しました({n} パック)"
+      "langUpdDone": "v{v} に更新しました({n} パック)",
+      "integrityBtn": "プログラムファイルの整合性を検証",
+      "integrityChecking": "GitHub のマニフェストと照合中…",
+      "integrityOk": "{n} 個のプログラムファイルはすべて GitHub のリリースと一致しています",
+      "integrityIssues": "{n} 個のファイルが欠落または変更されています:",
+      "integrityMissing": "欠落",
+      "integrityModified": "変更済み",
+      "integrityRepair": "修復",
+      "integrityRepairing": "修復中…",
+      "integrityRepaired": "{n} 個のファイルを修復しました",
+      "integrityUnsupported": "開発モードでは検証対象のプログラムファイルがありません",
+      "integrityNoManifest": "このバージョンのファイルマニフェストは GitHub にありません(この機能より前のリリースです)"
     },
     "side": {
       "nav": "ボールトナビゲーション",

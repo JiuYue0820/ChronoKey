@@ -666,7 +666,18 @@
       "settingsNav": "Nhóm cài đặt",
       "langUpdBtn": "Cập nhật gói ngôn ngữ",
       "langUpdDoing": "Đang cập nhật gói ngôn ngữ…",
-      "langUpdDone": "Đã cập nhật lên v{v} ({n} gói)"
+      "langUpdDone": "Đã cập nhật lên v{v} ({n} gói)",
+      "integrityBtn": "Kiểm tra tính toàn vẹn của tệp chương trình",
+      "integrityChecking": "Đang đối chiếu với tệp khai báo trên GitHub…",
+      "integrityOk": "Cả {n} tệp chương trình đều khớp với bản phát hành trên GitHub",
+      "integrityIssues": "{n} tệp bị thiếu hoặc đã bị sửa đổi:",
+      "integrityMissing": "thiếu",
+      "integrityModified": "đã sửa",
+      "integrityRepair": "Khắc phục",
+      "integrityRepairing": "Đang khắc phục…",
+      "integrityRepaired": "Đã khắc phục {n} tệp",
+      "integrityUnsupported": "Ở chế độ phát triển không có tệp chương trình đã cài đặt để kiểm tra",
+      "integrityNoManifest": "Không có tệp khai báo trên GitHub cho phiên bản này (phát hành trước khi có tính năng này)"
     },
     "side": {
       "nav": "Điều hướng kho",

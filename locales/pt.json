@@ -666,7 +666,18 @@
       "settingsNav": "Categorias de definições",
       "langUpdBtn": "Atualizar pacotes de idioma",
       "langUpdDoing": "A atualizar pacotes de idioma…",
-      "langUpdDone": "Atualizado para v{v} ({n} pacotes)"
+      "langUpdDone": "Atualizado para v{v} ({n} pacotes)",
+      "integrityBtn": "Verificar ficheiros do programa",
+      "integrityChecking": "A comparar com o manifesto no GitHub…",
+      "integrityOk": "Todos os {n} ficheiros do programa correspondem à versão no GitHub",
+      "integrityIssues": "{n} ficheiro(s) em falta ou modificados:",
+      "integrityMissing": "em falta",
+      "integrityModified": "modificado",
+      "integrityRepair": "Reparar",
+      "integrityRepairing": "A reparar…",
+      "integrityRepaired": "{n} ficheiro(s) reparado(s)",
+      "integrityUnsupported": "Em modo de desenvolvimento não há ficheiros de programa instalados para verificar",
+      "integrityNoManifest": "Não há manifesto de ficheiros no GitHub para esta versão (anterior a esta funcionalidade)"
     },
     "side": {
       "nav": "Navegação do cofre",

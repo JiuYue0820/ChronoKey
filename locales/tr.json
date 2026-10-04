@@ -666,7 +666,18 @@
       "settingsNav": "Ayar kategorileri",
       "langUpdBtn": "Dil paketlerini güncelle",
       "langUpdDoing": "Dil paketleri güncelleniyor…",
-      "langUpdDone": "v{v} sürümüne güncellendi ({n} paket)"
+      "langUpdDone": "v{v} sürümüne güncellendi ({n} paket)",
+      "integrityBtn": "Program dosyalarını doğrula",
+      "integrityChecking": "GitHub manifestıyla karşılaştırılıyor…",
+      "integrityOk": "{n} program dosyasının tamamı GitHub sürümüyle eşleşiyor",
+      "integrityIssues": "{n} dosya eksik veya değiştirilmiş:",
+      "integrityMissing": "eksik",
+      "integrityModified": "değiştirilmiş",
+      "integrityRepair": "Onar",
+      "integrityRepairing": "Onarılıyor…",
+      "integrityRepaired": "{n} dosya onarıldı",
+      "integrityUnsupported": "Geliştirme modunda doğrulanacak yüklü program dosyası yok",
+      "integrityNoManifest": "Bu sürüm için GitHub dosya bildirimi yok (bu özellikten önce yayınlanmış)"
     },
     "side": {
       "nav": "Kasa gezinmesi",

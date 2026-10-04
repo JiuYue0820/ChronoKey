@@ -56,6 +56,8 @@ contextBridge.exposeInMainWorld('ck', {
   openExternal: (url) => call('shell:openExternal', url),
 
   updateCheck: () => call('update:check'),
+  repairList: () => call('repair:list'),
+  repairFix: (paths) => call('repair:fix', paths),
 
   win: {
     minimize: () => call('win:minimize'),

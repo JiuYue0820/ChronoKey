@@ -666,7 +666,18 @@
       "settingsNav": "Kategorie ustawień",
       "langUpdBtn": "Aktualizuj pakiety językowe",
       "langUpdDoing": "Aktualizowanie pakietów językowych…",
-      "langUpdDone": "Zaktualizowano do v{v} ({n} pakietów)"
+      "langUpdDone": "Zaktualizowano do v{v} ({n} pakietów)",
+      "integrityBtn": "Sprawdź pliki programu",
+      "integrityChecking": "Porównywanie z manifestem na GitHub…",
+      "integrityOk": "Wszystkie pliki programu ({n}) zgodne z wersją na GitHub",
+      "integrityIssues": "Brakuje {n} plików lub zostały zmodyfikowane:",
+      "integrityMissing": "brak",
+      "integrityModified": "zmodyfikowany",
+      "integrityRepair": "Napraw",
+      "integrityRepairing": "Naprawianie…",
+      "integrityRepaired": "Naprawiono pliki: {n}",
+      "integrityUnsupported": "W trybie deweloperskim nie ma zainstalowanych plików programu do sprawdzenia",
+      "integrityNoManifest": "Brak manifestu plików na GitHub dla tej wersji (wydanej przed tą funkcją)"
     },
     "side": {
       "nav": "Nawigacja po sejfie",

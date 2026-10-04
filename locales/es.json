@@ -666,7 +666,18 @@
       "settingsNav": "Categorías de ajustes",
       "langUpdBtn": "Actualizar paquetes de idioma",
       "langUpdDoing": "Actualizando paquetes de idioma…",
-      "langUpdDone": "Actualizado a la v{v} ({n} paquetes)"
+      "langUpdDone": "Actualizado a la v{v} ({n} paquetes)",
+      "integrityBtn": "Verificar archivos del programa",
+      "integrityChecking": "Comparando con el manifiesto de GitHub…",
+      "integrityOk": "Los {n} archivos del programa coinciden con la versión de GitHub",
+      "integrityIssues": "{n} archivo(s) falta(n) o fueron modificados:",
+      "integrityMissing": "falta",
+      "integrityModified": "modificado",
+      "integrityRepair": "Reparar",
+      "integrityRepairing": "Reparando…",
+      "integrityRepaired": "{n} archivo(s) reparado(s)",
+      "integrityUnsupported": "En modo de desarrollo no hay archivos de programa instalados para verificar",
+      "integrityNoManifest": "No hay manifiesto de archivos en GitHub para esta versión (publicada antes de esta función)"
     },
     "side": {
       "nav": "Navegación de la bóveda",

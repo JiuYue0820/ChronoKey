@@ -74,9 +74,12 @@ for (const f of readdirSync(packDir).filter((x) => x.endsWith('.json') && x !== 
 }
 
 // ---- 裸中文 Error 扫描:lib/主进程不允许散落未编目的中文 Error 字面量 ----
-// 允许的仅剩:动态模板(经 i18n.js 正则映射)与内部错误/网络层状态串(不会作为 UI 文案展示)。
+// 允许的仅剩:动态模板(经 i18n.js 正则映射)与内部错误/网络层/zip 修复机制的技术状态串。
 const DYNAMIC_PREFIXES = ['不支持的算法: ', '密钥包含非法字符 "', '不支持的 KDF: ', '语言包不存在: '];
-const INTERNAL_ALLOWED = ['非法来源', '重定向次数过多', '超时'];
+const INTERNAL_ALLOWED = [
+  '非法来源', '重定向次数过多', '超时',
+  '不是有效的 zip', '中央目录超出已获取范围', 'zip 里没有该文件', 'zip 条目头损坏', 'SHA-256 校验失败', '非法路径',
+];
 const codeFiles = ['electron/vault.cjs', 'electron/crypto.cjs', 'electron/main.cjs', 'src/lib/totp.js', 'src/lib/importers.js'];
 
 for (const f of codeFiles) {

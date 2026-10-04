@@ -23,8 +23,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("ChronoKey Setup")]
 [assembly: AssemblyProduct("ChronoKey")]
 [assembly: AssemblyCompany("JiuYue0820")]
-[assembly: AssemblyVersion("0.3.0.0")]
-[assembly: AssemblyFileVersion("0.3.0.0")]
+[assembly: AssemblyVersion("0.3.1.0")]
+[assembly: AssemblyFileVersion("0.3.1.0")]
 
 namespace ChronoKeySetup
 {
@@ -48,6 +48,12 @@ namespace ChronoKeySetup
         else if (a.StartsWith("/lang:", StringComparison.OrdinalIgnoreCase)) SetupForm.LangOverride = a.Substring(6);
         else if (a.Equals("/auto", StringComparison.OrdinalIgnoreCase)) SetupForm.Auto = true;
       }
+      // 安装器界面语言:/lang: 优先,否则按系统 UI 语言;不在中/俄语系则用 English
+      string uiLang = SetupForm.LangOverride;
+      if (string.IsNullOrEmpty(uiLang)) { try { uiLang = System.Globalization.CultureInfo.CurrentUICulture.Name; } catch { } }
+      string ul = (uiLang ?? "").ToLowerInvariant();
+      L.Lang = ul.StartsWith("zh") ? "zh" : ul.StartsWith("ru") ? "ru" : "en";
+
       // 双击 Uninstall.exe(没有参数)也应进入卸载:按文件名或"与 ChronoKey.exe 同目录"判断
       string self = Application.ExecutablePath;
       if (Path.GetFileName(self).Equals("Uninstall.exe", StringComparison.OrdinalIgnoreCase)
@@ -296,7 +302,7 @@ namespace ChronoKeySetup
   {
     bool on;
     public event EventHandler Changed;
-    public bool Checked { get { return on; } set { on = value; AccessibleDescription = on ? "已选中" : "未选中"; Invalidate(); } }
+    public bool Checked { get { return on; } set { on = value; AccessibleDescription = on ? L.T("已选中", "Selected", "Выбрано") : L.T("未选中", "Not selected", "Не выбрано"); Invalidate(); } }
     public Check(string text, bool value)
     {
       Text = text; AccessibleName = text; AccessibleRole = AccessibleRole.CheckButton;
@@ -350,7 +356,7 @@ namespace ChronoKeySetup
       Box.BackColor = Theme.Surface;
       Box.ForeColor = Theme.Text;
       Box.Font = Theme.F(14, false);
-      Box.AccessibleName = "安装位置";
+      Box.AccessibleName = L.T("安装位置", "Install location", "Папка установки");
       Box.GotFocus += (s, e) => Invalidate();
       Box.LostFocus += (s, e) => Invalidate();
       Controls.Add(Box);
@@ -373,6 +379,16 @@ namespace ChronoKeySetup
     }
   }
 
+  // 安装器界面语言:三语内联(Lang 由 Main 按 /lang: 或系统 UI 语言设定)
+  static class L
+  {
+    public static string Lang = "en";
+    public static string T(string zh, string en, string ru)
+    {
+      return Lang == "zh" ? zh : Lang == "ru" ? ru : en;
+    }
+  }
+
   static class Util
   {
     public static string Bytes(double b)
@@ -384,10 +400,10 @@ namespace ChronoKeySetup
     }
     public static string Eta(double sec)
     {
-      if (double.IsNaN(sec) || double.IsInfinity(sec) || sec < 0) return "估算中";
-      if (sec < 60) return "约 " + Math.Max(1, (int)Math.Ceiling(sec)) + " 秒";
-      if (sec < 3600) return "约 " + (int)Math.Ceiling(sec / 60) + " 分钟";
-      return "约 " + (sec / 3600).ToString("0.0") + " 小时";
+      if (double.IsNaN(sec) || double.IsInfinity(sec) || sec < 0) return L.T("估算中", "estimating", "оценка");
+      if (sec < 60) return L.T("约 ", "about ", "≈ ") + Math.Max(1, (int)Math.Ceiling(sec)) + L.T(" 秒", " s", " с");
+      if (sec < 3600) return L.T("约 ", "about ", "≈ ") + (int)Math.Ceiling(sec / 60) + L.T(" 分钟", " min", " мин");
+      return L.T("约 ", "about ", "≈ ") + (sec / 3600).ToString("0.0") + L.T(" 小时", " h", " ч");
     }
     // 只取 latest.json 里我们需要的几个字段,避免引入 JSON 库
     public static string Json(string json, string key)
@@ -544,7 +560,7 @@ namespace ChronoKeySetup
       int x = Theme.S(32), y = Theme.S(56) + Anim.Height + Theme.S(24);
       using (var f = Theme.F(24, true)) TextRenderer.DrawText(g, "ChronoKey", f, new Point(x - Theme.S(2), y), Theme.Text);
       y += Theme.S(36);
-      using (var f = Theme.F(14, false)) TextRenderer.DrawText(g, "离线密码库 · 数据只在本机", f, new Point(x, y), Theme.Text2);
+      using (var f = Theme.F(14, false)) TextRenderer.DrawText(g, L.T("离线密码库 · 数据只在本机", "Offline password vault · data stays local", "Автономный менеджер паролей · данные только локально"), f, new Point(x, y), Theme.Text2);
       y += Theme.S(48);
       using (var f = Theme.F(14, false))
       using (var fb = Theme.F(14, true))
@@ -581,7 +597,7 @@ namespace ChronoKeySetup
       SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
       Size = new Size(Theme.S(46), Theme.S(32));
       AccessibleRole = AccessibleRole.PushButton;
-      AccessibleName = close ? "关闭" : "最小化";
+      AccessibleName = close ? L.T("关闭", "Close", "Закрыть") : L.T("最小化", "Minimize", "Свернуть");
       TabStop = false;
     }
     protected override void OnMouseEnter(EventArgs e) { hover = true; Invalidate(); base.OnMouseEnter(e); }
@@ -602,7 +618,7 @@ namespace ChronoKeySetup
   class PathRow : Panel
   {
     public readonly PathBox Input = new PathBox();
-    public readonly FlatButton Browse = new FlatButton("浏览…", false);
+    public readonly FlatButton Browse = new FlatButton(L.T("浏览…", "Browse…", "Обзор…"), false);
     public PathRow()
     {
       BackColor = Theme.Bg; Height = Theme.S(44);
@@ -681,14 +697,14 @@ namespace ChronoKeySetup
       StartPosition = FormStartPosition.Manual; // 在 OnLoad 中按鼠标所在屏幕的工作区居中
       ClientSize = new Size(Theme.S(760), Theme.S(480));
       BackColor = Theme.Bg;
-      Text = uninstall ? "卸载 ChronoKey" : "安装 ChronoKey";
+      Text = uninstall ? L.T("卸载 ChronoKey", "Uninstall ChronoKey", "Удаление ChronoKey") : L.T("安装 ChronoKey", "Install ChronoKey", "Установка ChronoKey");
       DoubleBuffered = true;
       KeyPreview = true;
       try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
       side.Bounds = new Rectangle(0, 0, Theme.S(240), ClientSize.Height);
-      side.Steps = uninstall ? new[] { "确认", "卸载", "完成" } : new[] { "选择位置", "下载", "安装", "完成" };
-      side.Version = uninstall ? "卸载程序" : "安装程序 v" + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
+      side.Steps = uninstall ? new[] { L.T("确认", "Confirm", "Подтверждение"), L.T("卸载", "Uninstall", "Удаление"), L.T("完成", "Done", "Готово") } : new[] { L.T("选择位置", "Location", "Папка"), L.T("下载", "Download", "Загрузка"), L.T("安装", "Install", "Установка"), L.T("完成", "Done", "Готово") };
+      side.Version = uninstall ? L.T("卸载程序", "Uninstaller", "Удаление") : L.T("安装程序 v", "Installer v", "Установка v") + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
       Controls.Add(side);
 
       btnClose.Location = new Point(ClientSize.Width - btnClose.Width, 0);
@@ -749,14 +765,14 @@ namespace ChronoKeySetup
     void BuildInstall()
     {
       pLocation = NewPage();
-      pLocation.Add(new Txt("选择安装位置", 32, true, Theme.Text), 0);
-      locHint = pLocation.Add(new Txt("ChronoKey 将安装到下面的文件夹。安装到当前用户目录,无需管理员权限。", 16, false, Theme.Text2), 8);
+      pLocation.Add(new Txt(L.T("选择安装位置", "Choose install location", "Выбор папки установки"), 32, true, Theme.Text), 0);
+      locHint = pLocation.Add(new Txt(L.T("ChronoKey 将安装到下面的文件夹。安装到当前用户目录,无需管理员权限。", "ChronoKey will be installed to the folder below. Per-user install, no admin rights needed.", "ChronoKey будет установлен в указанную ниже папку. Установка в профиле пользователя, без прав администратора."), 16, false, Theme.Text2), 8);
       pathRow = pLocation.Add(new PathRow(), 24);
       installDir = DirOverride ?? ReadInstalledDir() ?? Paths.DefaultDir;
       pathRow.Input.Box.Text = installDir;
       pathRow.Browse.Click += (s, e) =>
       {
-        using (var d = new FolderBrowserDialog { Description = "选择 ChronoKey 的安装位置", ShowNewFolderButton = true })
+        using (var d = new FolderBrowserDialog { Description = L.T("选择 ChronoKey 的安装位置", "Choose where to install ChronoKey", "Выберите папку для ChronoKey"), ShowNewFolderButton = true })
         {
           try { d.SelectedPath = Directory.Exists(pathRow.Input.Box.Text) ? pathRow.Input.Box.Text : Path.GetDirectoryName(pathRow.Input.Box.Text); } catch { }
           if (d.ShowDialog(this) == DialogResult.OK)
@@ -764,33 +780,47 @@ namespace ChronoKeySetup
               ? d.SelectedPath : Path.Combine(d.SelectedPath, Paths.AppName);
         }
       };
-      pLocation.Add(new Txt("需要约 400 MB 可用空间,下载约 140 MB。", 14, false, Theme.Text3), 8);
-      chkDesktop = pLocation.Add(new Check("创建桌面快捷方式", true), 16);
-      chkStart = pLocation.Add(new Check("添加到开始菜单", true), 4);
-      pLocation.Add(new Txt("应用界面语言 (App language)", 14, true, Theme.Text2), 24);
-      langBox = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Flat, Font = Theme.F(14, false) };
+      pLocation.Add(new Txt(L.T("需要约 400 MB 可用空间,下载约 140 MB。", "Needs about 400 MB of free space; downloads about 140 MB.", "Требуется около 400 МБ места; загрузка около 140 МБ."), 14, false, Theme.Text3), 8);
+      chkDesktop = pLocation.Add(new Check(L.T("创建桌面快捷方式", "Create desktop shortcut", "Создать ярлык на рабочем столе"), true), 16);
+      chkStart = pLocation.Add(new Check(L.T("添加到开始菜单", "Add to Start menu", "Добавить в меню «Пуск»"), true), 4);
+      pLocation.Add(new Txt(L.T("应用界面语言 (App language)", "App language (应用界面语言)", "Язык приложения (应用界面语言)"), 14, true, Theme.Text2), 24);
+      // 自绘下拉框,与整体 UI 用同一套主题色和缩放
+      langBox = new ComboBox {
+        DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Flat, Font = Theme.F(14, false),
+        BackColor = Theme.Bg, ForeColor = Theme.Text, DrawMode = DrawMode.OwnerDrawFixed, ItemHeight = Theme.S(28),
+      };
+      langBox.DrawItem += (s2, e) =>
+      {
+        e.DrawBackground();
+        var selected = (e.State & DrawItemState.Selected) != 0;
+        using (var b = new SolidBrush(selected ? Color.FromArgb(28, Theme.Accent) : Theme.Bg)) e.Graphics.FillRectangle(b, e.Bounds);
+        if (e.Index >= 0 && langBox != null)
+          TextRenderer.DrawText(e.Graphics, langBox.Items[e.Index].ToString(), langBox.Font,
+            new Rectangle(e.Bounds.X + Theme.S(10), e.Bounds.Y, e.Bounds.Width - Theme.S(10), e.Bounds.Height),
+            Theme.Text, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
+      };
       pLocation.Add(langBox, 6);
-      pLocation.Add(new Txt("内置:简体中文 · English · Русский。选择其他语言会在安装时从 GitHub 自动下载。\nBuilt-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", 12, false, Theme.Text3), 6);
+      pLocation.Add(new Txt(L.T("内置:简体中文 · English · Русский。选择其他语言会在安装时从 GitHub 自动下载。\nBuilt-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", "Built-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", "Встроено: 中文 · English · Русский. Остальные языки загружаются автоматически во время установки."), 12, false, Theme.Text3), 6);
       InitLangList();
       // 自动化测试(/auto):不建快捷方式、不启动应用,只验证安装流程本身
       if (Auto) { chkDesktop.Checked = false; chkStart.Checked = false; }
-      pLocation.Foot(new FlatButton("取消", false)).Click += (s, e) => Close();
-      pLocation.Foot(new FlatButton("开始安装", true)).Click += (s, e) => StartInstall();
+      pLocation.Foot(new FlatButton(L.T("取消", "Cancel", "Отмена"), false)).Click += (s, e) => Close();
+      pLocation.Foot(new FlatButton(L.T("开始安装", "Install", "Установить"), true)).Click += (s, e) => StartInstall();
 
       pWork = NewPage();
-      workTitle = pWork.Add(new Txt("正在下载", 32, true, Theme.Text), 0);
-      workStatus = pWork.Add(new Txt("正在连接 GitHub…", 16, false, Theme.Text2), 8);
+      workTitle = pWork.Add(new Txt(L.T("正在下载", "Downloading", "Загрузка"), 32, true, Theme.Text), 0);
+      workStatus = pWork.Add(new Txt(L.T("正在连接 GitHub…", "Connecting to GitHub…", "Подключение к GitHub…"), 16, false, Theme.Text2), 8);
       bar = pWork.Add(new Progress(), 40);
       stats = pWork.Add(new Row(), 8);
       workDetail = pWork.Add(new Txt("", 14, false, Theme.Text3), 16);
-      pWork.Foot(new FlatButton("取消", false)).Click += (s, e) => AskCancel();
+      pWork.Foot(new FlatButton(L.T("取消", "Cancel", "Отмена"), false)).Click += (s, e) => AskCancel();
 
       pDone = NewPage();
-      pDone.Add(new Txt("安装完成", 32, true, Theme.Text), 0);
+      pDone.Add(new Txt(L.T("安装完成", "Install complete", "Установка завершена"), 32, true, Theme.Text), 0);
       doneBody = pDone.Add(new Txt("", 16, false, Theme.Text2), 8);
-      chkLaunch = pDone.Add(new Check("立即启动 ChronoKey", !Auto), 24);
-      pDone.Add(new Txt("关闭后安装程序会自动删除自身。之后可在\"设置 → 应用 → 已安装的应用\"中卸载。", 14, false, Theme.Text3), 16);
-      pDone.Foot(new FlatButton("完成", true)).Click += (s, e) => { Close(); };
+      chkLaunch = pDone.Add(new Check(L.T("立即启动 ChronoKey", "Launch ChronoKey now", "Запустить ChronoKey сейчас"), !Auto), 24);
+      pDone.Add(new Txt(L.T("关闭后安装程序会自动删除自身。之后可在\"设置 → 应用 → 已安装的应用\"中卸载。", "The installer deletes itself when closed. Uninstall later via Settings → Apps → Installed apps.", "После закрытия установщик удалит себя. Удаление: Параметры → Приложения → Установленные приложения."), 14, false, Theme.Text3), 16);
+      pDone.Foot(new FlatButton(L.T("完成", "Done", "Готово"), true)).Click += (s, e) => { Close(); };
     }
 
     // ---------- 卸载界面 ----------
@@ -799,35 +829,35 @@ namespace ChronoKeySetup
       string here = Path.GetDirectoryName(Path.GetFullPath(Application.ExecutablePath));
       installDir = File.Exists(Path.Combine(here, "ChronoKey.exe")) ? here : ReadInstalledDir() ?? here;
       pLocation = NewPage();
-      pLocation.Add(new Txt("卸载 ChronoKey", 32, true, Theme.Text), 0);
-      locHint = pLocation.Add(new Txt("将删除程序文件、快捷方式和卸载项:\n" + installDir, 16, false, Theme.Text2), 8);
-      chkKeep = pLocation.Add(new Check("保留我的保险库数据(推荐)", true), 24);
-      keepHint = pLocation.Add(new Txt("保险库与自动快照位于 " + Paths.UserData + "。保留后重新安装即可继续使用;取消勾选将永久删除,无法恢复。", 14, false, Theme.Text3), 4);
+      pLocation.Add(new Txt(L.T("卸载 ChronoKey", "Uninstall ChronoKey", "Удаление ChronoKey"), 32, true, Theme.Text), 0);
+      locHint = pLocation.Add(new Txt(L.T("将删除程序文件、快捷方式和卸载项:\n", "Removes program files, shortcuts and the uninstall entry:\n", "Удаляет файлы программы, ярлыки и запись об установке:\n") + installDir, 16, false, Theme.Text2), 8);
+      chkKeep = pLocation.Add(new Check(L.T("保留我的保险库数据(推荐)", "Keep my vault data (recommended)", "Сохранить данные хранилища (рекомендуется)"), true), 24);
+      keepHint = pLocation.Add(new Txt(L.T("保险库与自动快照位于 ", "Vault and automatic snapshots are located in ", "Хранилище и снимки находятся в ") + Paths.UserData + L.T("。保留后重新安装即可继续使用;取消勾选将永久删除,无法恢复。", ". Keep them to reuse after reinstalling; unchecking deletes them permanently.", ". Сохраните их, чтобы продолжить после переустановки; снятие галочки удалит их безвозвратно."), 14, false, Theme.Text3), 4);
       chkKeep.Changed += (s, e) => keepHint.ForeColor = chkKeep.Checked ? Theme.Text3 : Theme.Danger;
-      pLocation.Foot(new FlatButton("取消", false)).Click += (s, e) => Close();
-      pLocation.Foot(new FlatButton("卸载", true)).Click += (s, e) => StartUninstall();
+      pLocation.Foot(new FlatButton(L.T("取消", "Cancel", "Отмена"), false)).Click += (s, e) => Close();
+      pLocation.Foot(new FlatButton(L.T("卸载", "Uninstall", "Удалить"), true)).Click += (s, e) => StartUninstall();
 
       pWork = NewPage();
-      workTitle = pWork.Add(new Txt("正在卸载", 32, true, Theme.Text), 0);
+      workTitle = pWork.Add(new Txt(L.T("正在卸载", "Uninstalling", "Удаление"), 32, true, Theme.Text), 0);
       workStatus = pWork.Add(new Txt("", 16, false, Theme.Text2), 8);
       bar = pWork.Add(new Progress(), 40);
       stats = pWork.Add(new Row(), 8);
       workDetail = pWork.Add(new Txt("", 14, false, Theme.Text3), 16);
 
       pDone = NewPage();
-      pDone.Add(new Txt("已卸载", 32, true, Theme.Text), 0);
+      pDone.Add(new Txt(L.T("已卸载", "Uninstalled", "Удалено"), 32, true, Theme.Text), 0);
       doneBody = pDone.Add(new Txt("", 16, false, Theme.Text2), 8);
-      pDone.Foot(new FlatButton("完成", true)).Click += (s, e) => Close();
+      pDone.Foot(new FlatButton(L.T("完成", "Done", "Готово"), true)).Click += (s, e) => Close();
     }
 
     void BuildCommon()
     {
       pError = NewPage();
-      pError.Add(new Txt("没能完成", 32, true, Theme.Text), 0);
+      pError.Add(new Txt(L.T("没能完成", "Couldn't finish", "Не удалось завершить"), 32, true, Theme.Text), 0);
       errBody = pError.Add(new Txt("", 16, false, Theme.Text2), 8);
-      pError.Add(new Txt("没有改动你的保险库数据。", 14, false, Theme.Text3), 16);
-      pError.Foot(new FlatButton("关闭", false)).Click += (s, e) => Close();
-      pError.Foot(new FlatButton("重试", true)).Click += (s, e) => { Step(0); Show(pLocation); };
+      pError.Add(new Txt(L.T("没有改动你的保险库数据。", "Your vault data was not touched.", "Данные хранилища не затронуты."), 14, false, Theme.Text3), 16);
+      pError.Foot(new FlatButton(L.T("关闭", "Close", "Закрыть"), false)).Click += (s, e) => Close();
+      pError.Foot(new FlatButton(L.T("重试", "Retry", "Повторить"), true)).Click += (s, e) => { Step(0); Show(pLocation); };
     }
 
     static string ReadInstalledDir()
@@ -859,7 +889,7 @@ namespace ChronoKeySetup
       {
         busy = false;
         side.Anim.Mode = 0;
-        errBody.Text = ex is CancelledException ? "已取消。" : ex.Message;
+        errBody.Text = ex is CancelledException ? L.T("已取消。", "Cancelled.", "Отменено.") : ex.Message;
         Show(pError);
       });
     }
@@ -868,18 +898,18 @@ namespace ChronoKeySetup
     {
       if (!busy) { Close(); return; }
       if (!cancellable) return;
-      var r = MessageBox.Show(this, "确定要取消安装吗?已下载的内容会被删除。", "取消安装", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
-      if (r == DialogResult.Yes) { cancel = true; workStatus.Text = "正在取消…"; }
+      var r = MessageBox.Show(this, L.T("确定要取消安装吗?已下载的内容会被删除。", "Cancel the installation? Downloaded content will be deleted.", "Отменить установку? Загруженное будет удалено."), L.T("取消安装", "Cancel installation", "Отмена установки"), MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+      if (r == DialogResult.Yes) { cancel = true; workStatus.Text = L.T("正在取消…", "Cancelling…", "Отмена…"); }
     }
 
     // 拒绝明显危险的位置:卸载时会删除整个文件夹
     static string ValidateDir(string dir)
     {
-      if (string.IsNullOrWhiteSpace(dir)) return "请选择安装位置。";
-      try { dir = Path.GetFullPath(dir.Trim()); } catch { return "路径无效。"; }
-      if (!Path.IsPathRooted(dir) || dir.StartsWith(@"\\")) return "请选择本机磁盘上的文件夹。";
+      if (string.IsNullOrWhiteSpace(dir)) return L.T("请选择安装位置。", "Choose an install location.", "Выберите папку установки.");
+      try { dir = Path.GetFullPath(dir.Trim()); } catch { return L.T("路径无效。", "Invalid path.", "Неверный путь."); }
+      if (!Path.IsPathRooted(dir) || dir.StartsWith(@"\\")) return L.T("请选择本机磁盘上的文件夹。", "Choose a folder on a local disk.", "Выберите папку на локальном диске.");
       var trimmed = dir.TrimEnd('\\');
-      if (trimmed.Length <= 2 || Path.GetPathRoot(dir).TrimEnd('\\').Equals(trimmed, StringComparison.OrdinalIgnoreCase)) return "不能直接安装到磁盘根目录。";
+      if (trimmed.Length <= 2 || Path.GetPathRoot(dir).TrimEnd('\\').Equals(trimmed, StringComparison.OrdinalIgnoreCase)) return L.T("不能直接安装到磁盘根目录。", "Cannot install to a drive root.", "Нельзя устанавливать в корень диска.");
       var forbidden = new[] {
         Environment.SpecialFolder.UserProfile, Environment.SpecialFolder.DesktopDirectory, Environment.SpecialFolder.MyDocuments,
         Environment.SpecialFolder.Windows, Environment.SpecialFolder.System, Environment.SpecialFolder.ProgramFiles,
@@ -888,12 +918,12 @@ namespace ChronoKeySetup
       foreach (var f in forbidden)
       {
         var p = Environment.GetFolderPath(f);
-        if (!string.IsNullOrEmpty(p) && p.TrimEnd('\\').Equals(trimmed, StringComparison.OrdinalIgnoreCase)) return "这是系统文件夹,请在其中新建一个 ChronoKey 子文件夹。";
+        if (!string.IsNullOrEmpty(p) && p.TrimEnd('\\').Equals(trimmed, StringComparison.OrdinalIgnoreCase)) return L.T("这是系统文件夹,请在其中新建一个 ChronoKey 子文件夹。", "That's a system folder; create a ChronoKey subfolder inside it.", "Это системная папка; создайте внутри неё подпапку ChronoKey.");
       }
       if (trimmed.Equals(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs"), StringComparison.OrdinalIgnoreCase))
-        return "请在 Programs 中新建一个 ChronoKey 子文件夹。";
+        return L.T("请在 Programs 中新建一个 ChronoKey 子文件夹。", "Create a ChronoKey subfolder inside Programs.", "Создайте подпапку ChronoKey внутри Programs.");
       if (Directory.Exists(dir) && Directory.EnumerateFileSystemEntries(dir).Any() && !File.Exists(Path.Combine(dir, "ChronoKey.exe")))
-        return "这个文件夹不是空的。为避免卸载时误删其他文件,请选择空文件夹或新文件夹。";
+        return L.T("这个文件夹不是空的。为避免卸载时误删其他文件,请选择空文件夹或新文件夹。", "This folder isn't empty. Choose an empty or new folder so uninstalling can't delete unrelated files.", "Папка не пуста. Выберите пустую или новую папку, чтобы удаление не задело чужие файлы.");
       return null;
     }
 
@@ -997,7 +1027,7 @@ namespace ChronoKeySetup
       string file = m.Groups["file"].Value, sha = m.Groups["sha"].Value;
       if (file.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) return;
 
-      Status(null, "正在下载语言包 (" + code + ")…");
+      Status(null, L.T("正在下载语言包 (", "Downloading language pack (", "Загрузка языкового пакета (") + code + ")…");
       string packPath = Path.Combine(tempDir, code + ".pack");
       DownloadSingle(file, packPath, 0);
       string actual;
@@ -1014,13 +1044,13 @@ namespace ChronoKeySetup
     void StartInstall()
     {
       var err = ValidateDir(pathRow.Input.Box.Text);
-      if (err != null) { MessageBox.Show(this, err, "安装位置", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-      if (!Auto && Util.IsAppRunning()) { MessageBox.Show(this, "ChronoKey 正在运行。请先退出(保存好未完成的编辑),再继续安装。", "需要退出 ChronoKey", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
+      if (err != null) { MessageBox.Show(this, err, L.T("安装位置", "Install location", "Папка установки"), MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+      if (!Auto && Util.IsAppRunning()) { MessageBox.Show(this, L.T("ChronoKey 正在运行。请先退出(保存好未完成的编辑),再继续安装。", "ChronoKey is running. Quit it first (save any edits), then continue.", "ChronoKey запущен. Сначала выйдите (сохранив правки), затем продолжите."), L.T("需要退出 ChronoKey", "Quit ChronoKey first", "Сначала закройте ChronoKey"), MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
       installDir = Path.GetFullPath(pathRow.Input.Box.Text.Trim()).TrimEnd('\\');
       cancel = false; busy = true; cancellable = true;
       bar.Value = 0; bar.Indeterminate = true;
       stats.L.Text = ""; stats.R.Text = ""; workDetail.Text = "";
-      workTitle.Text = "正在下载"; workStatus.Text = "正在获取最新版本信息…";
+      workTitle.Text = "正在下载"; workStatus.Text = L.T("正在获取最新版本信息…", "Fetching latest version info…", "Получение информации о версии…");
       pWork.Primary.Enabled = true;
       Step(1); Show(pWork);
       side.Anim.Mode = 1;
@@ -1063,8 +1093,8 @@ namespace ChronoKeySetup
     static Exception ConnectError(WebException ex, string name)
     {
       var r = ex.Response as HttpWebResponse;
-      if (r != null && r.StatusCode == HttpStatusCode.NotFound) return new Exception("没有在 GitHub Releases 找到安装包(" + name + ")。请稍后再试,或到官网手动下载。");
-      return new Exception("无法连接到 GitHub:" + ex.Message + "\n请检查网络后重试。");
+      if (r != null && r.StatusCode == HttpStatusCode.NotFound) return new Exception(L.T("没有在 GitHub Releases 找到安装包(", "Not found on GitHub Releases (", "Не найдено в GitHub Releases (") + name + L.T(")。请稍后再试,或到官网手动下载。", "). Try again later or download manually from the website.", "). Повторите позже или скачайте вручную с сайта."));
+      return new Exception(L.T("无法连接到 GitHub:", "Cannot reach GitHub:", "Не удалось подключиться к GitHub:") + " " + ex.Message + L.T("\n请检查网络后重试。", "\nCheck your network and try again.", "\nПроверьте сеть и повторите."));
     }
 
     // 下载进度:每 0.25 秒刷新一次,速度做指数平滑,避免数字乱跳
@@ -1081,7 +1111,7 @@ namespace ChronoKeySetup
       {
         if (total > 0) bar.Value = (float)got / total;
         stats.L.Text = total > 0 ? Util.Bytes(got) + " / " + Util.Bytes(total) : Util.Bytes(got);
-        stats.R.Text = Util.Bytes(sp) + "/s" + (total > 0 && sp > 0 ? " · 剩余 " + Util.Eta((total - got) / sp) : "");
+        stats.R.Text = Util.Bytes(sp) + "/s" + (total > 0 && sp > 0 ? L.T(" · 剩余 ", " · ", " · осталось ") + Util.Eta((total - got) / sp) : "");
       });
     }
 
@@ -1102,7 +1132,7 @@ namespace ChronoKeySetup
           got += n;
           ReportDownload(got, total);
         }
-        if (total > 0 && got != total) throw new Exception("下载不完整(" + Util.Bytes(got) + " / " + Util.Bytes(total) + "),请重试。");
+        if (total > 0 && got != total) throw new Exception(L.T("下载不完整(", "Download incomplete (", "Загрузка неполна (") + Util.Bytes(got) + " / " + Util.Bytes(total) + L.T("),请重试。", "), please retry.", "), повторите."));
       }
     }
 
@@ -1176,7 +1206,7 @@ namespace ChronoKeySetup
                   req.AddRange(pos, end);
                   using (var resp = (HttpWebResponse)req.GetResponse())
                   {
-                    if (resp.StatusCode != HttpStatusCode.PartialContent) throw new Exception("服务器不支持分段下载");
+                    if (resp.StatusCode != HttpStatusCode.PartialContent) throw new Exception(L.T("服务器不支持分段下载", "Server does not support ranged downloads", "Сервер не поддерживает докачку"));
                     using (var s = resp.GetResponseStream())
                     {
                       fs.Position = pos;
@@ -1216,9 +1246,9 @@ namespace ChronoKeySetup
       if (failure != null)
       {
         var we = failure as WebException;
-        throw we != null ? ConnectError(we, name) : new Exception("下载失败:" + failure.Message + "\n请检查网络后重试。");
+        throw we != null ? ConnectError(we, name) : new Exception(L.T("下载失败:", "Download failed: ", "Ошибка загрузки: ") + failure.Message + L.T("\n请检查网络后重试。", "\nCheck your network and try again.", "\nПроверьте сеть и повторите."));
       }
-      if (Interlocked.Read(ref got) != total) throw new Exception("下载不完整(" + Util.Bytes(got) + " / " + Util.Bytes(total) + "),请重试。");
+      if (Interlocked.Read(ref got) != total) throw new Exception(L.T("下载不完整(", "Download incomplete (", "Загрузка неполна (") + Util.Bytes(got) + " / " + Util.Bytes(total) + L.T("),请重试。", "), please retry.", "), повторите."));
       ReportDownload(total, total);
       return true;
     }
@@ -1235,12 +1265,12 @@ namespace ChronoKeySetup
       using (var r = new StreamReader(s, Encoding.UTF8)) manifest = r.ReadToEnd();
       string version = Util.Json(manifest, "version"), file = Util.Json(manifest, "file"), sha = Util.Json(manifest, "sha256");
       if (string.IsNullOrEmpty(file) || string.IsNullOrEmpty(sha) || file.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-        throw new Exception("版本信息格式不正确。");
-      Ui(() => side.Version = "正在安装 v" + version);
+        throw new Exception(L.T("版本信息格式不正确。", "Version info has an unexpected format.", "Неверный формат информации о версии."));
+      Ui(() => side.Version = L.T("正在安装 v", "Installing v", "Установка v") + version);
 
       // 2. 下载:GitHub 对单个连接常被限速,按 2 MB 分块、8 个连接并行;断线自动续传重试
       string zipPath = Path.Combine(tempDir, file);
-      Status("正在下载", "ChronoKey " + version + " · " + file);
+      Status(L.T("正在下载", "Downloading", "Загрузка"), "ChronoKey " + version + " · " + file);
       long total;
       long.TryParse(Util.Json(manifest, "size"), out total);
       dlWatch = Stopwatch.StartNew(); dlSpeed = 0; dlLastT = 0; dlLastGot = 0;
@@ -1248,18 +1278,18 @@ namespace ChronoKeySetup
       if (IsLocalSource || total <= 0 || !DownloadParallel(file, zipPath, total)) DownloadSingle(file, zipPath, total);
 
       // 3. 校验(读回整个文件计算 SHA-256)
-      Ui(() => { bar.Value = 1; stats.R.Text = "下载完成"; });
-      Status("正在校验", "核对 SHA-256,确保文件完整且未被篡改…");
+      Ui(() => { bar.Value = 1; stats.R.Text = L.T("下载完成", "Download complete", "Загрузка завершена"); });
+      Status(L.T("正在校验", "Verifying", "Проверка"), L.T("核对 SHA-256,确保文件完整且未被篡改…", "Checking SHA-256 to ensure the file is intact and untampered…", "Сверка SHA-256: целостность и подлинность файла…"));
       string actual;
       using (var sha256 = SHA256.Create())
       using (var fs = File.OpenRead(zipPath)) actual = Util.Hex(sha256.ComputeHash(fs));
       if (!actual.Equals(sha.Trim(), StringComparison.OrdinalIgnoreCase))
-        throw new Exception("安装包校验失败:SHA-256 与发布信息不一致。文件可能损坏或被篡改,已停止安装。");
+        throw new Exception(L.T("安装包校验失败:SHA-256 与发布信息不一致。文件可能损坏或被篡改,已停止安装。", "Integrity check failed: SHA-256 does not match the published value. The file may be corrupt or tampered — install stopped.", "Проверка не пройдена: SHA-256 не совпадает с опубликованным. Файл повреждён или подменён — установка остановлена."));
       Thread.Sleep(300);
 
       // 4. 解压到同级临时目录,成功后再替换,避免装一半
       Ui(() => { cancellable = false; pWork.Primary.Enabled = false; Step(2); bar.Value = 0; stats.L.Text = ""; stats.R.Text = ""; });
-      Status("正在安装", "正在解压文件…");
+      Status(L.T("正在安装", "Installing", "Установка"), L.T("正在解压文件…", "Extracting files…", "Распаковка файлов…"));
       string staging = installDir + ".installing";
       if (Directory.Exists(staging)) Retry(() => Directory.Delete(staging, true));
       Directory.CreateDirectory(staging);
@@ -1272,18 +1302,18 @@ namespace ChronoKeySetup
         {
           i++;
           string dest = Path.GetFullPath(Path.Combine(staging, entry.FullName));
-          if (!dest.StartsWith(stagingFull, StringComparison.OrdinalIgnoreCase)) throw new Exception("安装包包含非法路径,已停止安装。");
+          if (!dest.StartsWith(stagingFull, StringComparison.OrdinalIgnoreCase)) throw new Exception(L.T("安装包包含非法路径,已停止安装。", "Package contains an illegal path — install stopped.", "Пакет содержит недопустимый путь — установка остановлена."));
           if (entry.FullName.EndsWith("/")) { Directory.CreateDirectory(dest); continue; }
           Directory.CreateDirectory(Path.GetDirectoryName(dest));
           entry.ExtractToFile(dest, true);
           done += entry.Length;
           long d = done; int ii = i; string nm = entry.Name;
-          Ui(() => { bar.Value = (float)d / sum; stats.L.Text = ii + " / " + count + " 个文件"; workDetail.Text = nm; });
+          Ui(() => { bar.Value = (float)d / sum; stats.L.Text = ii + " / " + count + L.T(" 个文件", " files", " файлов"); workDetail.Text = nm; });
         }
       }
-      if (!File.Exists(Path.Combine(staging, "ChronoKey.exe"))) throw new Exception("安装包内容不完整(缺少 ChronoKey.exe)。");
+      if (!File.Exists(Path.Combine(staging, "ChronoKey.exe"))) throw new Exception(L.T("安装包内容不完整(缺少 ChronoKey.exe)。", "Package incomplete (ChronoKey.exe missing).", "Пакет неполон (нет ChronoKey.exe)."));
 
-      Status(null, "正在写入程序文件…");
+      Status(null, L.T("正在写入程序文件…", "Writing program files…", "Запись файлов программы…"));
       if (Directory.Exists(installDir))
       {
         // 覆盖安装:保留便携数据目录
@@ -1299,12 +1329,12 @@ namespace ChronoKeySetup
       try { if (Directory.Exists(staging)) Directory.Delete(staging, true); } catch { }
 
       // 5. 卸载程序、快捷方式、"已安装的应用"条目
-      Status(null, "正在创建快捷方式…");
+      Status(null, L.T("正在创建快捷方式…", "Creating shortcuts…", "Создание ярлыков…"));
       string exe = Path.Combine(installDir, "ChronoKey.exe");
       string uninst = Path.Combine(installDir, "Uninstall.exe");
       File.Copy(Application.ExecutablePath, uninst, true);
-      if (desktop) Util.Shortcut(Paths.DesktopLnk, exe, installDir, "ChronoKey 离线密码库");
-      if (start) Util.Shortcut(Paths.StartLnk, exe, installDir, "ChronoKey 离线密码库");
+      if (desktop) Util.Shortcut(Paths.DesktopLnk, exe, installDir, L.T("ChronoKey 离线密码库", "ChronoKey offline password vault", "ChronoKey — автономный менеджер паролей"));
+      if (start) Util.Shortcut(Paths.StartLnk, exe, installDir, L.T("ChronoKey 离线密码库", "ChronoKey offline password vault", "ChronoKey — автономный менеджер паролей"));
       long kb = new DirectoryInfo(installDir).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length) / 1024;
       using (var k = Registry.CurrentUser.CreateSubKey(Paths.UninstallKey))
       {
@@ -1331,18 +1361,18 @@ namespace ChronoKeySetup
         busy = false; finished = true;
         bar.Value = 1;
         side.Anim.Mode = 2;
-        doneBody.Text = "ChronoKey " + version + " 已安装到\n" + installDir;
+        doneBody.Text = "ChronoKey " + version + L.T(" 已安装到\n", " installed to\n", " установлено в\n") + installDir;
         Step(3); Show(pDone);
       });
     }
 
     void StartUninstall()
     {
-      if (Util.IsAppRunning()) { MessageBox.Show(this, "ChronoKey 正在运行。请先退出,再继续卸载。", "需要退出 ChronoKey", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
+      if (Util.IsAppRunning()) { MessageBox.Show(this, L.T("ChronoKey 正在运行。请先退出,再继续卸载。", "ChronoKey is running. Quit it before uninstalling.", "ChronoKey запущен. Выйдите из него перед удалением."), L.T("需要退出 ChronoKey", "Quit ChronoKey first", "Сначала закройте ChronoKey"), MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
       bool keep = chkKeep.Checked;
       if (!keep)
       {
-        var r = MessageBox.Show(this, "将永久删除保险库和全部自动快照,无法恢复。\n确定要删除吗?", "删除保险库数据", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+        var r = MessageBox.Show(this, L.T("将永久删除保险库和全部自动快照,无法恢复。\n确定要删除吗?", "The vault and all automatic snapshots will be permanently deleted. This cannot be undone.\nDelete anyway?", "Хранилище и все снимки будут удалены безвозвратно.\nУдалить?"), L.T("删除保险库数据", "Delete vault data", "Удаление данных хранилища"), MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
         if (r != DialogResult.Yes) return;
       }
       busy = true; cancellable = false;
@@ -1359,14 +1389,14 @@ namespace ChronoKeySetup
     void DoUninstall(bool keep)
     {
       string self = Path.GetFullPath(Application.ExecutablePath);
-      Status(null, "正在删除快捷方式…");
+      Status(null, L.T("正在删除快捷方式…", "Deleting shortcuts…", "Удаление ярлыков…"));
       foreach (var lnk in new[] { Paths.DesktopLnk, Paths.StartLnk }) try { if (File.Exists(lnk)) File.Delete(lnk); } catch { }
       Ui(() => bar.Value = 0.1f);
 
       // 只删除确实是 ChronoKey 的目录(含 ChronoKey.exe),防止注册表被改写后误删
       if (Directory.Exists(installDir) && File.Exists(Path.Combine(installDir, "ChronoKey.exe")) && ValidateDir(installDir) == null)
       {
-        Status(null, "正在删除程序文件…");
+        Status(null, L.T("正在删除程序文件…", "Deleting program files…", "Удаление файлов программы…"));
         var files = Directory.GetFiles(installDir, "*", SearchOption.AllDirectories);
         int i = 0;
         foreach (var f in files)
@@ -1376,7 +1406,7 @@ namespace ChronoKeySetup
           if (!keep || !f.StartsWith(Path.Combine(installDir, "ChronoKeyData") + "\\", StringComparison.OrdinalIgnoreCase))
             try { File.Delete(f); } catch { }
           int ii = i; string nm = Path.GetFileName(f);
-          if (i % 5 == 0 || i == files.Length) Ui(() => { bar.Value = 0.1f + 0.7f * ii / files.Length; stats.L.Text = ii + " / " + files.Length + " 个文件"; workDetail.Text = nm; });
+          if (i % 5 == 0 || i == files.Length) Ui(() => { bar.Value = 0.1f + 0.7f * ii / files.Length; stats.L.Text = ii + " / " + files.Length + L.T(" 个文件", " files", " файлов"); workDetail.Text = nm; });
         }
         foreach (var d in Directory.GetDirectories(installDir, "*", SearchOption.AllDirectories).OrderByDescending(d => d.Length))
           try { if (!Directory.EnumerateFileSystemEntries(d).Any()) Directory.Delete(d); } catch { }
@@ -1384,11 +1414,11 @@ namespace ChronoKeySetup
 
       if (!keep)
       {
-        Status(null, "正在删除保险库数据…");
-        try { if (Directory.Exists(Paths.UserData)) Directory.Delete(Paths.UserData, true); } catch (Exception ex) { throw new Exception("程序已删除,但保险库数据删除失败:" + ex.Message); }
+        Status(null, L.T("正在删除保险库数据…", "Deleting vault data…", "Удаление данных хранилища…"));
+        try { if (Directory.Exists(Paths.UserData)) Directory.Delete(Paths.UserData, true); } catch (Exception ex) { throw new Exception(L.T("程序已删除,但保险库数据删除失败:", "Program removed, but deleting vault data failed: ", "Программа удалена, но не удалось удалить данные хранилища: ") + ex.Message); }
       }
       Ui(() => bar.Value = 0.95f);
-      Status(null, "正在移除卸载项…");
+      Status(null, L.T("正在移除卸载项…", "Removing uninstall entry…", "Удаление записи об установке…"));
       try { Registry.CurrentUser.DeleteSubKeyTree(Paths.UninstallKey, false); } catch { }
 
       Ui(() =>
@@ -1397,8 +1427,8 @@ namespace ChronoKeySetup
         bar.Value = 1;
         side.Anim.Mode = 2;
         doneBody.Text = keep
-          ? "程序已删除。你的保险库数据仍保留在\n" + Paths.UserData + "\n重新安装后可直接解锁。"
-          : "程序与保险库数据均已删除。";
+          ? L.T("程序已删除。你的保险库数据仍保留在\n", "Program removed. Your vault data remains in\n", "Программа удалена. Данные хранилища сохранены в\n") + Paths.UserData + L.T("\n重新安装后可直接解锁。", "\nUnlock directly after reinstalling.", "\nПосле переустановки вход как раньше.")
+          : L.T("程序与保险库数据均已删除。", "The program and vault data have all been deleted.", "Программа и данные хранилища полностью удалены.");
         Step(2); Show(pDone);
       });
     }

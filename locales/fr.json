@@ -666,7 +666,18 @@
       "settingsNav": "Catégories de paramètres",
       "langUpdBtn": "Mettre à jour les packs de langue",
       "langUpdDoing": "Mise à jour des packs de langue…",
-      "langUpdDone": "Mis à jour vers v{v} ({n} packs)"
+      "langUpdDone": "Mis à jour vers v{v} ({n} packs)",
+      "integrityBtn": "Vérifier l’intégrité des fichiers du programme",
+      "integrityChecking": "Comparaison avec le manifeste GitHub…",
+      "integrityOk": "Les {n} fichiers du programme correspondent à la publication GitHub",
+      "integrityIssues": "{n} fichier(s) manquant(s) ou modifié(s) :",
+      "integrityMissing": "manquant",
+      "integrityModified": "modifié",
+      "integrityRepair": "Réparer",
+      "integrityRepairing": "Réparation…",
+      "integrityRepaired": "{n} fichier(s) réparé(s)",
+      "integrityUnsupported": "Aucun fichier de programme installé à vérifier en mode développement",
+      "integrityNoManifest": "Aucun manifeste de fichiers sur GitHub pour cette version (publiée avant cette fonctionnalité)"
     },
     "side": {
       "nav": "Navigation du coffre",
