@@ -111,7 +111,10 @@
       "crashBody": "O ficheiro do cofre não foi afetado e os dados guardados estão seguros. Pode tentar novamente; se continuar a acontecer, bloqueie e desbloqueie de novo.",
       "crashRetry": "Tentar novamente",
       "crashLock": "Bloquear e voltar",
-      "crashReload": "Recarregar a janela"
+      "crashReload": "Recarregar a janela",
+      "attachFileTooBig": "Ficheiro demasiado grande: o limite por ficheiro é de {max} MB",
+      "attachVaultTooBig": "Armazenamento de anexos cheio: {max} MB por cofre",
+      "copied": "Copiado"
     },
     "audit": {
       "breachedLabel": "Encontrado em dicionário de vazamentos",
@@ -272,7 +275,11 @@
       "addCustom": "Adicionar",
       "customHint": "Por exemplo: pergunta de segurança, ID de conta, telefone do responsável…",
       "valuePlaceholder": "Valor",
-      "sshGen": "Gerar par de chaves Ed25519"
+      "sshGen": "Gerar par de chaves Ed25519",
+      "attachments": "Anexos",
+      "attachHint": "Até {max} MB por ficheiro, {total} MB no total no cofre",
+      "addAttachment": "Adicionar anexo",
+      "removeFile": "Remover"
     },
     "list": {
       "all": "Todos os itens",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Atualizar pacotes de idioma",
       "langUpdDoing": "A atualizar pacotes de idioma…",
       "langUpdDone": "Atualizado para v{v} ({n} pacotes)",
+      "behavior": "Comportamento da aplicação",
+      "closeToTray": "Fechar a janela esconde-a na bandeja do sistema",
+      "closeToTrayHint": "O menu da bandeja permite abrir, bloquear ou sair da aplicação",
+      "globalHotkey": "O atalho global Ctrl+Shift+K mostra/esconde a janela",
+      "globalHotkeyHint": "Traz a janela para a frente sobre qualquer aplicação; prima de novo para a esconder",
+      "bridge": "Integração com o navegador (beta)",
+      "bridgeHint": "Permite à extensão de navegador acompanhante obter os inícios de sessão que correspondem ao site atual. Escuta apenas em 127.0.0.1, requer um token de emparelhamento e está desativada por predefinição; deixa de funcionar assim que o cofre é bloqueado.",
+      "bridgeEnable": "Ativar a ponte do navegador",
+      "bridgeToken": "Token de emparelhamento",
+      "bridgeCopy": "Copiar token",
+      "bridgeRegen": "Regenerar",
+      "bridgeTokenHint": "Cole este token na extensão (código-fonte na pasta extension/ do repositório, carregada em modo de programador). Volte a colá-lo depois de regenerar.",
       "integrityBtn": "Verificar ficheiros do programa",
       "integrityChecking": "A comparar com o manifesto no GitHub…",
       "integrityOk": "Todos os {n} ficheiros do programa correspondem à versão no GitHub",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "O ficheiro é demasiado grande (>64 MB)",
         "只允许打开 http/https 链接": "Apenas ligações http/https são permitidas",
         "非法语言代码": "Código de idioma inválido",
-        "语言包清单格式不正确": "O manifesto dos pacotes de idioma tem um formato inesperado"
+        "语言包清单格式不正确": "O manifesto dos pacotes de idioma tem um formato inesperado",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Os anexos excedem 2 MB e não cabem numa superchave (é texto simples). Remova os anexos grandes ou utilize uma exportação ChronoKey JSON"
       }
     }
   }

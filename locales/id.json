@@ -111,7 +111,10 @@
       "crashBody": "Berkas brankas tidak terpengaruh dan data yang tersimpan aman. Anda bisa mencoba lagi; jika terus terjadi, kunci lalu buka kunci kembali.",
       "crashRetry": "Coba lagi",
       "crashLock": "Kunci dan kembali",
-      "crashReload": "Muat ulang jendela"
+      "crashReload": "Muat ulang jendela",
+      "attachFileTooBig": "File terlalu besar: batas per berkas adalah {max} MB",
+      "attachVaultTooBig": "Penyimpanan lampiran penuh: {max} MB per brankas",
+      "copied": "Disalin"
     },
     "audit": {
       "breachedLabel": "Ditemukan di kamus kebocoran",
@@ -272,7 +275,11 @@
       "addCustom": "Tambah",
       "customHint": "Contoh: pertanyaan keamanan, ID akun, telepon manajer…",
       "valuePlaceholder": "Nilai",
-      "sshGen": "Buat pasangan kunci Ed25519"
+      "sshGen": "Buat pasangan kunci Ed25519",
+      "attachments": "Lampiran",
+      "attachHint": "Hingga {max} MB per berkas, total {total} MB untuk seluruh brankas",
+      "addAttachment": "Tambah lampiran",
+      "removeFile": "Hapus"
     },
     "list": {
       "all": "Semua entri",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Perbarui paket bahasa",
       "langUpdDoing": "Memperbarui paket bahasa…",
       "langUpdDone": "Diperbarui ke v{v} ({n} paket)",
+      "behavior": "Perilaku aplikasi",
+      "closeToTray": "Menutup jendela akan menyembunyikannya ke baki sistem",
+      "closeToTrayHint": "Menu baki dapat membuka, mengunci, atau menutup aplikasi",
+      "globalHotkey": "Pintasan global Ctrl+Shift+K menampilkan/menyembunyikan jendela",
+      "globalHotkeyHint": "Memunculkannya di atas aplikasi apa pun; tekan lagi untuk menyembunyikannya",
+      "bridge": "Integrasi browser (beta)",
+      "bridgeHint": "Memungkinkan ekstensi browser pendamping mengambil login yang cocok dengan situs saat ini. Hanya mendengarkan di 127.0.0.1, memerlukan token pemasangan, nonaktif secara bawaan; langsung mati saat brankas dikunci.",
+      "bridgeEnable": "Aktifkan bridge browser",
+      "bridgeToken": "Token pemasangan",
+      "bridgeCopy": "Salin token",
+      "bridgeRegen": "Buat ulang",
+      "bridgeTokenHint": "Tempel token ini ke ekstensi (kode sumber ada di folder extension/ repositori, dimuat melalui mode pengembang). Tempel ulang setelah dibuat ulang.",
       "integrityBtn": "Verifikasi keutuhan berkas program",
       "integrityChecking": "Membandingkan dengan manifest di GitHub…",
       "integrityOk": "Semua {n} berkas program cocok dengan rilis GitHub",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "File terlalu besar (>64 MB)",
         "只允许打开 http/https 链接": "Hanya tautan http/https yang diizinkan",
         "非法语言代码": "Kode bahasa tidak valid",
-        "语言包清单格式不正确": "Manifest paket bahasa berformat tak terduga"
+        "语言包清单格式不正确": "Manifest paket bahasa berformat tak terduga",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Lampiran melebihi 2 MB dan tidak muat dalam superkunci (berupa teks biasa). Hapus lampiran besar atau gunakan ekspor ChronoKey JSON"
       }
     }
   }

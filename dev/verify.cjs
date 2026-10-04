@@ -250,6 +250,38 @@ app.on('browser-window-created', () => {
       const m = document.querySelector('.modal-close'); if (m) m.click();
       ok(await H_.waitFor('.list-pane'))`, '21-back-zh');
 
+    // 22 浏览器桥端到端:启用 → 主进程直接请求回环接口,验证三条防线(无自定义头 403 / 错令牌 401 /
+    // 正确令牌 200 且返回匹配条目),最后关闭。注意这里必须从主进程请求——渲染进程的 CSP 会拦回环。
+    try {
+      const tok = 'ab'.repeat(32);
+      await j(`(async () => {
+        await window.ck.setPrefs({ browserBridge: true, bridgeToken: ${JSON.stringify(tok)} });
+        await window.ck.bridgeIndex([{ id: 'x', title: 'GitHub', username: 'u', password: 'p', hosts: ['github.com'] }]);
+        return 'indexed';
+      })()`);
+      await sleep(600);
+      const http = require('node:http');
+      const probe = (headers) => new Promise((resolve) => {
+        const rq = http.get('http://127.0.0.1:39781/bridge/v1/entries?host=github.com', { headers }, (r) => {
+          let b = ''; r.on('data', (d) => { b += d; }); r.on('end', () => resolve({ code: r.statusCode, body: b }));
+        });
+        rq.on('error', (e) => resolve({ code: 0, body: e.message }));
+        rq.setTimeout(4000, () => { rq.destroy(); resolve({ code: 0, body: 'timeout' }); });
+      });
+      const noHead = await probe({});
+      const badTok = await probe({ 'x-chronokey-bridge': '1', authorization: 'Bearer ' + 'ff'.repeat(32) });
+      const good = await probe({ 'x-chronokey-bridge': '1', authorization: 'Bearer ' + tok });
+      let hit = false;
+      try { hit = good.code === 200 && JSON.parse(good.body).entries[0].password === 'p'; } catch { }
+      await j(`window.ck.setPrefs({ browserBridge: false }).then(() => 'off')`);
+      if (noHead.code !== 403 || badTok.code !== 401 || !hit) throw new Error(`bridge codes: ${noHead.code}/${badTok.code}/${good.code}`);
+      results.push('[PASS] s22 browser-bridge :: 403/401/200+entry');
+      log('<<< s22 PASS');
+    } catch (e) {
+      results.push('[FAIL] s22 browser-bridge :: ' + e.message);
+      log('<<< s22 FAIL ' + e.message);
+    }
+
     fs.writeFileSync(path.join(OUT, 'report.txt'), results.join('\n') + '\n');
     console.log('=== VERIFY REPORT ===');
     for (const r of results) console.log(r);

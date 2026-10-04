@@ -111,7 +111,10 @@
       "crashBody": "볼트 파일은 그대로이고 저장된 데이터는 안전해요. 다시 시도할 수 있어요. 계속 발생하면 잠금 후 다시 잠금 해제해 보세요.",
       "crashRetry": "다시 시도",
       "crashLock": "잠금하고 돌아가기",
-      "crashReload": "창 다시 불러오기"
+      "crashReload": "창 다시 불러오기",
+      "attachFileTooBig": "파일이 너무 커요: 파일 하나당 최대 {max}MB까지 가능해요",
+      "attachVaultTooBig": "첨부 파일 저장 공간이 가득 찼어요: 볼트당 최대 {max}MB까지 가능해요",
+      "copied": "복사됨"
     },
     "audit": {
       "breachedLabel": "유출 사전에 발견됨",
@@ -272,7 +275,11 @@
       "addCustom": "추가",
       "customHint": "예: 보안 질문, 계정 ID, 담당자 전화번호…",
       "valuePlaceholder": "값",
-      "sshGen": "Ed25519 키 쌍 생성"
+      "sshGen": "Ed25519 키 쌍 생성",
+      "attachments": "첨부 파일",
+      "attachHint": "파일 하나당 최대 {max}MB, 볼트 전체 합계 {total}MB",
+      "addAttachment": "첨부 파일 추가",
+      "removeFile": "제거"
     },
     "list": {
       "all": "모든 항목",
@@ -667,6 +674,18 @@
       "langUpdBtn": "언어 팩 업데이트",
       "langUpdDoing": "언어 팩 업데이트 중…",
       "langUpdDone": "v{v}(으)로 업데이트됨({n}개 팩)",
+      "behavior": "앱 동작",
+      "closeToTray": "창을 닫으면 시스템 트레이로 숨겨요",
+      "closeToTrayHint": "트레이 메뉴에서 열기, 잠금, 종료를 할 수 있어요",
+      "globalHotkey": "전역 단축키 Ctrl+Shift+K로 창을 표시하거나 숨겨요",
+      "globalHotkeyHint": "어떤 앱 위에서든 한 번에 창을 불러오고, 다시 누르면 숨겨져요",
+      "bridge": "브라우저 연동(베타)",
+      "bridgeHint": "전용 브라우저 확장 프로그램이 현재 사이트에 맞는 로그인을 가져올 수 있게 해요. 127.0.0.1에서만 대기하고, 페어링 토큰이 필요하며, 기본적으로 꺼져 있어요. 볼트가 잠기면 바로 작동을 멈춰요.",
+      "bridgeEnable": "브라우저 브리지 켜기",
+      "bridgeToken": "페어링 토큰",
+      "bridgeCopy": "토큰 복사",
+      "bridgeRegen": "다시 생성",
+      "bridgeTokenHint": "이 토큰을 확장 프로그램에 붙여 넣어요(소스는 저장소의 extension/ 폴더에 있고, 개발자 모드로 로드해요). 다시 생성한 후에는 다시 붙여 넣어야 해요.",
       "integrityBtn": "프로그램 파일 무결성 검사",
       "integrityChecking": "GitHub 매니페스트와 대조 중…",
       "integrityOk": "{n}개 프로그램 파일이 모두 GitHub 릴리스와 일치합니다",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "파일이 너무 큽니다(64MB 초과)",
         "只允许打开 http/https 链接": "http/https 링크만 허용됩니다",
         "非法语言代码": "잘못된 언어 코드입니다",
-        "语言包清单格式不正确": "언어 팩 매니페스트 형식이 잘못되었습니다"
+        "语言包清单格式不正确": "언어 팩 매니페스트 형식이 잘못되었습니다",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "첨부 파일 합계가 2MB를 넘어 슈퍼키(일반 텍스트 형식)에 기록할 수 없어요. 큰 첨부 파일을 제거하거나 ChronoKey JSON 내보내기를 사용해 주세요"
       }
     }
   }

@@ -111,7 +111,10 @@
       "crashBody": "Die Tresor-Datei ist unberührt und gespeicherte Daten sind sicher. Du kannst es erneut versuchen; falls es wiederholt passiert, sperre und entsperre erneut.",
       "crashRetry": "Erneut versuchen",
       "crashLock": "Sperren und zurück",
-      "crashReload": "Fenster neu laden"
+      "crashReload": "Fenster neu laden",
+      "attachFileTooBig": "Datei zu groß: Das Limit pro Datei beträgt {max} MB",
+      "attachVaultTooBig": "Anhang-Speicher voll: {max} MB pro Tresor",
+      "copied": "Kopiert"
     },
     "audit": {
       "breachedLabel": "In Leak-Wörterbuch gefunden",
@@ -272,7 +275,11 @@
       "addCustom": "Hinzufügen",
       "customHint": "Zum Beispiel: Sicherheitsfrage, Konto-ID, Telefonnummer des Betreuers…",
       "valuePlaceholder": "Wert",
-      "sshGen": "Ed25519-Schlüsselpaar generieren"
+      "sshGen": "Ed25519-Schlüsselpaar generieren",
+      "attachments": "Anhänge",
+      "attachHint": "Bis zu {max} MB pro Datei, insgesamt {total} MB im Tresor",
+      "addAttachment": "Anhang hinzufügen",
+      "removeFile": "Entfernen"
     },
     "list": {
       "all": "Alle Einträge",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Sprachpakete aktualisieren",
       "langUpdDoing": "Sprachpakete werden aktualisiert…",
       "langUpdDone": "Aktualisiert auf v{v} ({n} Pakete)",
+      "behavior": "App-Verhalten",
+      "closeToTray": "Beim Schließen des Fensters in den Systemtray minimieren",
+      "closeToTrayHint": "Über das Tray-Menü lässt sich die App öffnen, sperren oder beenden",
+      "globalHotkey": "Globales Tastaturkürzel Ctrl+Shift+K zeigt/versteckt das Fenster",
+      "globalHotkeyHint": "Holt das Fenster über alles andere nach vorn; nochmaliges Drücken versteckt es",
+      "bridge": "Browser-Integration (Beta)",
+      "bridgeHint": "Ermöglicht der zugehörigen Browser-Erweiterung, passende Logins für die aktuelle Website abzurufen. Lauscht nur auf 127.0.0.1, erfordert ein Kopplungs-Token, standardmäßig aus; sobald der Tresor gesperrt wird, ist sie außer Funktion.",
+      "bridgeEnable": "Browser-Bridge aktivieren",
+      "bridgeToken": "Kopplungs-Token",
+      "bridgeCopy": "Token kopieren",
+      "bridgeRegen": "Neu generieren",
+      "bridgeTokenHint": "Füge dieses Token in die Erweiterung ein (Quellcode im Ordner extension/ des Repositorys, im Entwicklermodus geladen). Nach dem Neugenerieren erneut einfügen.",
       "integrityBtn": "Programmdateien überprüfen",
       "integrityChecking": "Abgleich mit dem GitHub-Manifest…",
       "integrityOk": "Alle {n} Programmdateien stimmen mit der GitHub-Veröffentlichung überein",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "Datei ist zu groß (>64 MB)",
         "只允许打开 http/https 链接": "Nur http/https-Links sind erlaubt",
         "非法语言代码": "Ungültiger Sprachcode",
-        "语言包清单格式不正确": "Sprachpaket-Manifest hat ein unerwartetes Format"
+        "语言包清单格式不正确": "Sprachpaket-Manifest hat ein unerwartetes Format",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Die Anhänge überschreiten 2 MB und passen nicht in einen Superkey (er ist reiner Text). Entferne große Anhänge oder verwende einen ChronoKey-JSON-Export"
       }
     }
   }

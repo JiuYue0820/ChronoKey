@@ -111,7 +111,10 @@
       "crashBody": "Het kluisbestand is onaangetast en opgeslagen data is veilig. Je kunt het opnieuw proberen; als het blijft gebeuren, vergrendel en ontgrendel opnieuw.",
       "crashRetry": "Opnieuw proberen",
       "crashLock": "Vergrendelen en terug",
-      "crashReload": "Venster herladen"
+      "crashReload": "Venster herladen",
+      "attachFileTooBig": "Bestand te groot: de limiet per bestand is {max} MB",
+      "attachVaultTooBig": "Bijlageopslag vol: {max} MB per kluis",
+      "copied": "Gekopieerd"
     },
     "audit": {
       "breachedLabel": "Gevonden in lekwoordenboek",
@@ -272,7 +275,11 @@
       "addCustom": "Toevoegen",
       "customHint": "Bijvoorbeeld: beveiligingsvraag, account-ID, telefoon van de beheerder…",
       "valuePlaceholder": "Waarde",
-      "sshGen": "Ed25519-sleutelpaar genereren"
+      "sshGen": "Ed25519-sleutelpaar genereren",
+      "attachments": "Bijlagen",
+      "attachHint": "Maximaal {max} MB per bestand, in totaal {total} MB in de kluis",
+      "addAttachment": "Bijlage toevoegen",
+      "removeFile": "Verwijderen"
     },
     "list": {
       "all": "Alle items",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Taalpakketten bijwerken",
       "langUpdDoing": "Taalpakketten worden bijgewerkt…",
       "langUpdDone": "Bijgewerkt naar v{v} ({n} pakketten)",
+      "behavior": "App-gedrag",
+      "closeToTray": "Bij het sluiten wordt het venster verborgen in het systeemvak",
+      "closeToTrayHint": "Via het systeemvakmenu kun je de app openen, vergrendelen of afsluiten",
+      "globalHotkey": "De globale sneltoets Ctrl+Shift+K toont/verbergt het venster",
+      "globalHotkeyHint": "Haalt het venster boven alles vandaan; druk opnieuw om het te verbergen",
+      "bridge": "Browserintegratie (bèta)",
+      "bridgeHint": "Laat de bijbehorende browserextensie logins ophalen die bij de huidige site passen. Luistert alleen op 127.0.0.1, vereist een koppelingstoken, staat standaard uit; zodra de kluis vergrendelt, doet hij niets meer.",
+      "bridgeEnable": "Browserbrug inschakelen",
+      "bridgeToken": "Koppelingstoken",
+      "bridgeCopy": "Token kopiëren",
+      "bridgeRegen": "Opnieuw genereren",
+      "bridgeTokenHint": "Plak dit token in de extensie (bron in de map extension/ van de repository, geladen via de ontwikkelaarsmodus). Plak het opnieuw na het opnieuw genereren.",
       "integrityBtn": "Programmabestanden controleren",
       "integrityChecking": "Vergelijken met het GitHub-manifest…",
       "integrityOk": "Alle {n} programmabestanden komen overeen met de GitHub-release",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "Bestand is te groot (>64 MB)",
         "只允许打开 http/https 链接": "Alleen http/https-links zijn toegestaan",
         "非法语言代码": "Ongeldige taalcode",
-        "语言包清单格式不正确": "Het taalpakketmanifest heeft een onverwacht formaat"
+        "语言包清单格式不正确": "Het taalpakketmanifest heeft een onverwacht formaat",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "De bijlagen overschrijden 2 MB en passen niet in een superkey (het is platte tekst). Verwijder grote bijlagen of gebruik een ChronoKey JSON-export"
       }
     }
   }

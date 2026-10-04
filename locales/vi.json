@@ -111,7 +111,10 @@
       "crashBody": "Tệp kho không bị ảnh hưởng và dữ liệu đã lưu vẫn an toàn. Bạn có thể thử lại; nếu lỗi tiếp diễn, hãy khóa rồi mở khóa lại.",
       "crashRetry": "Thử lại",
       "crashLock": "Khóa và quay lại",
-      "crashReload": "Tải lại cửa sổ"
+      "crashReload": "Tải lại cửa sổ",
+      "attachFileTooBig": "Tệp quá lớn: giới hạn mỗi tệp là {max} MB",
+      "attachVaultTooBig": "Dung lượng tệp đính kèm đã đầy: tối đa {max} MB mỗi kho",
+      "copied": "Đã sao chép"
     },
     "audit": {
       "breachedLabel": "Có trong từ điển rò rỉ",
@@ -272,7 +275,11 @@
       "addCustom": "Thêm",
       "customHint": "Ví dụ: câu hỏi bảo mật, ID tài khoản, điện thoại người quản lý…",
       "valuePlaceholder": "Giá trị",
-      "sshGen": "Tạo cặp khóa Ed25519"
+      "sshGen": "Tạo cặp khóa Ed25519",
+      "attachments": "Tệp đính kèm",
+      "attachHint": "Tối đa {max} MB mỗi tệp, tổng cộng {total} MB trong kho",
+      "addAttachment": "Thêm tệp đính kèm",
+      "removeFile": "Gỡ bỏ"
     },
     "list": {
       "all": "Tất cả mục",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Cập nhật gói ngôn ngữ",
       "langUpdDoing": "Đang cập nhật gói ngôn ngữ…",
       "langUpdDone": "Đã cập nhật lên v{v} ({n} gói)",
+      "behavior": "Hành vi của ứng dụng",
+      "closeToTray": "Đóng cửa sổ sẽ ẩn nó xuống khay hệ thống",
+      "closeToTrayHint": "Menu khay có thể mở, khóa hoặc thoát ứng dụng",
+      "globalHotkey": "Phím tắt toàn cục Ctrl+Shift+K hiển thị/ẩn cửa sổ",
+      "globalHotkeyHint": "Gọi cửa sổ lên trên bất kỳ ứng dụng nào; nhấn lần nữa để ẩn",
+      "bridge": "Tích hợp trình duyệt (bản thử nghiệm)",
+      "bridgeHint": "Cho phép tiện ích trình duyệt đi kèm lấy các mục đăng nhập khớp với trang hiện tại. Chỉ lắng nghe trên 127.0.0.1, cần mã ghép nối, mặc định tắt; ngừng hoạt động ngay khi kho bị khóa.",
+      "bridgeEnable": "Bật cầu nối trình duyệt",
+      "bridgeToken": "Mã ghép nối",
+      "bridgeCopy": "Sao chép mã",
+      "bridgeRegen": "Tạo lại",
+      "bridgeTokenHint": "Dán mã này vào tiện ích (mã nguồn trong thư mục extension/ của repo, được tải qua chế độ nhà phát triển). Sau khi tạo lại, hãy dán lại.",
       "integrityBtn": "Kiểm tra tính toàn vẹn của tệp chương trình",
       "integrityChecking": "Đang đối chiếu với tệp khai báo trên GitHub…",
       "integrityOk": "Cả {n} tệp chương trình đều khớp với bản phát hành trên GitHub",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "Tệp quá lớn (>64 MB)",
         "只允许打开 http/https 链接": "Chỉ cho phép liên kết http/https",
         "非法语言代码": "Mã ngôn ngữ không hợp lệ",
-        "语言包清单格式不正确": "Tệp khai báo gói ngôn ngữ có định dạng không mong đợi"
+        "语言包清单格式不正确": "Tệp khai báo gói ngôn ngữ có định dạng không mong đợi",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Tệp đính kèm vượt quá 2 MB nên không thể ghi vào siêu khóa (nó là định dạng văn bản thuần). Hãy gỡ các tệp đính kèm lớn hoặc dùng bản xuất ChronoKey JSON"
       }
     }
   }

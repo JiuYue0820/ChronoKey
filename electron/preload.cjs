@@ -47,6 +47,7 @@ contextBridge.exposeInMainWorld('ck', {
   listLocales: () => call('locales:list'),
   readLocale: (code) => call('locales:read', code),
   localesUpdate: () => call('locales:update'),
+  bridgeIndex: (entries) => call('bridge:index', entries),
   copy: (text, opts) => call('clipboard:copy', text, opts),
   clearClipboard: () => call('clipboard:clear'),
   readClipboardImage: () => call('clipboard:readImage'),

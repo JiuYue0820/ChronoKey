@@ -1,7 +1,7 @@
 {
   "name": "chronokey",
   "productName": "ChronoKey",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "时钥 · 纯本地、离线的密码管理器",
   "main": "electron/main.cjs",
   "private": true,
@@ -56,7 +56,42 @@
     "electronLanguages": [
       "zh-CN",
       "en-US"
-    ]
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "build/icon.png",
+      "identity": null,
+      "artifactName": "ChronoKey-${version}-mac-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png",
+      "artifactName": "ChronoKey-${version}-linux-${arch}.${ext}",
+      "desktop": {
+        "Name": "ChronoKey",
+        "Comment": "Offline password manager"
+      }
+    }
   },
   "author": "JiuYue0820",
   "homepage": "https://jiuyue0820.github.io/ChronoKey/",

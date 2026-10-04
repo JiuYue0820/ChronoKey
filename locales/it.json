@@ -111,7 +111,10 @@
       "crashBody": "Il file della cassaforte è intatto e i dati salvati sono al sicuro. Puoi riprovare; se continua a succedere, blocca e sblocca di nuovo.",
       "crashRetry": "Riprova",
       "crashLock": "Blocca e torna indietro",
-      "crashReload": "Ricarica la finestra"
+      "crashReload": "Ricarica la finestra",
+      "attachFileTooBig": "File troppo grande: il limite per file è di {max} MB",
+      "attachVaultTooBig": "Spazio per gli allegati esaurito: {max} MB per cassaforte",
+      "copied": "Copiato"
     },
     "audit": {
       "breachedLabel": "Presente nel dizionario di violazioni",
@@ -272,7 +275,11 @@
       "addCustom": "Aggiungi",
       "customHint": "Ad esempio: domanda di sicurezza, ID account, telefono del referente…",
       "valuePlaceholder": "Valore",
-      "sshGen": "Genera coppia di chiavi Ed25519"
+      "sshGen": "Genera coppia di chiavi Ed25519",
+      "attachments": "Allegati",
+      "attachHint": "Fino a {max} MB per file, {total} MB in totale nella cassaforte",
+      "addAttachment": "Aggiungi allegato",
+      "removeFile": "Rimuovi"
     },
     "list": {
       "all": "Tutte le voci",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Aggiorna i pacchetti lingua",
       "langUpdDoing": "Aggiornamento dei pacchetti lingua…",
       "langUpdDone": "Aggiornato alla v{v} ({n} pacchetti)",
+      "behavior": "Comportamento dell'app",
+      "closeToTray": "Chiudendo la finestra, questa viene ridotta nell'area di notifica",
+      "closeToTrayHint": "Dal menu dell'area di notifica puoi aprire, bloccare o chiudere l'app",
+      "globalHotkey": "La scorciatoia globale Ctrl+Shift+K mostra/nasconde la finestra",
+      "globalHotkeyHint": "Porta la finestra in primo piano su qualsiasi app; premi di nuovo per nasconderla",
+      "bridge": "Integrazione con il browser (beta)",
+      "bridgeHint": "Consente all'estensione browser complementare di recuperare i login corrispondenti al sito corrente. Ascolta solo su 127.0.0.1, richiede un token di abbinamento, disattivata per impostazione predefinita; smette di funzionare appena la cassaforte viene bloccata.",
+      "bridgeEnable": "Attiva bridge del browser",
+      "bridgeToken": "Token di abbinamento",
+      "bridgeCopy": "Copia token",
+      "bridgeRegen": "Rigenera",
+      "bridgeTokenHint": "Incolla questo token nell'estensione (sorgente nella cartella extension/ del repository, caricata in modalità sviluppatore). Incollalo di nuovo dopo la rigenerazione.",
       "integrityBtn": "Verifica i file del programma",
       "integrityChecking": "Confronto con il manifesto su GitHub…",
       "integrityOk": "Tutti gli {n} file del programma corrispondono alla release su GitHub",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "File troppo grande (>64 MB)",
         "只允许打开 http/https 链接": "Sono consentiti solo link http/https",
         "非法语言代码": "Codice lingua non valido",
-        "语言包清单格式不正确": "Il manifesto dei pacchetti lingua ha un formato inatteso"
+        "语言包清单格式不正确": "Il manifesto dei pacchetti lingua ha un formato inatteso",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Gli allegati superano 2 MB e non entrano in una superchiave (è testo semplice). Rimuovi gli allegati più grandi o usa un'esportazione ChronoKey JSON"
       }
     }
   }

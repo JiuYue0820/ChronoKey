@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Field, Icon, IconButton, SecretInput, StrengthMeter, Segmented, useToast, modKey } from './ui.jsx';
 import { TotpSetup } from './TotpSetup.jsx';
-import { TYPES, TYPE_ORDER, hostOf, uid } from '../lib/model.js';
+import { TYPES, TYPE_ORDER, hostOf, uid, FILE_MAX, VAULT_FILES_MAX } from '../lib/model.js';
 import { estimate } from '../lib/strength.js';
 import { generate, DEFAULT_GEN } from '../lib/generator.js';
 import { t, typeLabel, fieldLabel } from '../i18n-react.js';
@@ -76,8 +76,30 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
   const [genFor, setGenFor] = useState(null);
   const [err, setErr] = useState('');
   const toast = useToast();
+  const fileInput = useRef(null);
   const def = TYPES[draft.type];
   const setField = (k, v) => setDraft((d) => ({ ...d, fields: { ...d.fields, [k]: v } }));
+
+  // 附件:渲染进程用 FileReader 读成 base64 存进条目(随保险库一起加密),不走网络
+  const addFiles = async (list) => {
+    const files = [...(list || [])];
+    if (!files.length) return;
+    const next = [...(draft.files || [])];
+    let total = next.reduce((s, f) => s + f.size, 0);
+    for (const f of files) {
+      if (f.size > FILE_MAX) { toast(t('app.attachFileTooBig', { max: FILE_MAX / 1048576 }), 'danger', 5000); continue; }
+      if (total + f.size > VAULT_FILES_MAX) { toast(t('app.attachVaultTooBig', { max: VAULT_FILES_MAX / 1048576 }), 'danger', 5000); break; }
+      const data = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result).split(',')[1] || '');
+        r.onerror = reject;
+        r.readAsDataURL(f);
+      });
+      next.push({ id: uid(), name: f.name, size: f.size, type: f.type || 'application/octet-stream', data });
+      total += f.size;
+    }
+    setDraft((d) => ({ ...d, files: next }));
+  };
 
   const save = (e) => {
     e?.preventDefault();
@@ -188,6 +210,21 @@ export function ItemEditor({ item, isNew, folders, allTags, generatorDefaults, o
             </div>
           );
         })}
+      </div>
+
+      <div className="form-card">
+        <div className="card-head">
+          <h3 className="section-title">{t('editor.attachments')}</h3>
+          <input ref={fileInput} type="file" multiple hidden onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }} />
+          <Button size="sm" variant="ghost" icon="plus" onClick={() => fileInput.current?.click()}>{t('editor.addAttachment')}</Button>
+        </div>
+        <p className="field-hint">{t('editor.attachHint', { max: FILE_MAX / 1048576, total: VAULT_FILES_MAX / 1048576 })}</p>
+        {(draft.files || []).map((f, i) => (
+          <div key={f.id} className="custom-row">
+            <input className="input" value={`${f.name} (${f.size >= 1048576 ? `${(f.size / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(f.size / 1024))} KB`})`} readOnly aria-label={f.name} />
+            <IconButton icon="x" label={t('editor.removeFile')} onClick={() => setDraft({ ...draft, files: draft.files.filter((_, j) => j !== i) })} />
+          </div>
+        ))}
       </div>
 
       <div className="form-card grid-2">

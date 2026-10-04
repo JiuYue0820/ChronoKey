@@ -36,6 +36,13 @@ function SecurityTab({ data, status, commit, refresh }) {
     window.ck.applySettings({ ...s, ...patch });
   };
   const setPref = async (patch) => { setPrefs(await window.ck.setPrefs(patch)); refresh(); };
+  const toast = useToast();
+  const newToken = () => [...crypto.getRandomValues(new Uint8Array(32))].map((x) => x.toString(16).padStart(2, '0')).join('');
+  const toggleBridge = async (v) => {
+    if (v && !prefs.bridgeToken) await setPref({ browserBridge: true, bridgeToken: newToken() });
+    else await setPref({ browserBridge: v });
+  };
+  const regenBridgeToken = async () => setPref({ bridgeToken: newToken() });
   return (
     <div className="stack gap-4">
       <section className="settings-group">
@@ -62,6 +69,28 @@ function SecurityTab({ data, status, commit, refresh }) {
           hint={t('set.sdHint')} />
         <NumberSelect label={t('set.expiry')} value={s.passwordMaxAgeDays} onChange={(v) => set({ passwordMaxAgeDays: v })}
           options={[[90, t('set.exp90')], [180, t('set.exp180')], [365, t('set.exp1y')], [730, t('set.exp2y')], [0, t('set.expOff')]]} />
+      </section>
+      <section className="settings-group">
+        <h3>{t('set.behavior')}</h3>
+        <Toggle label={t('set.closeToTray')} description={t('set.closeToTrayHint')}
+          checked={prefs.closeToTray === true} onChange={(v) => setPref({ closeToTray: v })} />
+        <Toggle label={t('set.globalHotkey')} description={t('set.globalHotkeyHint')}
+          checked={prefs.globalHotkey === true} onChange={(v) => setPref({ globalHotkey: v })} />
+      </section>
+      <section className="settings-group">
+        <h3>{t('set.bridge')}</h3>
+        <p className="field-hint">{t('set.bridgeHint')}</p>
+        <Toggle label={t('set.bridgeEnable')} checked={prefs.browserBridge === true} onChange={toggleBridge} />
+        {prefs.browserBridge && prefs.bridgeToken && (
+          <div className="stack gap-2">
+            <code className="break mono">{prefs.bridgeToken}</code>
+            <div className="row gap-2">
+              <Button size="sm" icon="copy" onClick={async () => { await window.ck.copy(prefs.bridgeToken, { sensitive: false }); toast(t('app.copied'), 'ok'); }}>{t('set.bridgeCopy')}</Button>
+              <Button size="sm" variant="ghost" onClick={regenBridgeToken}>{t('set.bridgeRegen')}</Button>
+            </div>
+            <p className="field-hint">{t('set.bridgeTokenHint')}</p>
+          </div>
+        )}
       </section>
       <p className="field-hint">{t('set.memHint')}</p>
     </div>

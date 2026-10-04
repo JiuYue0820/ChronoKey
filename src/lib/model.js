@@ -84,6 +84,37 @@ const MAX_VERSIONS = 15;
 
 export const uid = () => crypto.randomUUID();
 
+// 附件限额:单文件 5 MB、每条目最多 20 个、整库 25 MB。规范化时静默丢弃超限条目,
+// 保证旧数据/手工改过的 JSON 导入时不会撑爆保险库文件。
+export const FILE_MAX = 5 * 1024 * 1024;
+export const FILE_COUNT_MAX = 20;
+export const VAULT_FILES_MAX = 25 * 1024 * 1024;
+const B64_RE = /^[A-Za-z0-9+/]*={0,2}$/;
+
+function normalizeFiles(files) {
+  if (!Array.isArray(files)) return [];
+  const out = [];
+  const seen = new Set();
+  for (const f of files) {
+    if (out.length >= FILE_COUNT_MAX) break;
+    if (!f || typeof f !== 'object') continue;
+    const data = typeof f.data === 'string' && B64_RE.test(f.data) ? f.data : '';
+    const pad = data.endsWith('==') ? 2 : data.endsWith('=') ? 1 : 0;
+    const size = data ? Math.floor(data.length * 3 / 4) - pad : 0; // base64 解码后的精确字节数
+    if (size <= 0 || size > FILE_MAX) continue;
+    const id = typeof f.id === 'string' && f.id && !seen.has(f.id) ? f.id : uid();
+    seen.add(id);
+    out.push({
+      id,
+      name: String(f.name || 'file').slice(0, 255),
+      size,
+      type: String(f.type || 'application/octet-stream').slice(0, 100),
+      data,
+    });
+  }
+  return out;
+}
+
 export function emptyVault() {
   return {
     schema: 1,
@@ -118,6 +149,7 @@ export function newItem(type = 'login', patch = {}) {
     updatedAt: now,
     passwordChangedAt: now,
     versions: [],
+    files: [],
     deletedAt: null,
     ...patch,
   };
@@ -230,6 +262,7 @@ export function normalizeItem(raw) {
     updatedAt: Number(i.updatedAt) || created,
     passwordChangedAt: Number(i.passwordChangedAt) || created,
     versions: Array.isArray(i.versions) ? i.versions.filter((v) => v && typeof v === 'object').map((v) => ({ ...v, fields: v.fields || {}, custom: v.custom || [], tags: v.tags || [] })) : [],
+    files: normalizeFiles(i.files),
     deletedAt: i.deletedAt || null,
   };
 }

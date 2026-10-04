@@ -111,7 +111,10 @@
       "crashBody": "El archivo de la bóveda no se ha visto afectado y los datos guardados están a salvo. Puedes reintentar; si sigue ocurriendo, bloquea y desbloquea de nuevo.",
       "crashRetry": "Reintentar",
       "crashLock": "Bloquear y volver",
-      "crashReload": "Recargar ventana"
+      "crashReload": "Recargar ventana",
+      "attachFileTooBig": "Archivo demasiado grande: el límite por archivo es de {max} MB",
+      "attachVaultTooBig": "Almacenamiento de adjuntos lleno: {max} MB por bóveda",
+      "copied": "Copiado"
     },
     "audit": {
       "breachedLabel": "Aparece en diccionario de filtraciones",
@@ -272,7 +275,11 @@
       "addCustom": "Añadir",
       "customHint": "Por ejemplo: pregunta de seguridad, ID de cuenta, teléfono del encargado…",
       "valuePlaceholder": "Valor",
-      "sshGen": "Generar par de claves Ed25519"
+      "sshGen": "Generar par de claves Ed25519",
+      "attachments": "Adjuntos",
+      "attachHint": "Hasta {max} MB por archivo, {total} MB en total en la bóveda",
+      "addAttachment": "Añadir adjunto",
+      "removeFile": "Quitar"
     },
     "list": {
       "all": "Todos los elementos",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Actualizar paquetes de idioma",
       "langUpdDoing": "Actualizando paquetes de idioma…",
       "langUpdDone": "Actualizado a la v{v} ({n} paquetes)",
+      "behavior": "Comportamiento de la aplicación",
+      "closeToTray": "Al cerrar la ventana, se oculta en la bandeja del sistema",
+      "closeToTrayHint": "El menú de la bandeja permite abrir, bloquear o salir de la aplicación",
+      "globalHotkey": "El atajo global Ctrl+Shift+K muestra/oculta la ventana",
+      "globalHotkeyHint": "La trae al frente sobre cualquier aplicación; pulsa de nuevo para ocultarla",
+      "bridge": "Integración con el navegador (beta)",
+      "bridgeHint": "Permite que la extensión de navegador complementaria obtenga los inicios de sesión que coincidan con el sitio actual. Escucha solo en 127.0.0.1, requiere un token de emparejamiento y está desactivada de forma predeterminada; deja de funcionar en cuanto la bóveda se bloquea.",
+      "bridgeEnable": "Activar puente de navegador",
+      "bridgeToken": "Token de emparejamiento",
+      "bridgeCopy": "Copiar token",
+      "bridgeRegen": "Regenerar",
+      "bridgeTokenHint": "Pega este token en la extensión (el código fuente está en la carpeta extension/ del repositorio, se carga en modo desarrollador). Vuelve a pegarlo después de regenerarlo.",
       "integrityBtn": "Verificar archivos del programa",
       "integrityChecking": "Comparando con el manifiesto de GitHub…",
       "integrityOk": "Los {n} archivos del programa coinciden con la versión de GitHub",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "El archivo es demasiado grande (>64 MB)",
         "只允许打开 http/https 链接": "Solo se permiten enlaces http/https",
         "非法语言代码": "Código de idioma no válido",
-        "语言包清单格式不正确": "El manifiesto de paquetes de idioma tiene un formato inesperado"
+        "语言包清单格式不正确": "El manifiesto de paquetes de idioma tiene un formato inesperado",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Los adjuntos superan los 2 MB y no caben en una superclave (es texto plano). Elimina los adjuntos grandes o usa una exportación ChronoKey JSON"
       }
     }
   }

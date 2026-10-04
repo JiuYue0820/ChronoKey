@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    :root { color-scheme: dark; }
+    body { width: 320px; margin: 0; padding: 12px; background: #1F1E1B; color: #EDE8DD;
+           font: 13px/1.5 "Segoe UI", system-ui, sans-serif; }
+    h1 { font-size: 13px; margin: 0 0 8px; display: flex; align-items: center; gap: 6px; color: #B9C98F; }
+    input[type=search], input[type=text] { width: 100%; box-sizing: border-box; padding: 7px 10px; margin-bottom: 8px;
+           border: 1px solid #3A3934; border-radius: 8px; background: #292824; color: inherit; font: inherit; }
+    ul { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow: auto; }
+    li { padding: 8px 10px; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    li:hover { background: #33322C; }
+    li b { display: block; font-weight: 600; }
+    li small { color: #8F8A7E; }
+    .empty { color: #8F8A7E; padding: 14px 4px; text-align: center; }
+    .err { color: #E2943B; padding: 10px 4px; }
+    .copy { flex: none; border: 1px solid #3A3934; background: none; color: #B9C98F; border-radius: 6px;
+            padding: 4px 8px; cursor: pointer; font: inherit; font-size: 12px; }
+    .copy:hover { border-color: #91AD70; }
+  </style>
+</head>
+<body>
+  <h1>ChronoKey</h1>
+  <input id="token" type="text" placeholder="Pairing token (Settings → Browser integration)" spellcheck="false">
+  <input id="q" type="search" placeholder="Search…" autofocus>
+  <div id="list"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+name: Cross-platform build
+
+# 由发布流程触发:dev/release.cjs 创建 release(含 Windows 资产)后,
+# 本工作流在真实 Linux / macOS runner 上构建其余平台产物并传到同一个 release。
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            args: --linux
+            globs: 'release/ChronoKey-*.AppImage release/ChronoKey-*.deb'
+          - os: macos-latest
+            args: --mac
+            globs: 'release/ChronoKey-*-mac-*.zip release/ChronoKey-*-mac-*.dmg'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      # 跨平台冒烟:真实 runner 上跑完整 Electron IPC 流程(创建保险库→解锁→超密钥→网络封锁→重置)
+      - name: Smoke test (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y xvfb
+          npx vite build
+          xvfb-run -a npx electron tests/electron-smoke.cjs
+      - name: Smoke test (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          npx vite build
+          npx electron tests/electron-smoke.cjs
+      - run: npx electron-builder ${{ matrix.args }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false' # macOS 无签名构建(Gatekeeper 见 README)
+      - name: Upload artifacts to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh release upload "${{ github.event.release.tag_name }}" ${{ matrix.globs }} --clobber --repo "$GITHUB_REPOSITORY"

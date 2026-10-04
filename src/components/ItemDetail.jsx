@@ -85,6 +85,8 @@ export function ItemDetail({ item, folders, onEdit, onFavorite, onTrash, onResto
   const folder = folders.find((f) => f.id === item.folderId);
   const totpCfg = safeParseTotp(item.fields.totp);
   const [confirmPurge, setConfirmPurge] = useState(false);
+  const fmtSize = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
+  const download = (f) => window.ck.saveFile({ title: f.name, defaultName: f.name, content: f.data, encoding: 'base64' });
 
   return (
     <article className="detail" aria-label={item.title}>
@@ -141,6 +143,23 @@ export function ItemDetail({ item, folders, onEdit, onFavorite, onTrash, onResto
       {item.tags.length > 0 && (
         <section className="detail-section">
           <div className="tags">{item.tags.map((t) => <span key={t} className="tag">#{t}</span>)}</div>
+        </section>
+      )}
+
+      {item.files?.length > 0 && (
+        <section className="detail-section">
+          <h3 className="section-title">{t('detail.attachments')} <span className="count">{item.files.length}</span></h3>
+          <ul className="versions">
+            {item.files.map((f) => (
+              <li key={f.id} className="version-row">
+                <div>
+                  <div>{f.name}</div>
+                  <div className="field-hint">{fmtSize(f.size)}</div>
+                </div>
+                <Button size="sm" disabled={trashed} onClick={() => download(f)}>{t('detail.download')}</Button>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

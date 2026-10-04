@@ -1,14 +1,16 @@
 'use strict';
 const path = require('node:path');
 const fs = require('node:fs');
+const http = require('node:http');
 const {
-  app, BrowserWindow, ipcMain, clipboard, powerMonitor, dialog, shell, session, nativeTheme, Menu,
+  app, BrowserWindow, ipcMain, clipboard, powerMonitor, dialog, shell, session, nativeTheme, Menu, Tray, globalShortcut,
 } = require('electron');
 const { Vault } = require('./vault.cjs');
 const { CODES, mkErr } = require('./errors.cjs');
 const C = require('./crypto.cjs');
 
 const isMac = process.platform === 'darwin';
+const isWin = process.platform === 'win32';
 const devUrlArg = process.argv.find((a) => a.startsWith('--dev-url='));
 const DEV_URL = devUrlArg ? devUrlArg.slice('--dev-url='.length) : null;
 
@@ -35,7 +37,8 @@ const OVERLAY = {
 const overlay = () => ({ ...OVERLAY[nativeTheme.shouldUseDarkColors ? 'dark' : 'light'], height: 48 });
 function syncChrome() {
   if (!win || win.isDestroyed()) return;
-  if (!isMac) win.setTitleBarOverlay(overlay());
+  // Window Controls Overlay 只在 Windows 可用;mac 用 hiddenInset,Linux 用原生边框
+  if (isWin) win.setTitleBarOverlay(overlay());
   win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#1F1E1B' : '#F6F3EC');
 }
 let settings = { autoLockMinutes: 5, clipboardSeconds: 20, lockOnSleep: true, lockOnMinimize: false };
@@ -53,6 +56,7 @@ app.on('second-instance', () => {
 function lockVault(reason) {
   if (!vault.isUnlocked()) return;
   vault.lock();
+  bridgeIndex = null; // 凭据索引只存在于解锁期间
   clearClipboardNow();
   if (win && !win.isDestroyed()) win.webContents.send('vault:locked', reason);
 }
@@ -87,8 +91,9 @@ function createWindow() {
     show: false,
     title: 'ChronoKey',
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#1F1E1B' : '#F6F3EC',
-    titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
-    titleBarOverlay: isMac ? undefined : overlay(),
+    // Windows:WCO 覆盖按钮;mac:红绿灯 hiddenInset;Linux:原生边框(titleBarStyle 默认)
+    titleBarStyle: isMac ? 'hiddenInset' : isWin ? 'hidden' : 'default',
+    titleBarOverlay: isWin ? overlay() : undefined,
     trafficLightPosition: isMac ? { x: 18, y: 17 } : undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -101,6 +106,13 @@ function createWindow() {
   });
   win.setContentProtection(prefs.contentProtection !== false);
   win.once('ready-to-show', () => { if (bounds.maximized) win.maximize(); win.show(); });
+  // 关窗驻留托盘(可选):拦截 close 改为隐藏;真正退出走托盘菜单 Quit(before-quit 里置 isQuitting)
+  win.on('close', (e) => {
+    if (!app.isQuitting && vault.getPrefs().closeToTray) {
+      e.preventDefault();
+      win.hide();
+    }
+  });
   // 记住窗口位置与大小(非敏感,写入 prefs.json)
   win.on('close', () => {
     vault.setPrefs({ bounds: { ...win.getNormalBounds(), maximized: win.isMaximized() } });
@@ -120,6 +132,96 @@ function createWindow() {
 
   if (DEV_URL) win.loadURL(DEV_URL);
   else win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+}
+
+// ---------- 托盘与全局热键 ----------
+let tray = null;
+let hotkeyOn = false;
+const HOTKEY_ACCEL = 'Control+Shift+K';
+
+function showWindow() {
+  if (!win || win.isDestroyed()) { createWindow(); return; }
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+}
+
+function createTray() {
+  // Linux 部分发行版缺 appindicator:失败只少个托盘,不影响应用
+  try {
+    tray = new Tray(path.join(__dirname, '..', 'build', 'icon.png'));
+    tray.setToolTip('ChronoKey');
+    tray.setContextMenu(Menu.buildFromTemplate([
+      { label: 'Open ChronoKey', click: showWindow },
+      { label: 'Lock', click: () => lockVault('manual') },
+      { type: 'separator' },
+      { label: 'Quit', click: () => { app.isQuitting = true; app.quit(); } },
+    ]));
+    tray.on('double-click', showWindow);
+  } catch (e) {
+    console.warn('[ChronoKey] tray unavailable:', e.message);
+  }
+}
+
+function toggleWindow() {
+  if (!win || win.isDestroyed()) { createWindow(); return; }
+  if (win.isVisible() && win.isFocused()) win.hide();
+  else showWindow();
+}
+
+function applyHotkey(on) {
+  if (on === hotkeyOn) return;
+  try {
+    if (on) globalShortcut.register(HOTKEY_ACCEL, toggleWindow);
+    else globalShortcut.unregister(HOTKEY_ACCEL);
+    hotkeyOn = on;
+  } catch (e) {
+    console.warn('[ChronoKey] global hotkey unavailable:', e.message);
+  }
+}
+
+// ---------- 浏览器桥(可选,默认关):127.0.0.1 上的最小服务,给配套扩展返回当前站点的登录项 ----------
+// 设计约束:只绑回环地址;自定义头 X-ChronoKey-Bridge 让网页跨源请求过不了预检;Bearer 令牌在设置里
+// 配对;保险库一锁定索引立即清零;限速防爆破。应用自身的网络封锁(session.webRequest + CSP)不受影响。
+let bridgeServer = null;
+let bridgeIndex = null; // 解锁期间的最小凭据索引(仅 login+password),主进程持有,锁定即清
+let bridgeHits = [];
+
+function startBridge() {
+  if (bridgeServer) return;
+  try {
+    bridgeServer = http.createServer((req, res) => {
+      const deny = (code, body) => { res.statusCode = code; res.setHeader('Content-Type', 'application/json; charset=utf-8'); res.end(JSON.stringify(body)); };
+      try {
+        const url = new URL(req.url, 'http://127.0.0.1');
+        if (req.method !== 'GET' || url.pathname !== '/bridge/v1/entries') return deny(404, { error: 'not found' });
+        if (req.headers['x-chronokey-bridge'] !== '1') return deny(403, { error: 'forbidden' });
+        const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+        if (!token || token !== vault.getPrefs().bridgeToken) return deny(401, { error: 'bad token' });
+        if (!vault.isUnlocked() || !bridgeIndex) return deny(423, { locked: true });
+        const now = Date.now();
+        bridgeHits = bridgeHits.filter((t) => now - t < 60_000);
+        if (bridgeHits.length >= 120) return deny(429, { error: 'rate limited' });
+        bridgeHits.push(now);
+        const host = String(url.searchParams.get('host') || '').toLowerCase().replace(/^www\./, '');
+        const match = host
+          ? bridgeIndex.filter((e) => e.hosts.some((h) => h === host || h.endsWith('.' + host) || host.endsWith('.' + h)))
+          : bridgeIndex;
+        deny(200, { locked: false, entries: match.slice(0, 20) });
+      } catch {
+        deny(400, { error: 'bad request' });
+      }
+    });
+    bridgeServer.on('error', (e) => { console.warn('[ChronoKey] bridge server error:', e.message); bridgeServer = null; });
+    bridgeServer.listen(39781, '127.0.0.1');
+  } catch (e) {
+    console.warn('[ChronoKey] bridge unavailable:', e.message);
+  }
+}
+
+function stopBridge() {
+  if (bridgeServer) { try { bridgeServer.close(); } catch { } bridgeServer = null; }
+  bridgeIndex = null;
 }
 
 // ---------- 离线:拦截一切网络请求 ----------
@@ -251,10 +353,35 @@ function registerIpc() {
     return settings;
   });
   handle('prefs:set', (patch) => {
+    // 首次启用浏览器桥时生成配对令牌(256 bit hex)
+    if (patch.browserBridge === true && !patch.bridgeToken && !vault.getPrefs().bridgeToken) {
+      patch = { ...patch, bridgeToken: require('node:crypto').randomBytes(32).toString('hex') };
+    }
     const p = vault.setPrefs(patch);
     if ('theme' in patch) { nativeTheme.themeSource = p.theme; syncChrome(); }
     if ('contentProtection' in patch) win.setContentProtection(!!p.contentProtection);
+    if ('globalHotkey' in patch) applyHotkey(!!p.globalHotkey);
+    if ('browserBridge' in patch) {
+      if (p.browserBridge) startBridge();
+      else stopBridge();
+    }
     return p;
+  });
+
+  // 渲染进程在解锁/保存后推送最小凭据索引(host → 登录项),锁定时主进程清零
+  handle('bridge:index', (entries) => {
+    if (!Array.isArray(entries)) throw new Error('bridge index must be an array');
+    if (!vault.isUnlocked()) { bridgeIndex = null; return true; }
+    bridgeIndex = entries.slice(0, 500).map((e) => ({
+      id: String(e?.id || ''),
+      title: String(e?.title || ''),
+      username: String(e?.username || ''),
+      password: String(e?.password || ''),
+      totp: e?.totp ? String(e.totp) : null,
+      hosts: Array.isArray(e?.hosts) ? e.hosts.slice(0, 5).map((h) => String(h).toLowerCase().replace(/^www\./, '').slice(0, 255)).filter(Boolean) : [],
+    })).filter((e) => e.password && e.hosts.length);
+    if (vault.getPrefs().browserBridge && !bridgeServer) startBridge();
+    return true;
   });
 
   handle('clipboard:copy', (text, { sensitive = true } = {}) => {
@@ -280,10 +407,11 @@ function registerIpc() {
 
   handle('ssh:generate', (comment) => C.generateSshKey(comment));
 
-  handle('file:save', async ({ title, defaultName, content, filters }) => {
+  handle('file:save', async ({ title, defaultName, content, filters, encoding }) => {
     const r = await dialog.showSaveDialog(win, { title, defaultPath: defaultName, filters });
     if (r.canceled || !r.filePath) return null;
-    fs.writeFileSync(r.filePath, content, { mode: 0o600 });
+    if (encoding === 'base64') fs.writeFileSync(r.filePath, Buffer.from(content, 'base64'), { mode: 0o600 });
+    else fs.writeFileSync(r.filePath, content, { mode: 0o600, encoding: 'utf8' });
     return r.filePath;
   });
   handle('file:open', async ({ title, filters }) => {
@@ -513,6 +641,9 @@ app.whenReady().then(() => {
   lockDownNetwork();
   registerIpc();
   createWindow();
+  createTray();
+  applyHotkey(!!vault.getPrefs().globalHotkey);
+  if (vault.getPrefs().browserBridge && vault.getPrefs().bridgeToken) startBridge();
 
   nativeTheme.on('updated', syncChrome);
   powerMonitor.on('lock-screen', () => lockVault('screen-lock'));
@@ -521,8 +652,8 @@ app.whenReady().then(() => {
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
 
-app.on('before-quit', () => { clearClipboardNow(); vault.lock(); });
-app.on('window-all-closed', () => { lockVault('closed'); if (!isMac) app.quit(); });
+app.on('before-quit', () => { app.isQuitting = true; globalShortcut.unregisterAll(); clearClipboardNow(); vault.lock(); });
+app.on('window-all-closed', () => { lockVault('closed'); if (!isMac && !vault.getPrefs().closeToTray) app.quit(); });
 
 // 拒绝任何额外的 webContents(例如 <webview>)
 app.on('web-contents-created', (_e, contents) => {

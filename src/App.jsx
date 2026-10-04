@@ -11,7 +11,7 @@ import { TotpBoard } from './components/TotpBoard.jsx';
 import { Settings } from './components/Settings.jsx';
 import { ToastProvider, useToast, EmptyState, Button } from './components/ui.jsx';
 import { t, initLang, getLang, registerLocale } from './i18n-react.js';
-import { matches, newItem, updateItem, appendAudit, normalizeVault } from './lib/model.js';
+import { matches, newItem, updateItem, appendAudit, normalizeVault, hostOf } from './lib/model.js';
 
 function applyTheme(theme) {
   const dark = theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -113,6 +113,26 @@ function Root() {
     }[reason];
     if (why) toast(t('app.autoLocked', { why }), 'info');
   }), [refresh, toast]);
+
+  // 浏览器桥:解锁/每次保存后把最小凭据索引(login+password,含站点 host)推给主进程。
+  // 主进程锁定时清零;桥关闭时主进程不持有。渲染进程之外只有 127.0.0.1 的令牌鉴权接口能查。
+  useEffect(() => {
+    if (!status?.unlocked || !data || !window.ck?.bridgeIndex) return;
+    const entries = [];
+    for (const it of data.items || []) {
+      if (it.deletedAt || it.type !== 'login' || !it.fields.password) continue;
+      const hosts = new Set();
+      if (it.fields.url) {
+        try {
+          const u = /^https?:\/\//i.test(it.fields.url) ? it.fields.url : `https://${it.fields.url}`;
+          hosts.add(new URL(u).hostname.toLowerCase().replace(/^www\./, ''));
+        } catch { /* 无效网址的条目只按标题匹配不到,无妨 */ }
+      }
+      if (!hosts.size) continue;
+      entries.push({ id: it.id, title: it.title, username: it.fields.username || '', password: it.fields.password, hosts: [...hosts] });
+    }
+    window.ck.bridgeIndex(entries).catch(() => { });
+  }, [data, status?.unlocked]);
 
   const onReady = useCallback(async (raw) => {
     const d = normalizeVault(raw);

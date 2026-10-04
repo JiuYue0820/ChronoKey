@@ -49,13 +49,15 @@ class Vault {
   writeJson(name, obj) { this.atomicWrite(path.join(this.dir, name), JSON.stringify(obj, null, 2)); }
 
   // 锁屏前可读的非敏感偏好(主题、自毁阈值、界面语言等)
-  getPrefs() { return { theme: 'system', contentProtection: true, wipeAfter: 0, lang: 'zh', ...this.readJson(PREFS_FILE, {}) }; }
+  getPrefs() { return { theme: 'system', contentProtection: true, wipeAfter: 0, lang: 'zh', closeToTray: false, globalHotkey: false, browserBridge: false, bridgeToken: '', ...this.readJson(PREFS_FILE, {}) }; }
   setPrefs(patch) {
-    const allowed = ['theme', 'contentProtection', 'wipeAfter', 'lang', 'bounds'];
+    const allowed = ['theme', 'contentProtection', 'wipeAfter', 'lang', 'bounds', 'closeToTray', 'globalHotkey', 'browserBridge', 'bridgeToken'];
     const next = this.getPrefs();
     for (const k of allowed) if (k in patch) next[k] = patch[k];
     // 语言:内置(zh/en/ru)或语言包代码(如 de、pt-BR),防止把任意值写进 prefs
     if ('lang' in patch && !/^(zh|en|ru|[a-z]{2,3}(-[A-Za-z]{2,4})?)$/.test(String(patch.lang))) delete next.lang;
+    // 桥令牌只接受 256-bit hex
+    if ('bridgeToken' in patch && !/^[0-9a-f]{64}$/.test(String(patch.bridgeToken))) delete next.bridgeToken;
     this.writeJson(PREFS_FILE, next);
     return next;
   }
@@ -295,6 +297,10 @@ class Vault {
   async exportSuperKey(data, masterPassword, transferPassphrase) {
     this.requireUnlocked();
     if (!(await this.verifyPassword(masterPassword))) throw mkErr('wrongMaster');
+    // 附件是二进制,超密钥是纯文本:总量超过 2 MB 时拒绝导出,提示改用 ChronoKey JSON 导出
+    let filesTotal = 0;
+    for (const item of (data && data.items) || []) for (const f of (item && item.files) || []) filesTotal += Number(f && f.size) || 0;
+    if (filesTotal > 2 * 1024 * 1024) throw mkErr('superKeyAttachments');
     const payload = {
       app: 'ChronoKey',
       kind: 'history-super-key',

@@ -111,7 +111,10 @@
       "crashBody": "Le fichier du coffre est intact et les données enregistrées sont en sécurité. Vous pouvez réessayer ; si le problème persiste, verrouillez puis déverrouillez à nouveau.",
       "crashRetry": "Réessayer",
       "crashLock": "Verrouiller et revenir",
-      "crashReload": "Recharger la fenêtre"
+      "crashReload": "Recharger la fenêtre",
+      "attachFileTooBig": "Fichier trop volumineux : la limite par fichier est de {max} MB",
+      "attachVaultTooBig": "Stockage des pièces jointes plein : {max} MB par coffre",
+      "copied": "Copié"
     },
     "audit": {
       "breachedLabel": "Présent dans un dictionnaire de fuites",
@@ -272,7 +275,11 @@
       "addCustom": "Ajouter",
       "customHint": "Par exemple : question de sécurité, ID de compte, téléphone du gestionnaire…",
       "valuePlaceholder": "Valeur",
-      "sshGen": "Générer une paire de clés Ed25519"
+      "sshGen": "Générer une paire de clés Ed25519",
+      "attachments": "Pièces jointes",
+      "attachHint": "Jusqu'à {max} MB par fichier, {total} MB au total dans le coffre",
+      "addAttachment": "Ajouter une pièce jointe",
+      "removeFile": "Retirer"
     },
     "list": {
       "all": "Toutes les entrées",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Mettre à jour les packs de langue",
       "langUpdDoing": "Mise à jour des packs de langue…",
       "langUpdDone": "Mis à jour vers v{v} ({n} packs)",
+      "behavior": "Comportement de l'application",
+      "closeToTray": "Fermer la fenêtre la réduit dans la zone de notification",
+      "closeToTrayHint": "Le menu de la zone de notification permet d'ouvrir, de verrouiller ou de quitter l'application",
+      "globalHotkey": "Le raccourci global Ctrl+Shift+K affiche/masque la fenêtre",
+      "globalHotkeyHint": "Elle passe au premier plan au-dessus de tout ; appuyez à nouveau pour la masquer",
+      "bridge": "Intégration navigateur (bêta)",
+      "bridgeHint": "Permet à l'extension de navigateur compagnon de récupérer les identifiants correspondant au site en cours. Écoute uniquement sur 127.0.0.1, nécessite un jeton d'appairage, désactivée par défaut ; elle devient inopérante dès que le coffre se verrouille.",
+      "bridgeEnable": "Activer le pont navigateur",
+      "bridgeToken": "Jeton d'appairage",
+      "bridgeCopy": "Copier le jeton",
+      "bridgeRegen": "Régénérer",
+      "bridgeTokenHint": "Collez ce jeton dans l'extension (source dans le dossier extension/ du dépôt, chargée en mode développeur). Recollez-le après une régénération.",
       "integrityBtn": "Vérifier l’intégrité des fichiers du programme",
       "integrityChecking": "Comparaison avec le manifeste GitHub…",
       "integrityOk": "Les {n} fichiers du programme correspondent à la publication GitHub",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "Fichier trop volumineux (>64 Mo)",
         "只允许打开 http/https 链接": "Seuls les liens http/https sont autorisés",
         "非法语言代码": "Code de langue invalide",
-        "语言包清单格式不正确": "Le manifeste des packs de langue a un format inattendu"
+        "语言包清单格式不正确": "Le manifeste des packs de langue a un format inattendu",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Les pièces jointes dépassent 2 MB et ne tiennent pas dans une superclé (c'est du texte brut). Retirez les pièces jointes volumineuses ou utilisez un export ChronoKey JSON"
       }
     }
   }

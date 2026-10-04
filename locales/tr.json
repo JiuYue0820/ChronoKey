@@ -111,7 +111,10 @@
       "crashBody": "Kasa dosyası etkilenmedi, kayıtlı veriler güvende. Tekrar deneyebilirsiniz; sorun sürerse kilitleyip yeniden açın.",
       "crashRetry": "Yeniden dene",
       "crashLock": "Kilitle ve geri dön",
-      "crashReload": "Pencereyi yeniden yükle"
+      "crashReload": "Pencereyi yeniden yükle",
+      "attachFileTooBig": "Dosya çok büyük: dosya başına sınır {max} MB",
+      "attachVaultTooBig": "Ek depolama alanı dolu: kasa başına {max} MB",
+      "copied": "Kopyalandı"
     },
     "audit": {
       "breachedLabel": "Sızıntı sözlüğünde bulundu",
@@ -272,7 +275,11 @@
       "addCustom": "Ekle",
       "customHint": "Örneğin: güvenlik sorusu, hesap kimliği, müşteri temsilcisi telefonu…",
       "valuePlaceholder": "Değer",
-      "sshGen": "Ed25519 anahtar çifti oluştur"
+      "sshGen": "Ed25519 anahtar çifti oluştur",
+      "attachments": "Ekler",
+      "attachHint": "Dosya başına en fazla {max} MB, kasada toplam {total} MB",
+      "addAttachment": "Ek ekle",
+      "removeFile": "Kaldır"
     },
     "list": {
       "all": "Tüm öğeler",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Dil paketlerini güncelle",
       "langUpdDoing": "Dil paketleri güncelleniyor…",
       "langUpdDone": "v{v} sürümüne güncellendi ({n} paket)",
+      "behavior": "Uygulama davranışı",
+      "closeToTray": "Pencere kapatıldığında sistem tepsisine gizlenir",
+      "closeToTrayHint": "Tepsi menüsünden uygulama açılabilir, kilitlenebilir veya kapatılabilir",
+      "globalHotkey": "Genel kısayol Ctrl+Shift+K pencereyi gösterir/gizler",
+      "globalHotkeyHint": "Pencereyi herhangi bir uygulamanın önüne getirir; tekrar basınca gizler",
+      "bridge": "Tarayıcı entegrasyonu (beta)",
+      "bridgeHint": "Eşlik eden tarayıcı uzantısının geçerli siteyle eşleşen girişleri almasını sağlar. Yalnızca 127.0.0.1 üzerinde dinler, eşleştirme anahtarı gerektirir, varsayılan olarak kapalıdır; kasa kilitlenir kilitlenmez devre dışı kalır.",
+      "bridgeEnable": "Tarayıcı köprüsünü etkinleştir",
+      "bridgeToken": "Eşleştirme anahtarı",
+      "bridgeCopy": "Anahtarı kopyala",
+      "bridgeRegen": "Yeniden oluştur",
+      "bridgeTokenHint": "Bu anahtarı uzantıya yapıştırın (kaynak kod, depodaki extension/ klasöründedir; geliştirici modunda yüklenir). Yeniden oluşturduktan sonra tekrar yapıştırın.",
       "integrityBtn": "Program dosyalarını doğrula",
       "integrityChecking": "GitHub manifestıyla karşılaştırılıyor…",
       "integrityOk": "{n} program dosyasının tamamı GitHub sürümüyle eşleşiyor",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "Dosya çok büyük (>64 MB)",
         "只允许打开 http/https 链接": "Yalnızca http/https bağlantılarına izin verilir",
         "非法语言代码": "Geçersiz dil kodu",
-        "语言包清单格式不正确": "Dil paketi bildirimi beklenmeyen biçimde"
+        "语言包清单格式不正确": "Dil paketi bildirimi beklenmeyen biçimde",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Ekler 2 MB'ı aşıyor ve süper anahtara sığmıyor (biçimi düz metindir). Büyük ekleri kaldırın veya ChronoKey JSON dışa aktarımını kullanın"
       }
     }
   }

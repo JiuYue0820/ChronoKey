@@ -37,6 +37,7 @@ const CODES = {
   externalLinkOnly: '只允许打开 http/https 链接',
   badLangCode: '非法语言代码',
   badLangManifest: '语言包清单格式不正确',
+  superKeyAttachments: '附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出',
 };
 
 // 构造带 code 的 Error;消息即上面的中文文案(zh 为默认输出,UI 经 tr() 翻译)

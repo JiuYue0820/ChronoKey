@@ -111,7 +111,10 @@
       "crashBody": "Plik sejfu pozostaje nietknięty, a zapisane dane są bezpieczne. Możesz spróbować ponownie; jeśli błąd się powtarza, zablokuj i odblokuj ponownie.",
       "crashRetry": "Ponów",
       "crashLock": "Zablokuj i wróć",
-      "crashReload": "Wczytaj okno ponownie"
+      "crashReload": "Wczytaj okno ponownie",
+      "attachFileTooBig": "Plik jest za duży: limit dla jednego pliku to {max} MB",
+      "attachVaultTooBig": "Miejsce na załączniki wyczerpane: {max} MB na sejf",
+      "copied": "Skopiowano"
     },
     "audit": {
       "breachedLabel": "Obecne w słowniku wycieków",
@@ -272,7 +275,11 @@
       "addCustom": "Dodaj",
       "customHint": "Na przykład: pytanie pomocnicze, identyfikator konta, telefon do opiekuna…",
       "valuePlaceholder": "Wartość",
-      "sshGen": "Wygeneruj parę kluczy Ed25519"
+      "sshGen": "Wygeneruj parę kluczy Ed25519",
+      "attachments": "Załączniki",
+      "attachHint": "Do {max} MB na plik, łącznie {total} MB w całym sejfie",
+      "addAttachment": "Dodaj załącznik",
+      "removeFile": "Usuń"
     },
     "list": {
       "all": "Wszystkie wpisy",
@@ -667,6 +674,18 @@
       "langUpdBtn": "Aktualizuj pakiety językowe",
       "langUpdDoing": "Aktualizowanie pakietów językowych…",
       "langUpdDone": "Zaktualizowano do v{v} ({n} pakietów)",
+      "behavior": "Zachowanie aplikacji",
+      "closeToTray": "Zamknięcie okna ukrywa je w zasobniku systemowym",
+      "closeToTrayHint": "Z menu zasobnika można otworzyć, zablokować lub zamknąć aplikację",
+      "globalHotkey": "Globalny skrót Ctrl+Shift+K pokazuje/ukrywa okno",
+      "globalHotkeyHint": "Przywołuje okno nad dowolną aplikacją; ponowne naciśnięcie je ukrywa",
+      "bridge": "Integracja z przeglądarką (beta)",
+      "bridgeHint": "Umożliwia towarzyszącemu rozszerzeniu przeglądarki pobieranie loginów pasujących do bieżącej witryny. Nasłuchuje tylko na 127.0.0.1, wymaga tokenu parowania, domyślnie wyłączone; przestaje działać, gdy tylko sejf zostanie zablokowany.",
+      "bridgeEnable": "Włącz mostek przeglądarki",
+      "bridgeToken": "Token parowania",
+      "bridgeCopy": "Kopiuj token",
+      "bridgeRegen": "Generuj ponownie",
+      "bridgeTokenHint": "Wklej ten token do rozszerzenia (źródła w folderze extension/ repozytorium, ładowane w trybie deweloperskim). Po ponownym wygenerowaniu wklej go ponownie.",
       "integrityBtn": "Sprawdź pliki programu",
       "integrityChecking": "Porównywanie z manifestem na GitHub…",
       "integrityOk": "Wszystkie pliki programu ({n}) zgodne z wersją na GitHub",
@@ -816,7 +835,8 @@
         "文件过大(>64MB)": "Plik jest za duży (>64 MB)",
         "只允许打开 http/https 链接": "Dozwolone są tylko linki http/https",
         "非法语言代码": "Nieprawidłowy kod języka",
-        "语言包清单格式不正确": "Manifest pakietów językowych ma nieoczekiwany format"
+        "语言包清单格式不正确": "Manifest pakietów językowych ma nieoczekiwany format",
+        "附件总量超过 2 MB,无法写入超密钥(它是纯文本格式)。请移除大附件,或改用 ChronoKey JSON 导出": "Załączniki przekraczają 2 MB i nie mieszczą się w superkluczu (to zwykły tekst). Usuń duże załączniki lub użyj eksportu ChronoKey JSON"
       }
     }
   }

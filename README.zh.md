@@ -1,6 +1,6 @@
 # ChronoKey（时钥）
 
-纯本地、离线的密码管理器。
+纯本地、离线的密码管理器。Windows / macOS / Linux 三平台——同一份保险库文件和历史超密钥在三个系统之间通用,中间没有任何云。
 
 [中文](README.zh.md) · [English](README.md)
 
@@ -17,6 +17,9 @@
 ### <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5l3.5 3.5 7-8" fill="none" stroke="#4c9a63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 已完成
 
 - **纯本地加密存储** — 所有数据存储在本地，使用 Argon2id + AES-256-GCM 加密
+- **加密附件** — 任何条目都可以挂文件（单文件 5 MB、整库 25 MB），随保险库一起加密;超大附件按设计不写入纯文本格式的超密钥
+- **系统托盘与全局热键** — 可选关闭窗口驻留托盘（托盘菜单:打开/锁定/退出），`Ctrl+Shift+K` 在任何应用最前面唤出/隐藏窗口
+- **浏览器扩展（Beta）** — 配套扩展（仓库 `extension/` 目录，开发者模式加载）通过可选的令牌鉴权 127.0.0.1 桥为当前网站回填登录项;保险库锁定的瞬间桥里一无所有
 - **历史超密钥** — 将整个密码库和设置导出为一个密钥字符串，可在新电脑上粘贴导入
 - **双因素认证 (2FA/TOTP)** — 内置 RFC 6238 TOTP 生成器，支持 QR 码扫描和 otpauth URI
 - **密码生成器** — 随机密码、口令短语、PIN 码，使用密码学安全的随机源
@@ -45,7 +48,6 @@
 以下功能暂未实现：
 
 - 浏览器扩展自动填充
-- 全局快捷键
 - Windows Hello / Touch ID / 生物识别解锁
 - YubiKey / 硬件密钥支持
 - Shamir 秘密共享恢复
@@ -200,6 +202,13 @@ npm run dist       # 构建 Windows x64 便携 zip: release/ChronoKey-<版本>-w
 5. 点击"完成"后安装程序删除自身；安装目录中的 `Uninstall.exe` 用于卸载（可选择保留保险库数据）
 
 构建： 运行 `installer\build.cmd`（使用系统自带的 csc，无需 SDK）。图标由 `installer/MakeIcon.cs` 生成。
+
+### 平台支持
+
+- **Windows** x64 —— 安装程序（自动选择界面语言）或便携版 zip
+- **macOS** x64 / Apple silicon —— zip 与 dmg,**未签名**:首次启动右键 → 打开,或执行 `xattr -cr /Applications/ChronoKey.app`（签名接入见 docs/SIGNING.md）
+- **Linux** x64 —— AppImage 与 deb;托盘功能需要支持 appindicator 的桌面环境
+- Mac/Linux 构建在发布时由 CI 在真实 runner 上产出,且**每个平台都先跑完单元测试与完整 Electron 冒烟**才上传产物;把主保险库托付之前仍建议先试用
 
 ### 便携模式
 
