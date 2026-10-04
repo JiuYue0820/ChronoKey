@@ -16,9 +16,13 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 const V = pkg.version;
 const ZIP_NAME = `ChronoKey-${V}-win-x64.zip`;
 const isWin = process.platform === 'win32';
-// Windows 下 npm/npx 是 .cmd 垫片,execFileSync 需要带扩展名
-const BIN = (c) => (isWin && (c === 'npm' || c === 'npx') ? `${c}.cmd` : c);
-const run = (cmd, args, opts = {}) => execFileSync(BIN(cmd), args, { cwd: root, stdio: 'inherit', ...opts });
+// Windows 下 npm/npx 是 .cmd 垫片,Node ≥20.12 出于 CVE-2024-27980 禁止直接 spawn,须经 cmd /c
+const run = (cmd, args, opts = {}) => {
+  if (isWin && (cmd === 'npm' || cmd === 'npx')) {
+    return execFileSync('cmd', ['/c', cmd, ...args], { cwd: root, stdio: 'inherit', ...opts });
+  }
+  return execFileSync(cmd, args, { cwd: root, stdio: 'inherit', ...opts });
+};
 
 const step = (s) => console.log(`\n=== ${s} ===`);
 
