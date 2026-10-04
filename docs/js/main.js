@@ -151,6 +151,43 @@ function initLang() {
   btn.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLangMenu(); });
 }
 
+// 下载区元信息:从 GitHub API 拉取最新 release,动态填充版本/体积/SHA/链接;
+// 失败(离线、限流)时保留页面内置的静态值。发布脚本只负责刷新静态回退值。
+function initDlMeta() {
+  const ver = document.getElementById('dl-version');
+  if (!ver) return;
+  const kb = (n) => Math.max(1, Math.round(n / 1024));
+  const mb = (n) => (n / 1048576).toFixed(1);
+  fetch('https://api.github.com/repos/JiuYue0820/ChronoKey/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+    .then((rel) => {
+      if (!rel || typeof rel.tag_name !== 'string') return;
+      const v = rel.tag_name.replace(/^v/, '');
+      const assets = Array.isArray(rel.assets) ? rel.assets : [];
+      const zip = assets.find((a) => a.name === `ChronoKey-${v}-win-x64.zip`);
+      const setup = assets.find((a) => a.name === 'ChronoKeySetup.exe');
+      ver.textContent = v;
+      const zipBtn = document.getElementById('dl-zip');
+      if (zip) {
+        if (zipBtn) {
+          zipBtn.href = zip.browser_download_url;
+          const s = zipBtn.querySelector('small');
+          if (s) s.textContent = ` · ${mb(zip.size)} MB`;
+        }
+        const sha = document.getElementById('dl-sha');
+        if (sha && typeof zip.digest === 'string' && zip.digest.startsWith('sha256:')) sha.textContent = zip.digest.slice(7);
+        const ps = document.querySelector('.dl-hash p.muted code');
+        if (ps) ps.textContent = `Get-FileHash .\\ChronoKey-${v}-win-x64.zip`;
+      }
+      const setupBtn = document.getElementById('dl-setup');
+      if (setup && setupBtn) {
+        const s = setupBtn.querySelector('small');
+        if (s) s.textContent = ` · ${kb(setup.size)} KB`;
+      }
+    })
+    .catch(() => { });
+}
+
 function safe(name, fn) {
   try { const r = fn(); if (r && r.catch) r.catch((e) => console.error(name, e)); }
   catch (e) { console.error(name, e); }
@@ -170,3 +207,4 @@ safe('generator', initGenerator);
 safe('totp', initTotp);
 safe('superkey', initSuperKey);
 safe('setup', initSetupWin);
+safe('dl-meta', initDlMeta);

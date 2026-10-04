@@ -663,7 +663,10 @@
       "paletteNote": "I colori derivano dalla palette tradizionale giapponese (nipponcolors.com); tutto il testo soddisfa il contrasto WCAG AA 4.5:1.",
       "shortcuts": "Scorciatoie da tastiera",
       "settingsTitle": "Impostazioni",
-      "settingsNav": "Categorie di impostazioni"
+      "settingsNav": "Categorie di impostazioni",
+      "langUpdBtn": "Aggiorna i pacchetti lingua",
+      "langUpdDoing": "Aggiornamento dei pacchetti lingua…",
+      "langUpdDone": "Aggiornato alla v{v} ({n} pacchetti)"
     },
     "side": {
       "nav": "Navigazione della cassaforte",
@@ -730,7 +733,8 @@
       "gh2": "Incollalo nella casella sopra e clicca \"Rileva\" (oppure fai uno screenshot del QR code e clicca \"Incolla uno screenshot del QR code\").",
       "gh3": "Qui apparirà un codice a 6 cifre — clicca per copiarlo, poi inseriscilo nel \"Verify the code from the app\" di GitHub.",
       "gh4": "GitHub offrirà quindi i <strong>Recovery codes</strong> — scaricali e salvali nel campo \"Codici di backup\".",
-      "ghHint": "I codici dipendono dall'orologio di sistema. Se un sito continua a dire che il codice è sbagliato, sincronizza prima l'ora di sistema."
+      "ghHint": "I codici dipendono dall'orologio di sistema. Se un sito continua a dire che il codice è sbagliato, sincronizza prima l'ora di sistema.",
+      "kdfUnsupported": "KDF non supportato: {alg}"
     },
     "totp": {
       "clockLabel": "Ora locale",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "È supportato solo TOTP (basato sul tempo), non HOTP",
         "位数只能是 6–8": "Le cifre devono essere 6–8",
         "周期超出范围": "Periodo fuori intervallo",
-        "图片中没有识别到二维码": "Nessun QR code trovato nell'immagine"
+        "图片中没有识别到二维码": "Nessun QR code trovato nell'immagine",
+        "文件过大(>64MB)": "File troppo grande (>64 MB)",
+        "只允许打开 http/https 链接": "Sono consentiti solo link http/https",
+        "非法语言代码": "Codice lingua non valido",
+        "语言包清单格式不正确": "Il manifesto dei pacchetti lingua ha un formato inatteso"
       }
     }
   }

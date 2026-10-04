@@ -1,7 +1,7 @@
 {
   "name": "chronokey",
   "productName": "ChronoKey",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "时钥 · 纯本地、离线的密码管理器",
   "main": "electron/main.cjs",
   "private": true,
@@ -14,7 +14,9 @@
     "electron": "electron .",
     "electron:dev": "electron . --dev-url=http://localhost:5173",
     "test": "node --test tests/*.test.cjs tests/*.test.mjs",
-    "test:electron": "vite build && electron tests/electron-smoke.cjs"
+    "test:electron": "vite build && electron tests/electron-smoke.cjs",
+    "test:installer": "node dev/smoke-installer.cjs",
+    "release": "node dev/release.cjs"
   },
   "dependencies": {
     "hash-wasm": "4.12.0"

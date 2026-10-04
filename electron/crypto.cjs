@@ -6,6 +6,7 @@
 // 不自创算法 —— "历史超密钥"只是对这些原语的封装格式。
 
 const crypto = require('node:crypto');
+const { CODES, mkErr } = require('./errors.cjs');
 const zlib = require('node:zlib');
 const { argon2id } = require('hash-wasm');
 
@@ -18,7 +19,7 @@ const b64 = (buf) => Buffer.from(buf).toString('base64');
 const unb64 = (s) => Buffer.from(s, 'base64');
 
 async function deriveKey(secret, salt, kdf = DEFAULT_KDF) {
-  if (kdf.alg !== 'argon2id') throw new Error('不支持的 KDF: ' + kdf.alg);
+  if (kdf.alg !== 'argon2id') { const e = new Error('不支持的 KDF: ' + kdf.alg); e.code = 'kdfUnsupported'; throw e; }
   const out = await argon2id({
     password: secret,
     salt,
@@ -119,13 +120,13 @@ async function encodeSuperKey(payload, passphrase, kdf = DEFAULT_KDF) {
 function parseSuperKey(str) {
   const clean = String(str).replace(/\s+/g, '');
   const parts = clean.split('.');
-  if (parts.length !== 3 || parts[0] !== SK_PREFIX) throw new Error('不是有效的历史超密钥(格式错误)');
-  if (crc32(`${parts[0]}.${parts[1]}`) !== parts[2]) throw new Error('超密钥校验失败:内容不完整或复制时出错');
+  if (parts.length !== 3 || parts[0] !== SK_PREFIX) throw mkErr('badSuperKeyFormat');
+  if (crc32(`${parts[0]}.${parts[1]}`) !== parts[2]) throw mkErr('superKeyChecksum');
   const raw = Buffer.from(parts[1], 'base64url');
-  if (raw.length < 27 + IV_LEN + 16 || !raw.subarray(0, 4).equals(SK_MAGIC)) throw new Error('超密钥头部损坏');
+  if (raw.length < 27 + IV_LEN + 16 || !raw.subarray(0, 4).equals(SK_MAGIC)) throw mkErr('superKeyHeader');
   const header = raw.subarray(0, 27);
   const kdf = { alg: 'argon2id', m: header.readUInt32BE(5), t: header.readUInt8(9), p: header.readUInt8(10) };
-  if (kdf.m > 1048576 || kdf.t > 20 || kdf.p > 8) throw new Error('超密钥 KDF 参数超出允许范围');
+  if (kdf.m > 1048576 || kdf.t > 20 || kdf.p > 8) throw mkErr('superKeyKdfRange');
   return {
     header,
     kdf,
@@ -143,8 +144,8 @@ async function decodeSuperKey(str, passphrase) {
     const plain = open(key, { iv: b64(p.iv), tag: b64(p.tag), ct: b64(p.ct) }, p.header);
     return JSON.parse(zlib.gunzipSync(plain).toString('utf8'));
   } catch (e) {
-    if (e instanceof SyntaxError) throw new Error('超密钥内容损坏');
-    throw new Error('口令错误,无法解开超密钥');
+    if (e instanceof SyntaxError) throw mkErr('superKeyCorrupt');
+    throw mkErr('wrongPassphrase');
   } finally {
     wipe(key);
   }

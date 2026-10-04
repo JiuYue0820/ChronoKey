@@ -663,7 +663,10 @@
       "paletteNote": "As cores provêm da paleta tradicional japonesa (nipponcolors.com); todo o texto cumpre o contraste WCAG AA 4.5:1.",
       "shortcuts": "Atalhos de teclado",
       "settingsTitle": "Definições",
-      "settingsNav": "Categorias de definições"
+      "settingsNav": "Categorias de definições",
+      "langUpdBtn": "Atualizar pacotes de idioma",
+      "langUpdDoing": "A atualizar pacotes de idioma…",
+      "langUpdDone": "Atualizado para v{v} ({n} pacotes)"
     },
     "side": {
       "nav": "Navegação do cofre",
@@ -730,7 +733,8 @@
       "gh2": "Cole-a na caixa acima e clique em \"Detetar\" (ou capture o código QR e clique em \"Colar captura do código QR\").",
       "gh3": "Aqui aparecerá um código de 6 dígitos — clique para copiar e introduza-o no \"Verify the code from the app\" do GitHub.",
       "gh4": "O GitHub oferecerá depois os <strong>Recovery codes</strong> — transfira-os e guarde-os no campo \"Códigos de backup\".",
-      "ghHint": "Os códigos dependem do relógio do sistema. Se um site insistir que o código está errado, sincronize primeiro as horas do sistema."
+      "ghHint": "Os códigos dependem do relógio do sistema. Se um site insistir que o código está errado, sincronize primeiro as horas do sistema.",
+      "kdfUnsupported": "KDF não suportado: {alg}"
     },
     "totp": {
       "clockLabel": "Hora local",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "Apenas TOTP (baseado no tempo) é suportado, não HOTP",
         "位数只能是 6–8": "Os dígitos devem ser 6–8",
         "周期超出范围": "Período fora do intervalo",
-        "图片中没有识别到二维码": "Nenhum código QR encontrado na imagem"
+        "图片中没有识别到二维码": "Nenhum código QR encontrado na imagem",
+        "文件过大(>64MB)": "O ficheiro é demasiado grande (>64 MB)",
+        "只允许打开 http/https 链接": "Apenas ligações http/https são permitidas",
+        "非法语言代码": "Código de idioma inválido",
+        "语言包清单格式不正确": "O manifesto dos pacotes de idioma tem um formato inesperado"
       }
     }
   }

@@ -26,11 +26,42 @@ let current = 'zh';
 let preferred = 'zh';          // 用户想要的语言(即使语言包还没加载)
 const listeners = new Set();
 
+// 语言包值里允许出现的 HTML 标签(与官方语言包一致;部分文案经 dangerouslySetInnerHTML 渲染)
+const ALLOWED_TAGS = new Set(['b', 'strong', 'code', 'span', 'br']);
+
+// 净化语言包:遍历全部字符串值,只允许白名单标签(span 仅限强调高亮写法),
+// 拒绝事件处理器、javascript: URL、script/iframe 等注入向量。不可信的语言包
+// (用户手动放进 locales/ 的 JSON)必须过这道闸再进渲染层。
+function sanitizeDict(dict) {
+  const tagRe = /<\/?\s*([a-zA-Z][a-zA-Z0-9]*)([^>]*)>/g;
+  const visit = (v) => {
+    if (typeof v === 'string') {
+      if (/\son\w+\s*=|javascript:/i.test(v)) return false;
+      if (v.includes('<script') || v.includes('<iframe')) return false;
+      let m;
+      tagRe.lastIndex = 0;
+      while ((m = tagRe.exec(v)) !== null) {
+        const tag = m[1].toLowerCase();
+        if (!ALLOWED_TAGS.has(tag)) return false;
+        if (tag === 'span' && !/^class="hl"$/.test(m[2].trim())) return false;
+      }
+      return true;
+    }
+    if (v && typeof v === 'object') return Object.values(v).every(visit);
+    return true;
+  };
+  return visit(dict);
+}
+
 // 注册一个语言包(缺键自动回落,同 code 重复注册则覆盖)。注册后通知订阅者,
 // 让语言选择菜单和当前界面即时刷新(比如启动时偏好的语言包此刻才加载完)。
 export function registerLocale(code, label, dict) {
   if (typeof code !== 'string' || !/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(code)) return false;
   if (!dict || typeof dict !== 'object') return false;
+  if (code !== 'zh' && code !== 'en' && code !== 'ru' && !sanitizeDict(dict)) {
+    console.warn(`[ChronoKey] 语言包 ${code} 含未授权的 HTML,已拒绝加载`);
+    return false;
+  }
   dicts[code] = dict;
   packCodes.add(code);
   packLabels.set(code, typeof label === 'string' && label ? label : code);
@@ -102,16 +133,20 @@ export function fieldLabel(fieldKey) {
   return t(`field.${fieldKey}`);
 }
 
-// 通用:把 lib/主进程/mock 的中文文案翻译成当前语言;未收录则原样返回,保证永不崩
+// 通用:把 lib/主进程/mock 的中文文案翻译成当前语言;未收录则原样返回,保证永不崩。
+// 接受字符串或 Error(有 .code 时按 code 记录日志,仍按 message 文案映射)。
 export function tr(text) {
   if (text == null) return '';
+  if (typeof text === 'object' && text.message != null) text = text.message;
   const s = String(text);
   if (current === 'zh') return s;
-  // 两个带变量的动态报错(totp.js):先按模板匹配(UI 侧 totp 域名为 otp)
+  // 带变量的动态报错:先按模板匹配(UI 侧 totp 域名为 otp)
   let m = s.match(/^不支持的算法[:：]\s*(.+)$/);
   if (m) return t('otp.errAlg', { alg: m[1] });
   m = s.match(/^密钥包含非法字符\s*"(.*)"\s*[(（]只允许 A-Z 和 2-7[)）]$/);
   if (m) return t('otp.errChar', { ch: m[1] });
+  m = s.match(/^不支持的 KDF[:：]\s*(.+)$/);
+  if (m) return t('otp.kdfUnsupported', { alg: m[1] });
   const map = dicts[current]._lib?.errors;
   return map && map[s] ? map[s] : s;
 }

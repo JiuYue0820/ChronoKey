@@ -663,7 +663,10 @@
       "paletteNote": "Die Farben stammen aus der japanischen Traditionspalette (nipponcolors.com); alle Texte erfüllen den WCAG-AA-Kontrast von 4,5:1.",
       "shortcuts": "Tastaturkürzel",
       "settingsTitle": "Einstellungen",
-      "settingsNav": "Einstellungskategorien"
+      "settingsNav": "Einstellungskategorien",
+      "langUpdBtn": "Sprachpakete aktualisieren",
+      "langUpdDoing": "Sprachpakete werden aktualisiert…",
+      "langUpdDone": "Aktualisiert auf v{v} ({n} Pakete)"
     },
     "side": {
       "nav": "Tresor-Navigation",
@@ -730,7 +733,8 @@
       "gh2": "Füge sie in das Feld oben ein und klicke auf \"Erkennen\" (oder mache einen Screenshot des QR-Codes und klicke auf \"QR-Screenshot einfügen\").",
       "gh3": "Hier erscheint ein 6-stelliger Code – klicke zum Kopieren und trage ihn bei GitHub unter \"Verify the code from the app\" ein.",
       "gh4": "GitHub bietet dir danach <strong>Recovery codes</strong> an – lade sie herunter und speichere sie im Feld \"Ersatzcodes\".",
-      "ghHint": "Codes hängen von der Systemzeit ab. Wenn eine Website behauptet, der Code sei falsch, synchronisiere zuerst die Systemzeit."
+      "ghHint": "Codes hängen von der Systemzeit ab. Wenn eine Website behauptet, der Code sei falsch, synchronisiere zuerst die Systemzeit.",
+      "kdfUnsupported": "Nicht unterstützter KDF: {alg}"
     },
     "totp": {
       "clockLabel": "Lokale Zeit",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "Nur TOTP (zeitbasiert) wird unterstützt, nicht HOTP",
         "位数只能是 6–8": "Die Ziffernanzahl muss 6–8 betragen",
         "周期超出范围": "Periode außerhalb des zulässigen Bereichs",
-        "图片中没有识别到二维码": "Kein QR-Code im Bild gefunden"
+        "图片中没有识别到二维码": "Kein QR-Code im Bild gefunden",
+        "文件过大(>64MB)": "Datei ist zu groß (>64 MB)",
+        "只允许打开 http/https 链接": "Nur http/https-Links sind erlaubt",
+        "非法语言代码": "Ungültiger Sprachcode",
+        "语言包清单格式不正确": "Sprachpaket-Manifest hat ein unerwartetes Format"
       }
     }
   }

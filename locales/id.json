@@ -663,7 +663,10 @@
       "paletteNote": "Warna berasal dari palet tradisional Jepang (nipponcolors.com); semua teks memenuhi kontras WCAG AA 4.5:1.",
       "shortcuts": "Pintasan papan ketik",
       "settingsTitle": "Pengaturan",
-      "settingsNav": "Kategori pengaturan"
+      "settingsNav": "Kategori pengaturan",
+      "langUpdBtn": "Perbarui paket bahasa",
+      "langUpdDoing": "Memperbarui paket bahasa…",
+      "langUpdDone": "Diperbarui ke v{v} ({n} paket)"
     },
     "side": {
       "nav": "Navigasi brankas",
@@ -730,7 +733,8 @@
       "gh2": "Tempel ke kotak di atas dan klik \"Deteksi\" (atau buat tangkapan layar kode QR lalu klik \"Tempel tangkapan layar QR\").",
       "gh3": "Kode 6 angka akan muncul di sini — klik untuk menyalin, lalu masukkan ke bagian \"Verify the code from the app\" milik GitHub.",
       "gh4": "GitHub lalu akan menawarkan <strong>Recovery codes</strong> — unduh dan simpan di kolom \"Kode cadangan\".",
-      "ghHint": "Kode bergantung pada jam sistem. Jika sebuah situs terus mengatakan kode salah, sinkronkan waktu sistem dulu."
+      "ghHint": "Kode bergantung pada jam sistem. Jika sebuah situs terus mengatakan kode salah, sinkronkan waktu sistem dulu.",
+      "kdfUnsupported": "KDF tidak didukung: {alg}"
     },
     "totp": {
       "clockLabel": "Waktu lokal",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "Hanya mendukung jenis TOTP (berbasis waktu), tidak mendukung HOTP",
         "位数只能是 6–8": "Jumlah angka harus 6–8",
         "周期超出范围": "Periode di luar rentang",
-        "图片中没有识别到二维码": "Tidak ada kode QR yang terdeteksi di gambar"
+        "图片中没有识别到二维码": "Tidak ada kode QR yang terdeteksi di gambar",
+        "文件过大(>64MB)": "File terlalu besar (>64 MB)",
+        "只允许打开 http/https 链接": "Hanya tautan http/https yang diizinkan",
+        "非法语言代码": "Kode bahasa tidak valid",
+        "语言包清单格式不正确": "Manifest paket bahasa berformat tak terduga"
       }
     }
   }

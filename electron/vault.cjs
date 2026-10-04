@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const C = require('./crypto.cjs');
+const { CODES, mkErr } = require('./errors.cjs');
 
 const VAULT_FILE = 'vault.ckv';
 const GUARD_FILE = 'guard.json';
@@ -85,7 +86,7 @@ class Vault {
     const { wipeAfter } = this.getPrefs();
     if (wipeAfter > 0 && g.failures >= wipeAfter) {
       this.selfDestruct();
-      const err = new Error('失败次数达到上限,本地保险库已被擦除');
+      const err = mkErr('wipeLimit');
       err.code = 'WIPED';
       throw err;
     }
@@ -118,7 +119,7 @@ class Vault {
 
   // ---------- 创建 / 解锁 ----------
   async create(password, initialData) {
-    if (this.exists()) throw new Error('保险库已存在');
+    if (this.exists()) throw mkErr('vaultExists');
     const kdf = { ...C.DEFAULT_KDF };
     const dek = crypto.randomBytes(32);
     const recoveryCode = C.generateRecoveryCode();
@@ -171,7 +172,7 @@ class Vault {
     const dek = await this.unwrap(vault, password, 'password');
     if (!dek) {
       const g = this.recordFailure();
-      const err = new Error('主密码错误');
+      const err = mkErr('wrongMaster');
       err.code = 'BAD_PASSWORD';
       err.failures = g.failures;
       throw err;
@@ -188,7 +189,7 @@ class Vault {
     const dek = await this.unwrap(vault, C.normalizeRecoveryCode(code), 'recovery');
     if (!dek) {
       this.recordFailure();
-      throw new Error('恢复代码无效');
+      throw mkErr('invalidRecovery');
     }
     this.resetGuard();
     await this.wrapWithPassword(vault, dek, newPassword);
@@ -214,7 +215,7 @@ class Vault {
 
   requireUnlocked() {
     if (!this.dek) {
-      const err = new Error('保险库已锁定');
+      const err = mkErr('vaultLocked');
       err.code = 'LOCKED';
       throw err;
     }
@@ -238,7 +239,7 @@ class Vault {
     this.requireUnlocked();
     const vault = this.readVault();
     const dek = await this.unwrap(vault, oldPassword, 'password');
-    if (!dek) throw new Error('当前主密码错误');
+    if (!dek) throw mkErr('wrongCurrentMaster');
     C.wipe(dek);
     await this.wrapWithPassword(vault, this.dek, newPassword);
     vault.updatedAt = Date.now();
@@ -248,7 +249,7 @@ class Vault {
 
   async rotateRecovery(password) {
     this.requireUnlocked();
-    if (!(await this.verifyPassword(password))) throw new Error('主密码错误');
+    if (!(await this.verifyPassword(password))) throw mkErr('wrongMaster');
     const vault = this.readVault();
     const recoveryCode = C.generateRecoveryCode();
     await this.wrapWithRecovery(vault, this.dek, recoveryCode);
@@ -281,10 +282,10 @@ class Vault {
 
   // 恢复快照:当前文件先做一份快照,再替换。之后需要用"那个时间点"的主密码解锁。
   restoreBackup(name) {
-    if (!/^vault-[\w-]+\.ckv$/.test(name)) throw new Error('非法的备份名');
+    if (!/^vault-[\w-]+\.ckv$/.test(name)) throw mkErr('badBackupName');
     const src = path.join(this.backupDir, name);
     const probe = JSON.parse(fs.readFileSync(src, 'utf8'));
-    if (probe.format !== 'chronokey-vault') throw new Error('备份文件无效');
+    if (probe.format !== 'chronokey-vault') throw mkErr('badBackupFile');
     this.snapshot();
     fs.copyFileSync(src, this.file);
     this.lock();
@@ -293,7 +294,7 @@ class Vault {
   // ---------- 历史超密钥 ----------
   async exportSuperKey(data, masterPassword, transferPassphrase) {
     this.requireUnlocked();
-    if (!(await this.verifyPassword(masterPassword))) throw new Error('主密码错误');
+    if (!(await this.verifyPassword(masterPassword))) throw mkErr('wrongMaster');
     const payload = {
       app: 'ChronoKey',
       kind: 'history-super-key',
@@ -306,9 +307,9 @@ class Vault {
 
   // 新电脑上:用超密钥直接建库(口令即新主密码)
   async createFromSuperKey(superKey, passphrase) {
-    if (this.exists()) throw new Error('保险库已存在,请在设置中选择"导入超密钥"');
+    if (this.exists()) throw mkErr('vaultExistsImport');
     const payload = await C.decodeSuperKey(superKey, passphrase);
-    if (payload.kind !== 'history-super-key' || !payload.data) throw new Error('超密钥内容不是 ChronoKey 数据');
+    if (payload.kind !== 'history-super-key' || !payload.data) throw mkErr('notChronoKeyData');
     const { recoveryCode } = await this.create(passphrase, payload.data);
     return { data: payload.data, recoveryCode, exportedAt: payload.exportedAt };
   }
@@ -317,7 +318,7 @@ class Vault {
   async peekSuperKey(superKey, passphrase) {
     this.requireUnlocked();
     const payload = await C.decodeSuperKey(superKey, passphrase);
-    if (payload.kind !== 'history-super-key' || !payload.data) throw new Error('超密钥内容不是 ChronoKey 数据');
+    if (payload.kind !== 'history-super-key' || !payload.data) throw mkErr('notChronoKeyData');
     return { data: payload.data, exportedAt: payload.exportedAt };
   }
 }

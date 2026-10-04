@@ -3,7 +3,7 @@ import { Button, Field, Icon, Modal, SecretInput, Segmented, Toggle, useToast, f
 import { appendAudit, mergeVaults, normalizeItem } from '../lib/model.js';
 import { importAuto, exportCsv, exportBitwardenJson, exportChronoJson } from '../lib/importers.js';
 import { estimate } from '../lib/strength.js';
-import { t, tr, useI18n, setLang, getLang, getLangs } from '../i18n-react.js';
+import { t, tr, useI18n, setLang, getLang, getLangs, registerLocale } from '../i18n-react.js';
 
 const TABS = [
   { id: 'security', label: () => t('set.tabSecurity') },
@@ -401,7 +401,26 @@ function AccountTab({ data, commit }) {
 
 function AppearanceTab({ status, refresh }) {
   useI18n();
+  const toast = useToast();
   const [theme, setTheme] = useState(status.prefs.theme);
+  const [langUpd, setLangUpd] = useState(null); // null | 'busy'
+
+  // 从最新 release 拉取全部语言包(SHA-256 由主进程校验),成功后即时重新注册
+  const updateLangPacks = async () => {
+    setLangUpd('busy');
+    try {
+      const r = await window.ck.localesUpdate();
+      for (const { code, label } of await window.ck.listLocales()) {
+        if (['zh', 'en', 'ru'].includes(code)) continue;
+        const pack = await window.ck.readLocale(code);
+        registerLocale(pack.code, pack.label || label, pack.dict);
+      }
+      toast(t('set.langUpdDone', { v: r.version, n: r.installed }), 'info', 4000);
+    } catch (e) {
+      toast(tr(e), 'danger', 5000);
+    }
+    setLangUpd(null);
+  };
   return (
     <div className="stack gap-4">
       <section className="settings-group">
@@ -433,6 +452,13 @@ function AppearanceTab({ status, refresh }) {
             </select>
           )}
         </Field>
+        {window.ck?.localesUpdate && (
+          <p>
+            <Button size="small" disabled={langUpd === 'busy'} onClick={updateLangPacks}>
+              {langUpd === 'busy' ? t('set.langUpdDoing') : t('set.langUpdBtn')}
+            </Button>
+          </p>
+        )}
         <p className="field-hint">{t('set.languageHint')}</p>
       </section>
     </div>

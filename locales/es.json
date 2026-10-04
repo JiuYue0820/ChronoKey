@@ -663,7 +663,10 @@
       "paletteNote": "Los colores provienen de la paleta tradicional japonesa (nipponcolors.com); todo el texto cumple el contraste WCAG AA 4.5:1.",
       "shortcuts": "Atajos de teclado",
       "settingsTitle": "Ajustes",
-      "settingsNav": "Categorías de ajustes"
+      "settingsNav": "Categorías de ajustes",
+      "langUpdBtn": "Actualizar paquetes de idioma",
+      "langUpdDoing": "Actualizando paquetes de idioma…",
+      "langUpdDone": "Actualizado a la v{v} ({n} paquetes)"
     },
     "side": {
       "nav": "Navegación de la bóveda",
@@ -730,7 +733,8 @@
       "gh2": "Pégala en el cuadro de arriba y haz clic en \"Detectar\" (o toma una captura del código QR y haz clic en \"Pegar captura del código QR\").",
       "gh3": "Aquí aparecerá un código de 6 dígitos; haz clic para copiarlo y escríbelo en el \"Verify the code from the app\" de GitHub.",
       "gh4": "GitHub ofrecerá entonces los <strong>Recovery codes</strong>; descárgalos y guárdalos en el campo \"Códigos de respaldo\".",
-      "ghHint": "Los códigos dependen del reloj del sistema. Si un sitio insiste en que el código es incorrecto, sincroniza primero la hora del sistema."
+      "ghHint": "Los códigos dependen del reloj del sistema. Si un sitio insiste en que el código es incorrecto, sincroniza primero la hora del sistema.",
+      "kdfUnsupported": "KDF no compatible: {alg}"
     },
     "totp": {
       "clockLabel": "Hora local",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "Solo se admite TOTP (basado en tiempo), no HOTP",
         "位数只能是 6–8": "Los dígitos deben ser 6–8",
         "周期超出范围": "Periodo fuera de rango",
-        "图片中没有识别到二维码": "No se encontró ningún código QR en la imagen"
+        "图片中没有识别到二维码": "No se encontró ningún código QR en la imagen",
+        "文件过大(>64MB)": "El archivo es demasiado grande (>64 MB)",
+        "只允许打开 http/https 链接": "Solo se permiten enlaces http/https",
+        "非法语言代码": "Código de idioma no válido",
+        "语言包清单格式不正确": "El manifiesto de paquetes de idioma tiene un formato inesperado"
       }
     }
   }

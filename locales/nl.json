@@ -663,7 +663,10 @@
       "paletteNote": "Kleuren komen uit het Japanse traditionele palet (nipponcolors.com); alle tekst voldoet aan WCAG AA 4.5:1 contrast.",
       "shortcuts": "Sneltoetsen",
       "settingsTitle": "Instellingen",
-      "settingsNav": "Instellingencategorieën"
+      "settingsNav": "Instellingencategorieën",
+      "langUpdBtn": "Taalpakketten bijwerken",
+      "langUpdDoing": "Taalpakketten worden bijgewerkt…",
+      "langUpdDone": "Bijgewerkt naar v{v} ({n} pakketten)"
     },
     "side": {
       "nav": "Kluisnavigatie",
@@ -730,7 +733,8 @@
       "gh2": "Plak hem in het veld hierboven en klik op \"Detecteren\" (of maak een schermafbeelding van de QR-code en klik op \"Plak een QR-schermafbeelding\").",
       "gh3": "Hier verschijnt een 6-cijferige code — klik om te kopiëren en voer hem in bij de GitHub-instelling \"Verify the code from the app\".",
       "gh4": "GitHub biedt daarna <strong>Recovery codes</strong> aan — download ze en bewaar ze in het veld \"Back-upcodes\".",
-      "ghHint": "Codes hangen af van de systeemklok. Als een site blijft zeggen dat de code fout is, synchroniseer dan eerst de systeemtijd."
+      "ghHint": "Codes hangen af van de systeemklok. Als een site blijft zeggen dat de code fout is, synchroniseer dan eerst de systeemtijd.",
+      "kdfUnsupported": "Niet-ondersteunde KDF: {alg}"
     },
     "totp": {
       "clockLabel": "Lokale tijd",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "Alleen TOTP (op tijd gebaseerd) wordt ondersteund, niet HOTP",
         "位数只能是 6–8": "Het aantal cijfers moet 6–8 zijn",
         "周期超出范围": "Periode buiten bereik",
-        "图片中没有识别到二维码": "Geen QR-code in de afbeelding gevonden"
+        "图片中没有识别到二维码": "Geen QR-code in de afbeelding gevonden",
+        "文件过大(>64MB)": "Bestand is te groot (>64 MB)",
+        "只允许打开 http/https 链接": "Alleen http/https-links zijn toegestaan",
+        "非法语言代码": "Ongeldige taalcode",
+        "语言包清单格式不正确": "Het taalpakketmanifest heeft een onverwacht formaat"
       }
     }
   }

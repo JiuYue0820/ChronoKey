@@ -663,7 +663,10 @@
       "paletteNote": "Màu sắc lấy từ bảng màu truyền thống Nhật Bản (nipponcolors.com); mọi chữ đều đạt độ tương phản WCAG AA 4.5:1.",
       "shortcuts": "Phím tắt",
       "settingsTitle": "Cài đặt",
-      "settingsNav": "Nhóm cài đặt"
+      "settingsNav": "Nhóm cài đặt",
+      "langUpdBtn": "Cập nhật gói ngôn ngữ",
+      "langUpdDoing": "Đang cập nhật gói ngôn ngữ…",
+      "langUpdDone": "Đã cập nhật lên v{v} ({n} gói)"
     },
     "side": {
       "nav": "Điều hướng kho",
@@ -730,7 +733,8 @@
       "gh2": "Dán vào ô phía trên và bấm \"Nhận diện\" (hoặc chụp màn hình mã QR rồi bấm \"Dán ảnh chụp mã QR\").",
       "gh3": "Một mã 6 chữ số sẽ hiện ở đây — bấm để sao chép, rồi nhập vào phần \"Verify the code from the app\" của GitHub.",
       "gh4": "GitHub sẽ đưa ra <strong>Recovery codes</strong> — hãy tải về và lưu vào trường \"Mã dự phòng\".",
-      "ghHint": "Mã phụ thuộc đồng hồ hệ thống. Nếu trang web cứ báo mã sai, hãy đồng bộ giờ hệ thống trước."
+      "ghHint": "Mã phụ thuộc đồng hồ hệ thống. Nếu trang web cứ báo mã sai, hãy đồng bộ giờ hệ thống trước.",
+      "kdfUnsupported": "KDF không được hỗ trợ: {alg}"
     },
     "totp": {
       "clockLabel": "Giờ máy",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "Chỉ hỗ trợ loại TOTP (theo thời gian), không hỗ trợ HOTP",
         "位数只能是 6–8": "Số chữ số chỉ có thể là 6–8",
         "周期超出范围": "Chu kỳ nằm ngoài phạm vi",
-        "图片中没有识别到二维码": "Không tìm thấy mã QR trong ảnh"
+        "图片中没有识别到二维码": "Không tìm thấy mã QR trong ảnh",
+        "文件过大(>64MB)": "Tệp quá lớn (>64 MB)",
+        "只允许打开 http/https 链接": "Chỉ cho phép liên kết http/https",
+        "非法语言代码": "Mã ngôn ngữ không hợp lệ",
+        "语言包清单格式不正确": "Tệp khai báo gói ngôn ngữ có định dạng không mong đợi"
       }
     }
   }

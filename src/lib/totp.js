@@ -1,16 +1,17 @@
+import { mkErr } from '../../electron/errors.cjs';
 // 时钥 TOTP 模块:RFC 6238 / RFC 4226,纯 WebCrypto 实现,离线运行。
 
 const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
 export function base32Decode(input) {
   const s = String(input).toUpperCase().replace(/[\s=-]/g, '');
-  if (!s) throw new Error('密钥为空');
+  if (!s) throw mkErr('emptySecret');
   let bits = 0;
   let value = 0;
   const out = [];
   for (const ch of s) {
     const idx = B32.indexOf(ch);
-    if (idx < 0) throw new Error(`密钥包含非法字符 "${ch}"(只允许 A-Z 和 2-7)`);
+    if (idx < 0) { const e = new Error(`密钥包含非法字符 "${ch}"(只允许 A-Z 和 2-7)`); e.code = 'errChar'; throw e; }
     value = (value << 5) | idx;
     bits += 5;
     if (bits >= 8) {
@@ -72,18 +73,18 @@ export function parseOtpauth(uri) {
     return { secret: normalizeSecret(s), issuer: '', account: '', algorithm: 'SHA1', digits: 6, period: 30 };
   }
   const url = new URL(s);
-  if (url.host.toLowerCase() !== 'totp') throw new Error('只支持 TOTP(基于时间)类型,不支持 HOTP');
+  if (url.host.toLowerCase() !== 'totp') throw mkErr('hotpUnsupported');
   const label = decodeURIComponent(url.pathname.replace(/^\//, ''));
   let [labelIssuer, account] = label.includes(':') ? label.split(/:(.*)/s) : ['', label];
   const p = url.searchParams;
   const secret = normalizeSecret(p.get('secret'));
   base32Decode(secret);
   const algorithm = (p.get('algorithm') || 'SHA1').toUpperCase().replace('-', '');
-  if (!HASHES[algorithm]) throw new Error('不支持的算法: ' + algorithm);
+  if (!HASHES[algorithm]) { const e = new Error('不支持的算法: ' + algorithm); e.code = 'errAlg'; throw e; }
   const digits = Number(p.get('digits') || 6);
   const period = Number(p.get('period') || 30);
-  if (![6, 7, 8].includes(digits)) throw new Error('位数只能是 6–8');
-  if (!(period >= 5 && period <= 300)) throw new Error('周期超出范围');
+  if (![6, 7, 8].includes(digits)) throw mkErr('digitsRange');
+  if (!(period >= 5 && period <= 300)) throw mkErr('periodRange');
   return {
     secret,
     issuer: p.get('issuer') || labelIssuer.trim(),
@@ -113,6 +114,6 @@ export async function decodeQrFromBlob(blob) {
   ctx.drawImage(bmp, 0, 0, canvas.width, canvas.height);
   const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const res = jsQR(img.data, img.width, img.height, { inversionAttempts: 'attemptBoth' });
-  if (!res) throw new Error('图片中没有识别到二维码');
+  if (!res) throw mkErr('qrNotFound');
   return res.data;
 }

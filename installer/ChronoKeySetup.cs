@@ -45,6 +45,7 @@ namespace ChronoKeySetup
         if (a.Equals("/uninstall", StringComparison.OrdinalIgnoreCase)) uninstall = true;
         else if (a.StartsWith("/source:", StringComparison.OrdinalIgnoreCase)) source = a.Substring(8);
         else if (a.StartsWith("/dir:", StringComparison.OrdinalIgnoreCase)) SetupForm.DirOverride = a.Substring(5);
+        else if (a.StartsWith("/lang:", StringComparison.OrdinalIgnoreCase)) SetupForm.LangOverride = a.Substring(6);
         else if (a.Equals("/auto", StringComparison.OrdinalIgnoreCase)) SetupForm.Auto = true;
       }
       // 双击 Uninstall.exe(没有参数)也应进入卸载:按文件名或"与 ChronoKey.exe 同目录"判断
@@ -638,6 +639,7 @@ namespace ChronoKeySetup
   {
     public static string DirOverride;
     public static bool Auto;
+    public static string LangOverride; // /lang:<code>:自动化测试用,强制选择应用语言
     readonly bool uninstall;
     readonly string source;
     readonly SidePanel side = new SidePanel();
@@ -770,6 +772,8 @@ namespace ChronoKeySetup
       pLocation.Add(langBox, 6);
       pLocation.Add(new Txt("内置:简体中文 · English · Русский。选择其他语言会在安装时从 GitHub 自动下载。\nBuilt-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", 12, false, Theme.Text3), 6);
       InitLangList();
+      // 自动化测试(/auto):不建快捷方式、不启动应用,只验证安装流程本身
+      if (Auto) { chkDesktop.Checked = false; chkStart.Checked = false; }
       pLocation.Foot(new FlatButton("取消", false)).Click += (s, e) => Close();
       pLocation.Foot(new FlatButton("开始安装", true)).Click += (s, e) => StartInstall();
 
@@ -784,7 +788,7 @@ namespace ChronoKeySetup
       pDone = NewPage();
       pDone.Add(new Txt("安装完成", 32, true, Theme.Text), 0);
       doneBody = pDone.Add(new Txt("", 16, false, Theme.Text2), 8);
-      chkLaunch = pDone.Add(new Check("立即启动 ChronoKey", true), 24);
+      chkLaunch = pDone.Add(new Check("立即启动 ChronoKey", !Auto), 24);
       pDone.Add(new Txt("关闭后安装程序会自动删除自身。之后可在\"设置 → 应用 → 已安装的应用\"中卸载。", 14, false, Theme.Text3), 16);
       pDone.Foot(new FlatButton("完成", true)).Click += (s, e) => { Close(); };
     }
@@ -965,6 +969,8 @@ namespace ChronoKeySetup
 
     string SelectedLangCode()
     {
+      // /lang: 覆盖(自动化测试),合法性由 WriteLangPack 再次校验
+      if (!string.IsNullOrEmpty(LangOverride) && Regex.IsMatch(LangOverride, "^[a-z]{2,3}(-[A-Za-z]{2,4})?$")) return LangOverride;
       if (langBox == null || langBox.SelectedIndex < 0 || langBox.SelectedIndex >= langOpts.Count) return "zh";
       return langOpts[langBox.SelectedIndex].Code;
     }
@@ -1009,7 +1015,7 @@ namespace ChronoKeySetup
     {
       var err = ValidateDir(pathRow.Input.Box.Text);
       if (err != null) { MessageBox.Show(this, err, "安装位置", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
-      if (Util.IsAppRunning()) { MessageBox.Show(this, "ChronoKey 正在运行。请先退出(保存好未完成的编辑),再继续安装。", "需要退出 ChronoKey", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
+      if (!Auto && Util.IsAppRunning()) { MessageBox.Show(this, "ChronoKey 正在运行。请先退出(保存好未完成的编辑),再继续安装。", "需要退出 ChronoKey", MessageBoxButtons.OK, MessageBoxIcon.Information); return; }
       installDir = Path.GetFullPath(pathRow.Input.Box.Text.Trim()).TrimEnd('\\');
       cancel = false; busy = true; cancellable = true;
       bar.Value = 0; bar.Indeterminate = true;

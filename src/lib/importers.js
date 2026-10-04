@@ -1,3 +1,4 @@
+import { mkErr } from '../../electron/errors.cjs';
 // 导入:CSV(Chrome / Edge / Firefox / Safari / 1Password / Bitwarden / LastPass 通用映射)、
 // Bitwarden JSON、KeePass 2 XML、ChronoKey JSON。导出:CSV / Bitwarden JSON / ChronoKey JSON。
 import { newItem } from './model.js';
@@ -67,9 +68,9 @@ function totpFrom(raw) {
 
 export function importCsv(text) {
   const rows = parseCsv(text);
-  if (rows.length < 2) throw new Error('CSV 为空或缺少表头');
+  if (rows.length < 2) throw mkErr('csvEmpty');
   const idx = mapHeader(rows[0]);
-  if (idx.password === undefined && idx.username === undefined) throw new Error('无法识别 CSV 列(需要 username / password 列)');
+  if (idx.password === undefined && idx.username === undefined) throw mkErr('csvUnknownColumns');
   const folderNames = new Set();
   const items = rows.slice(1).map((r) => {
     const g = (k) => (idx[k] !== undefined ? (r[idx[k]] || '').trim() : '');
@@ -100,7 +101,7 @@ function withFolders(pairs, names) {
 
 // ---------- Bitwarden JSON(未加密导出) ----------
 export function importBitwardenJson(obj) {
-  if (obj.encrypted) throw new Error('这是加密的 Bitwarden 导出,请选择"JSON(未加密)"格式重新导出');
+  if (obj.encrypted) throw mkErr('bitwardenEncrypted');
   const fmap = new Map((obj.folders || []).map((f) => [f.id, f.name]));
   const pairs = (obj.items || []).map((b) => {
     const custom = (b.fields || []).map((f) => ({ id: crypto.randomUUID(), label: f.name, value: f.value ?? '', hidden: f.type === 1 }));
@@ -138,8 +139,8 @@ export function importBitwardenJson(obj) {
 // ---------- KeePass 2 XML ----------
 export function importKeepassXml(text) {
   const doc = new DOMParser().parseFromString(text, 'application/xml');
-  if (doc.querySelector('parsererror')) throw new Error('XML 解析失败');
-  if (!doc.querySelector('KeePassFile')) throw new Error('不是 KeePass 2 XML 导出文件');
+  if (doc.querySelector('parsererror')) throw mkErr('xmlParse');
+  if (!doc.querySelector('KeePassFile')) throw mkErr('notKeePassXml');
   const pairs = [];
   // here = 当前组相对根的路径(根组为 '')
   const walk = (group, here) => {
@@ -182,7 +183,7 @@ export function importAuto(name, text) {
     const obj = JSON.parse(t);
     if (obj.format === 'chronokey-export') return { format: 'ChronoKey JSON', items: obj.items || [], folders: obj.folders || [] };
     if (Array.isArray(obj.items)) return { format: 'Bitwarden JSON', ...importBitwardenJson(obj) };
-    throw new Error('无法识别的 JSON 格式');
+    throw mkErr('unknownJsonFormat');
   }
   return { format: 'CSV', ...importCsv(t) };
 }

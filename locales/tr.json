@@ -663,7 +663,10 @@
       "paletteNote": "Renkler Japon geleneksel paletinden gelir (nipponcolors.com); tüm metinler WCAG AA 4,5:1 karşıtlığını karşılar.",
       "shortcuts": "Klavye kısayolları",
       "settingsTitle": "Ayarlar",
-      "settingsNav": "Ayar kategorileri"
+      "settingsNav": "Ayar kategorileri",
+      "langUpdBtn": "Dil paketlerini güncelle",
+      "langUpdDoing": "Dil paketleri güncelleniyor…",
+      "langUpdDone": "v{v} sürümüne güncellendi ({n} paket)"
     },
     "side": {
       "nav": "Kasa gezinmesi",
@@ -730,7 +733,8 @@
       "gh2": "Yukarıdaki kutuya yapıştırın ve “Algıla”ya tıklayın (ya da QR kodun ekran görüntüsünü alıp “QR ekran görüntüsünü yapıştırın” düğmesine tıklayın).",
       "gh3": "Burada 6 haneli bir kod belirecek — kopyalamak için tıklayın ve GitHub’daki “Verify the code from the app” alanına girin.",
       "gh4": "GitHub ardından <strong>Recovery codes</strong> sunacak — indirin ve “Yedek kodlar” alanına kaydedin.",
-      "ghHint": "Kodlar sistem saatine bağlıdır. Bir site kodun yanlış olduğunu ısrarla söylüyorsa önce sistem saatini eşitleyin."
+      "ghHint": "Kodlar sistem saatine bağlıdır. Bir site kodun yanlış olduğunu ısrarla söylüyorsa önce sistem saatini eşitleyin.",
+      "kdfUnsupported": "Desteklenmeyen KDF: {alg}"
     },
     "totp": {
       "clockLabel": "Yerel saat",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "Yalnızca TOTP (zaman tabanlı) desteklenir, HOTP desteklenmez",
         "位数只能是 6–8": "Hane sayısı yalnızca 6–8 olabilir",
         "周期超出范围": "Periyot aralığın dışında",
-        "图片中没有识别到二维码": "Görselde QR kodu bulunamadı"
+        "图片中没有识别到二维码": "Görselde QR kodu bulunamadı",
+        "文件过大(>64MB)": "Dosya çok büyük (>64 MB)",
+        "只允许打开 http/https 链接": "Yalnızca http/https bağlantılarına izin verilir",
+        "非法语言代码": "Geçersiz dil kodu",
+        "语言包清单格式不正确": "Dil paketi bildirimi beklenmeyen biçimde"
       }
     }
   }

@@ -5,6 +5,7 @@ const {
   app, BrowserWindow, ipcMain, clipboard, powerMonitor, dialog, shell, session, nativeTheme, Menu,
 } = require('electron');
 const { Vault } = require('./vault.cjs');
+const { CODES, mkErr } = require('./errors.cjs');
 const C = require('./crypto.cjs');
 
 const isMac = process.platform === 'darwin';
@@ -175,16 +176,18 @@ function listLocalePacks() {
 
 function readLocalePack(code) {
   const id = String(code || '');
-  if (!/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(id)) throw new Error('非法语言代码');
+  if (!/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(id)) throw mkErr('badLangCode');
   for (const dir of localeDirs()) {
     try {
-      const p = JSON.parse(fs.readFileSync(path.join(dir, id + '.json'), 'utf8'));
+      const file = path.join(dir, id + '.json');
+      if (fs.statSync(file).size > 4 * 1024 * 1024) continue; // 语言包合理上限约 1 MB,4 MB 以上视为异常
+      const p = JSON.parse(fs.readFileSync(file, 'utf8'));
       if (p && p.code === id && p.dict && typeof p.dict === 'object') {
         return { code: id, label: String(p.label || id), dict: p.dict };
       }
     } catch { /* 换下一个目录 */ }
   }
-  throw new Error('语言包不存在: ' + id);
+  { const e = new Error('语言包不存在: ' + id); e.code = 'localeMissing'; throw e; }
 }
 
 // ---------- IPC ----------
@@ -287,56 +290,90 @@ function registerIpc() {
     const r = await dialog.showOpenDialog(win, { title, filters, properties: ['openFile'] });
     if (r.canceled || !r.filePaths[0]) return null;
     const p = r.filePaths[0];
-    if (fs.statSync(p).size > 64 * 1024 * 1024) throw new Error('文件过大(>64MB)');
+    if (fs.statSync(p).size > 64 * 1024 * 1024) throw mkErr('fileTooBig');
     return { name: path.basename(p), content: fs.readFileSync(p, 'utf8') };
   });
 
   handle('locales:list', () => listLocalePacks());
   handle('locales:read', (code) => readLocalePack(code));
 
-  handle('update:check', async () => {
+  // GitHub 的 /releases/latest/download/ 返回 302,需要手动跟随(最多 5 跳)
+  const RELEASE_BASE = 'https://github.com/JiuYue0820/ChronoKey/releases/latest/download/';
+  const httpsGetText = (url) => new Promise((resolve, reject) => {
     const https = require('node:https');
-    const LATEST_URL = 'https://github.com/JiuYue0820/ChronoKey/releases/latest/download/latest.json';
-    // GitHub 的 /releases/latest/download/ 返回 302,需要手动跟随(最多 5 跳)
-    const raw = await new Promise((resolve, reject) => {
-      const get = (url, redirects) => {
-        if (redirects > 5) { reject(new Error('重定向次数过多')); return; }
-        const req = https.get(url, { timeout: 10000, headers: { 'User-Agent': 'ChronoKey' } }, (res) => {
-          if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
-            const next = new URL(res.headers.location, url).href;
-            res.resume();
-            get(next, redirects + 1);
-            return;
-          }
-          if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
-          let body = '';
-          res.setEncoding('utf8');
-          res.on('data', (d) => { body += d; });
-          res.on('end', () => resolve(body));
-        });
-        req.on('timeout', () => { req.destroy(); reject(new Error('超时')); });
-        req.on('error', reject);
-      };
-      get(LATEST_URL, 0);
-    });
+    const get = (u, redirects) => {
+      if (redirects > 5) { reject(new Error('重定向次数过多')); return; }
+      const req = https.get(u, { timeout: 10000, headers: { 'User-Agent': 'ChronoKey' } }, (res) => {
+        if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
+          const next = new URL(res.headers.location, u).href;
+          res.resume();
+          get(next, redirects + 1);
+          return;
+        }
+        if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
+        let body = '';
+        res.setEncoding('utf8');
+        res.on('data', (d) => { body += d; });
+        res.on('end', () => resolve(body));
+      });
+      req.on('timeout', () => { req.destroy(); reject(new Error('超时')); });
+      req.on('error', reject);
+    };
+    get(url, 0);
+  });
+
+  handle('update:check', async () => {
+    const raw = await httpsGetText(RELEASE_BASE + 'latest.json');
     const json = JSON.parse(raw);
     const current = app.getVersion();
     const latest = String(json.version || '');
     const cmp = (a, b) => a.split('.').map(Number).reduce((p, v, i) => p + (v - (b.split('.').map(Number)[i] || 0)) * Math.pow(1000, 2 - i), 0);
     const updateAvailable = cmp(latest, current) > 0;
+    // 顺带看语言包清单(失败不影响更新检查)
+    let langs = null;
+    try {
+      const manifest = JSON.parse(await httpsGetText(RELEASE_BASE + 'languages.json'));
+      if (manifest && Array.isArray(manifest.languages)) langs = { version: String(manifest.version || ''), count: manifest.languages.length };
+    } catch { }
     return {
       current,
       latest,
       updateAvailable,
       url: 'https://github.com/JiuYue0820/ChronoKey/releases',
+      langs,
     };
+  });
+
+  // 语言包在线更新:从最新 release 下载全部语言包(逐个校验 SHA-256)装入 userData\locales,
+  // 与安装器装的 <安装目录>\locales 互不覆盖;渲染进程随后重新 registerLocale 即时生效。
+  handle('locales:update', async () => {
+    const manifest = JSON.parse(await httpsGetText(RELEASE_BASE + 'languages.json'));
+    if (!manifest || !Array.isArray(manifest.languages) || !manifest.languages.length) throw mkErr('badLangManifest');
+    const dir = path.join(app.getPath('userData'), 'locales');
+    fs.mkdirSync(dir, { recursive: true });
+    let installed = 0;
+    for (const lang of manifest.languages) {
+      const code = String(lang.code || '');
+      const file = String(lang.file || '');
+      const sha = String(lang.sha256 || '');
+      if (!/^[a-z]{2,3}(-[A-Za-z]{2,4})?$/.test(code) || file !== code + '.json' || !/^[0-9a-fA-F]{64}$/.test(sha)) continue;
+      if (['zh', 'en', 'ru'].includes(code)) continue; // 内置语言不走语言包
+      const raw = await httpsGetText(RELEASE_BASE + file);
+      const hash = require('node:crypto').createHash('sha256').update(Buffer.from(raw, 'utf8')).digest('hex');
+      if (hash !== sha.toLowerCase()) continue; // 校验失败跳过该语言
+      fs.writeFileSync(path.join(dir, code + '.json'), raw, 'utf8');
+      installed++;
+    }
+    const version = String(manifest.version || '');
+    fs.writeFileSync(path.join(dir, 'version.json'), JSON.stringify({ version, at: new Date().toISOString(), installed }, null, 2));
+    return { version, installed };
   });
 
   handle('win:minimize', () => win.minimize());
   handle('win:toggleMaximize', () => (win.isMaximized() ? win.unmaximize() : win.maximize()));
   handle('win:close', () => win.close());
   handle('shell:openExternal', (url) => {
-    if (!/^https?:\/\//i.test(url)) throw new Error('只允许打开 http/https 链接');
+    if (!/^https?:\/\//i.test(url)) throw mkErr('externalLinkOnly');
     return shell.openExternal(url);
   });
 }

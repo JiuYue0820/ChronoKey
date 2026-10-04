@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # 单元测试包含词典键位/占位符/HTML 白名单/错误文案覆盖校验,
+      # 语言包类 PR(新增 locales/*.json、docs/js/lang/*.js)在此即被拦截
+      - run: npm test
+      - run: npm run build

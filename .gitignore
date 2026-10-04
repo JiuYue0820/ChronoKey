@@ -12,3 +12,5 @@ dev/shots*/
 dev/_*.json
 dev/_*.png
 dev/_*.txt
+dev/verify-progress.log
+.zcodeignore

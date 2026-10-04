@@ -663,7 +663,10 @@
       "paletteNote": "Les couleurs proviennent de la palette traditionnelle japonaise (nipponcolors.com) ; tous les textes respectent le contraste WCAG AA de 4,5:1.",
       "shortcuts": "Raccourcis clavier",
       "settingsTitle": "Paramètres",
-      "settingsNav": "Catégories de paramètres"
+      "settingsNav": "Catégories de paramètres",
+      "langUpdBtn": "Mettre à jour les packs de langue",
+      "langUpdDoing": "Mise à jour des packs de langue…",
+      "langUpdDone": "Mis à jour vers v{v} ({n} packs)"
     },
     "side": {
       "nav": "Navigation du coffre",
@@ -730,7 +733,8 @@
       "gh2": "Collez-la dans le champ ci-dessus et cliquez sur « Détecter » (ou capturez le QR code puis cliquez sur « Coller une capture du QR code »).",
       "gh3": "Un code à 6 chiffres apparaîtra ici — cliquez pour le copier, puis saisissez-le dans « Verify the code from the app » de GitHub.",
       "gh4": "GitHub proposera ensuite des <strong>Recovery codes</strong> — téléchargez-les et enregistrez-les dans le champ « Codes de secours ».",
-      "ghHint": "Les codes dépendent de l'horloge système. Si un site dit que le code est faux, synchronisez d'abord l'heure système."
+      "ghHint": "Les codes dépendent de l'horloge système. Si un site dit que le code est faux, synchronisez d'abord l'heure système.",
+      "kdfUnsupported": "KDF non pris en charge : {alg}"
     },
     "totp": {
       "clockLabel": "Heure locale",
@@ -797,7 +801,11 @@
         "只支持 TOTP(基于时间)类型,不支持 HOTP": "Seul TOTP (basé sur le temps) est pris en charge, pas HOTP",
         "位数只能是 6–8": "Le nombre de chiffres doit être 6–8",
         "周期超出范围": "Période hors des limites",
-        "图片中没有识别到二维码": "Aucun QR code détecté dans l'image"
+        "图片中没有识别到二维码": "Aucun QR code détecté dans l'image",
+        "文件过大(>64MB)": "Fichier trop volumineux (>64 Mo)",
+        "只允许打开 http/https 链接": "Seuls les liens http/https sont autorisés",
+        "非法语言代码": "Code de langue invalide",
+        "语言包清单格式不正确": "Le manifeste des packs de langue a un format inattendu"
       }
     }
   }
