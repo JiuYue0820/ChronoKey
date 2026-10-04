@@ -89,7 +89,10 @@
       "artifactName": "ChronoKey-${version}-linux-${arch}.${ext}"
     }
   },
-  "author": "JiuYue0820",
+  "author": {
+    "name": "JiuYue0820",
+    "email": "JiuYue0820@users.noreply.github.com"
+  },
   "homepage": "https://jiuyue0820.github.io/ChronoKey/",
   "repository": {
     "type": "git",
