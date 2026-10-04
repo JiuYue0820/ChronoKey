@@ -15,7 +15,10 @@ const UPLOAD = process.argv.includes('--upload');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const V = pkg.version;
 const ZIP_NAME = `ChronoKey-${V}-win-x64.zip`;
-const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { cwd: root, stdio: 'inherit', ...opts });
+const isWin = process.platform === 'win32';
+// Windows 下 npm/npx 是 .cmd 垫片,execFileSync 需要带扩展名
+const BIN = (c) => (isWin && (c === 'npm' || c === 'npx') ? `${c}.cmd` : c);
+const run = (cmd, args, opts = {}) => execFileSync(BIN(cmd), args, { cwd: root, stdio: 'inherit', ...opts });
 
 const step = (s) => console.log(`\n=== ${s} ===`);
 
