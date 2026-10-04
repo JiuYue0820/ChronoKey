@@ -389,6 +389,175 @@ namespace ChronoKeySetup
     }
   }
 
+  // 主题化下拉框:圆角 + 自绘,弹出列表是独立置顶小窗,不受主窗体裁剪,放不下会向上展开
+  class Combo : Control
+  {
+    public readonly List<string> Items = new List<string>();
+    public event EventHandler SelectedChanged;
+    int index = -1;
+    bool hover;
+    ComboPopup popup;
+    int closedTick;
+
+    public int SelectedIndex
+    {
+      get { return index; }
+      set { index = value; Invalidate(); }
+    }
+
+    public Combo()
+    {
+      SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.Selectable | ControlStyles.StandardClick, true);
+      TabStop = true; Cursor = Cursors.Hand; BackColor = Theme.Bg; Font = Theme.F(14, false);
+      Height = Theme.S(44);
+    }
+
+    protected override bool IsInputKey(Keys k) { return k == Keys.Enter || k == Keys.Down || k == Keys.Up || k == Keys.Escape || base.IsInputKey(k); }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+      if (popup == null)
+      {
+        if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Down || e.KeyCode == Keys.Up) { Toggle(); e.Handled = true; }
+        base.OnKeyDown(e);
+        return;
+      }
+      if (e.KeyCode == Keys.Escape) { ClosePopup(); e.Handled = true; }
+      else if (e.KeyCode == Keys.Down) { popup.Step(1); e.Handled = true; }
+      else if (e.KeyCode == Keys.Up) { popup.Step(-1); e.Handled = true; }
+      else if (e.KeyCode == Keys.Enter) { popup.ConfirmHover(); e.Handled = true; }
+      base.OnKeyDown(e);
+    }
+
+    void Toggle()
+    {
+      if (popup != null) { ClosePopup(); return; }
+      if (Environment.TickCount - closedTick < 250) return; // 点按钮关闭弹层的那次点击不再重新打开
+      popup = new ComboPopup(Items, index, this);
+      var topLeft = PointToScreen(new Point(0, 0));
+      var below = PointToScreen(new Point(0, Height + Theme.S(4)));
+      var wa = Screen.FromControl(this).WorkingArea;
+      int h = Math.Min(popup.NaturalHeight, wa.Height * 3 / 4);
+      int y = below.Y;
+      if (y + h > wa.Bottom) y = topLeft.Y - h - Theme.S(4);
+      popup.ViewHeight = h;
+      popup.Bounds = new Rectangle(Math.Max(wa.Left, Math.Min(topLeft.X, wa.Right - Width)), Math.Max(wa.Top, y), Width, h);
+      popup.Pick = (i) => { if (i >= 0 && i < Items.Count && i != index) { index = i; if (SelectedChanged != null) SelectedChanged(this, EventArgs.Empty); } ClosePopup(); Invalidate(); };
+      popup.ClosedByUser = ClosePopup;
+      popup.Show(this);
+      Invalidate();
+    }
+
+    internal void ClosePopup()
+    {
+      if (popup != null) { var f = popup; popup = null; closedTick = Environment.TickCount; try { f.Close(); f.Dispose(); } catch { } }
+      if (IsHandleCreated) Invalidate();
+    }
+
+    protected override void OnClick(EventArgs e) { Focus(); Toggle(); base.OnClick(e); }
+    protected override void OnMouseEnter(EventArgs e) { hover = true; Invalidate(); base.OnMouseEnter(e); }
+    protected override void OnMouseLeave(EventArgs e) { hover = false; Invalidate(); base.OnMouseLeave(e); }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+      var g = e.Graphics;
+      g.SmoothingMode = SmoothingMode.AntiAlias;
+      g.Clear(Parent != null ? Parent.BackColor : Theme.Bg);
+      var r = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
+      using (var path = Theme.Round(r, Theme.S(10)))
+      {
+        using (var b = new SolidBrush(Theme.Surface)) g.FillPath(b, path);
+        using (var pen = new Pen(popup != null || hover || Focused ? Theme.Accent : Theme.Border, 1.4f)) g.DrawPath(pen, path);
+      }
+      string text = index >= 0 && index < Items.Count ? Items[index] : "";
+      TextRenderer.DrawText(g, text, Font, new Rectangle(Theme.S(14), 0, Width - Theme.S(56), Height), Theme.Text, TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
+      // 右侧箭头(展开时翻转)
+      using (var pen = new Pen(Theme.Text2, 1.8f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+      {
+        float cx = Width - Theme.S(26), cy = Height / 2f, w = Theme.S(5), up = popup != null ? 1 : -1;
+        g.DrawLines(pen, new[] { new PointF(cx - w, cy + up * w * 0.6f), new PointF(cx, cy - up * w * 0.6f), new PointF(cx + w, cy + up * w * 0.6f) });
+      }
+      if (Focused && ShowFocusCues)
+        using (var pen = new Pen(Theme.Accent, 1.5f) { DashStyle = DashStyle.Dot })
+          g.DrawRectangle(pen, 1, 1, Width - 3, Height - 3);
+    }
+  }
+
+  // 弹出列表:无边框置顶窗,失焦即关;滚轮翻页;悬停高亮,选中项用强调色
+  class ComboPopup : Form
+  {
+    public Action<int> Pick;
+    public Action ClosedByUser;
+    readonly List<string> items;
+    readonly Combo owner;
+    readonly int itemH, pad;
+    int hover = -1, scroll;
+    bool leaving;
+
+    public ComboPopup(List<string> items, int index, Combo owner)
+    {
+      this.items = items; this.owner = owner;
+      itemH = Theme.S(34); pad = Theme.S(6);
+      hover = index;
+      SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+      FormBorderStyle = FormBorderStyle.None; StartPosition = FormStartPosition.Manual;
+      ShowInTaskbar = false; BackColor = Theme.Surface; DoubleBuffered = true;
+      Region = new Region(Theme.Round(new RectangleF(0, 0, Width, Height), Theme.S(10)));
+      Deactivate += (s, e) => { if (!leaving) { leaving = true; if (ClosedByUser != null) ClosedByUser(); } };
+    }
+
+    public int NaturalHeight { get { return pad * 2 + items.Count * itemH; } }
+    public int ViewHeight { set { Height = value; } }
+    protected override void OnSizeChanged(EventArgs e) { base.OnSizeChanged(e); Region = new Region(Theme.Round(new RectangleF(0, 0, Width, Height), Theme.S(10))); }
+    int VisibleRows { get { return Math.Max(1, (Height - pad * 2) / itemH); } }
+
+    public void Step(int d) { hover = Math.Max(0, Math.Min(items.Count - 1, hover + d)); EnsureVisible(); Invalidate(); }
+    public void ConfirmHover() { if (hover >= 0 && Pick != null) Pick(hover); }
+
+    void EnsureVisible()
+    {
+      int rows = VisibleRows;
+      if (hover < scroll) scroll = hover;
+      else if (hover >= scroll + rows) scroll = hover - rows + 1;
+      scroll = Math.Max(0, Math.Min(scroll, Math.Max(0, items.Count - rows)));
+    }
+
+    int IndexAt(int y) { int i = scroll + (y - pad) / itemH; return (y >= pad && i >= 0 && i < items.Count) ? i : -1; }
+
+    protected override void OnMouseMove(MouseEventArgs e) { int i = IndexAt(e.Y); if (i != hover) { hover = i; Invalidate(); } base.OnMouseMove(e); }
+    protected override void OnMouseLeave(EventArgs e) { hover = -1; Invalidate(); base.OnMouseLeave(e); }
+    protected override void OnMouseClick(MouseEventArgs e) { int i = IndexAt(e.Y); if (i >= 0 && Pick != null) Pick(i); base.OnMouseClick(e); }
+    protected override void OnMouseWheel(MouseEventArgs e) { scroll = Math.Max(0, Math.Min(scroll - Math.Sign(e.Delta), Math.Max(0, items.Count - VisibleRows))); Invalidate(); base.OnMouseWheel(e); }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+      var g = e.Graphics;
+      g.Clear(Theme.Surface);
+      int rows = VisibleRows;
+      using (var bgHover = new SolidBrush(Color.FromArgb(24, Theme.Accent)))
+      using (var textB = new SolidBrush(Theme.Text))
+      using (var text2B = new SolidBrush(Theme.Text2))
+      {
+        for (int i = scroll; i < items.Count && i < scroll + rows + 1; i++)
+        {
+          var r = new Rectangle(pad, pad + (i - scroll) * itemH, Width - pad * 2, itemH);
+          if (i == hover) { using (var path = Theme.Round(new RectangleF(r.X, r.Y, r.Width, r.Height), Theme.S(8))) { g.FillPath(bgHover, path); } }
+          TextRenderer.DrawText(g, items[i], Theme.F(14, false),
+            new Rectangle(r.X + Theme.S(12), r.Y, r.Width - Theme.S(44), r.Height),
+            i == owner.SelectedIndex ? Theme.Accent : Theme.Text,
+            TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
+          if (i == owner.SelectedIndex)
+            using (var pen = new Pen(Theme.Accent, 1.8f) { StartCap = LineCap.Round, EndCap = LineCap.Round })
+              g.DrawLines(pen, new[] {
+                new PointF(r.Right - Theme.S(30), r.Y + r.Height * .52f),
+                new PointF(r.Right - Theme.S(24), r.Y + r.Height * .68f),
+                new PointF(r.Right - Theme.S(14), r.Y + r.Height * .32f),
+              });
+        }
+      }
+    }
+  }
+
   static class Util
   {
     public static string Bytes(double b)
@@ -675,7 +844,7 @@ namespace ChronoKeySetup
     Progress bar;
     Row stats;
     // 语言选择:应用界面语言。zh/en/ru 内置,其余语言在安装时从 Releases 一起下载语言包
-    ComboBox langBox;
+    Combo langBox;
     string langManifest;   // languages.json 原文;null 表示清单没拿到(只提供内置语言)
     readonly List<LangOpt> langOpts = new List<LangOpt>();
 
@@ -784,21 +953,7 @@ namespace ChronoKeySetup
       chkDesktop = pLocation.Add(new Check(L.T("创建桌面快捷方式", "Create desktop shortcut", "Создать ярлык на рабочем столе"), true), 16);
       chkStart = pLocation.Add(new Check(L.T("添加到开始菜单", "Add to Start menu", "Добавить в меню «Пуск»"), true), 4);
       pLocation.Add(new Txt(L.T("应用界面语言 (App language)", "App language (应用界面语言)", "Язык приложения (应用界面语言)"), 14, true, Theme.Text2), 24);
-      // 自绘下拉框,与整体 UI 用同一套主题色和缩放
-      langBox = new ComboBox {
-        DropDownStyle = ComboBoxStyle.DropDownList, FlatStyle = FlatStyle.Flat, Font = Theme.F(14, false),
-        BackColor = Theme.Bg, ForeColor = Theme.Text, DrawMode = DrawMode.OwnerDrawFixed, ItemHeight = Theme.S(28),
-      };
-      langBox.DrawItem += (s2, e) =>
-      {
-        e.DrawBackground();
-        var selected = (e.State & DrawItemState.Selected) != 0;
-        using (var b = new SolidBrush(selected ? Color.FromArgb(28, Theme.Accent) : Theme.Bg)) e.Graphics.FillRectangle(b, e.Bounds);
-        if (e.Index >= 0 && langBox != null)
-          TextRenderer.DrawText(e.Graphics, langBox.Items[e.Index].ToString(), langBox.Font,
-            new Rectangle(e.Bounds.X + Theme.S(10), e.Bounds.Y, e.Bounds.Width - Theme.S(10), e.Bounds.Height),
-            Theme.Text, TextFormatFlags.VerticalCenter | TextFormatFlags.Left);
-      };
+      langBox = new Combo();
       pLocation.Add(langBox, 6);
       pLocation.Add(new Txt(L.T("内置:简体中文 · English · Русский。选择其他语言会在安装时从 GitHub 自动下载。\nBuilt-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", "Built-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", "Встроено: 中文 · English · Русский. Остальные языки загружаются автоматически во время установки."), 12, false, Theme.Text3), 6);
       InitLangList();
