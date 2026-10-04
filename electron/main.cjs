@@ -430,22 +430,24 @@ function registerIpc() {
   const httpsGetText = (url) => new Promise((resolve, reject) => {
     const https = require('node:https');
     const get = (u, redirects) => {
-      if (redirects > 5) { reject(new Error('重定向次数过多')); return; }
+      if (redirects > 7) { reject(new Error('重定向次数过多(最后一个: ' + u.slice(0, 120) + ')')); return; }
       const req = https.get(u, { timeout: 10000, headers: { 'User-Agent': 'ChronoKey' } }, (res) => {
         if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
-          const next = new URL(res.headers.location, u).href;
+          const loc = res.headers.location;
+          if (!loc) { res.resume(); reject(new Error('HTTP ' + res.statusCode + ' 无 Location 头(发布可能处于中间状态): ' + u.slice(0, 120))); return; }
+          const next = new URL(loc, u).href;
           res.resume();
           get(next, redirects + 1);
           return;
         }
-        if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode)); return; }
+        if (res.statusCode !== 200) { res.resume(); reject(new Error('HTTP ' + res.statusCode + ': ' + u.slice(0, 120))); return; }
         let body = '';
         res.setEncoding('utf8');
         res.on('data', (d) => { body += d; });
         res.on('end', () => resolve(body));
       });
-      req.on('timeout', () => { req.destroy(); reject(new Error('超时')); });
-      req.on('error', reject);
+      req.on('timeout', () => { req.destroy(); reject(new Error('超时: ' + u.slice(0, 120))); });
+      req.on('error', (e) => reject(new Error(e.message + ': ' + u.slice(0, 120))));
     };
     get(url, 0);
   });

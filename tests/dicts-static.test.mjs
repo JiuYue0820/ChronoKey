@@ -80,13 +80,14 @@ const INTERNAL_ALLOWED = [
   '非法来源', '重定向次数过多', '超时',
   '不是有效的 zip', '中央目录超出已获取范围', 'zip 里没有该文件', 'zip 条目头损坏', 'SHA-256 校验失败', '非法路径',
 ];
+const INTERNAL_PREFIXES = INTERNAL_ALLOWED; // 允许项按前缀匹配(部分技术串带上下文后缀,如请求 URL)
 const codeFiles = ['electron/vault.cjs', 'electron/crypto.cjs', 'electron/main.cjs', 'src/lib/totp.js', 'src/lib/importers.js'];
 
 for (const f of codeFiles) {
   test(`无未编目中文 Error: ${f}`, () => {
     const text = read(f);
     const literals = [...text.matchAll(/new Error\('((?:[^'\\]|\\.)*)'/g)].map((m) => m[1]).filter((s) => CJK.test(s));
-    const bad = literals.filter((s) => !DYNAMIC_PREFIXES.some((p) => s.startsWith(p)) && !INTERNAL_ALLOWED.includes(s));
+    const bad = literals.filter((s) => !DYNAMIC_PREFIXES.some((p) => s.startsWith(p)) && !INTERNAL_PREFIXES.some((p) => s.startsWith(p)));
     assert.deepEqual(bad, [], `${f} 存在未编目的中文 Error 字面量,请改用 electron/errors.cjs 的 mkErr: ${bad.join(' | ')}`);
   });
 }

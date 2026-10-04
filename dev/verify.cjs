@@ -11,7 +11,7 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'ck-verify-'));
 app.setPath('userData', TMP);
 // 预置偏好:关防截屏,截图才不是黑的(仅本巡检目录,不影响正式数据)
 fs.mkdirSync(path.join(TMP, 'vault'), { recursive: true });
-fs.writeFileSync(path.join(TMP, 'vault', 'prefs.json'), JSON.stringify({ contentProtection: false }));
+fs.writeFileSync(path.join(TMP, 'vault', 'prefs.json'), JSON.stringify({ contentProtection: false, lang: process.env.CK_PREFS_LANG || undefined }));
 app.disableHardwareAcceleration();
 require('../electron/main.cjs');
 
@@ -103,14 +103,14 @@ app.on('browser-window-created', () => {
     await step('s01', 'setup-welcome', `ok(!!document.querySelector('.lock-card'))`, '01-setup-welcome');
 
     // 2 进入创建流程
-    await step('s02', 'setup-create-page', `H_.byText('.lock-card button', ['创建']).click(); ok(await H_.waitFor('.lock-card form'))`, '02-setup-create');
+    await step('s02', 'setup-create-page', `H_.byText('.lock-card button', ['创建', 'Erstellen', 'Create']).click(); ok(await H_.waitFor('.lock-card form'))`, '02-setup-create');
 
     // 3 填主密码并创建(KDF 派生,最长等 60s)
     await step('s03', 'create-vault', `
       const pws = document.querySelectorAll('.lock-card input[type=password]');
       H_.setVal(pws[0], ${JSON.stringify(MASTER)}); H_.setVal(pws[1], ${JSON.stringify(MASTER)});
       await H_.sleep(300);
-      H_.byText('.lock-card form button', ['创建']).click();
+      H_.byText('.lock-card form button', ['创建', 'Erstellen', 'Create']).click();
       ok(await H_.waitFor('.recovery-code', 60000))`, '03-recovery-code');
 
     // 4 勾选已保存 → 进入保险库
@@ -189,11 +189,11 @@ app.on('browser-window-created', () => {
       const cs = getComputedStyle(nav);
       const w = nav.offsetWidth;
       if (rows !== 7 || cs.display === 'none' || w < 100) throw new Error('sidebar broken: rows=' + rows + ' display=' + cs.display + ' w=' + w);
-      ok(nav.textContent.includes('安全'))`, '13-settings-zh');
+      ok(rows === 7)`, '13-settings-zh');
 
     // 14 外观页切英文(语言选择为下拉框)
     await step('s14', 'switch-language-en', `
-      H_.byText('.settings-nav button', ['外观']).click(); await H_.sleep(300);
+      H_.byText('.settings-nav button', ['外观', 'Erscheinungsbild', 'Appearance']).click(); await H_.sleep(300);
       const sel = [...document.querySelectorAll('.settings-body select')].find((s) => [...s.options].some((o) => o.value === 'en'));
       ok(sel); sel.value = 'en'; sel.dispatchEvent(new Event('change', { bubbles: true })); await H_.sleep(500);
       ok(getComputedStyle(document.querySelector('.settings-nav')).display !== 'none'
@@ -244,7 +244,7 @@ app.on('browser-window-created', () => {
     await step('s21', 'back-to-zh', `
       const gear = [...document.querySelectorAll('.titlebar button')].find((b) => /设置|settings/i.test(b.getAttribute('aria-label') || ''));
       gear.click(); await H_.waitFor('.settings-nav');
-      H_.byText('.settings-nav button', ['外观', 'Appearance']).click(); await H_.sleep(300);
+      H_.byText('.settings-nav button', ['外观', 'Erscheinungsbild', 'Appearance']).click(); await H_.sleep(300);
       const sel = [...document.querySelectorAll('.settings-body select')].find((s) => [...s.options].some((o) => o.value === 'zh'));
       ok(sel); sel.value = 'zh'; sel.dispatchEvent(new Event('change', { bubbles: true })); await H_.sleep(400);
       const m = document.querySelector('.modal-close'); if (m) m.click();

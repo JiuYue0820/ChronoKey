@@ -10,7 +10,7 @@ import { AuditView } from './components/AuditView.jsx';
 import { TotpBoard } from './components/TotpBoard.jsx';
 import { Settings } from './components/Settings.jsx';
 import { ToastProvider, useToast, EmptyState, Button } from './components/ui.jsx';
-import { t, initLang, getLang, registerLocale } from './i18n-react.js';
+import { t, initLang, getLang, registerLocale, useI18n } from './i18n-react.js';
 import { matches, newItem, updateItem, appendAudit, normalizeVault, hostOf } from './lib/model.js';
 
 function applyTheme(theme) {
@@ -64,6 +64,9 @@ class ErrorBoundary extends Component {
 }
 
 function Root() {
+  // 订阅语言变更:语言包是异步注册的,包加载完成时整树重渲染,
+  // 否则没调用 useI18n 的组件(标题栏、设置侧边栏等)会停留在旧语言,出现混搭
+  useI18n();
   const [status, setStatus] = useState(null);
   const [data, setData] = useState(null);
   const toast = useToast();
