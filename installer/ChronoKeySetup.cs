@@ -312,7 +312,7 @@ namespace ChronoKeySetup
       Checked = value;
     }
     void Toggle() { Checked = !on; if (Changed != null) Changed(this, EventArgs.Empty); }
-    protected override void OnClick(EventArgs e) { Focus(); Toggle(); base.OnClick(e); }
+    protected override void OnClick(EventArgs e) { Focus(); BeginInvoke(new MethodInvoker(Toggle)); base.OnClick(e); }
     protected override bool IsInputKey(Keys k) { return k == Keys.Space || base.IsInputKey(k); }
     protected override void OnKeyUp(KeyEventArgs e) { if (e.KeyCode == Keys.Space) Toggle(); base.OnKeyUp(e); }
     protected override void OnGotFocus(EventArgs e) { Invalidate(); base.OnGotFocus(e); }
@@ -440,8 +440,8 @@ namespace ChronoKeySetup
       int h = Math.Min(popup.NaturalHeight, wa.Height * 3 / 4);
       int y = below.Y;
       if (y + h > wa.Bottom) y = topLeft.Y - h - Theme.S(4);
-      popup.ViewHeight = h;
       popup.Bounds = new Rectangle(Math.Max(wa.Left, Math.Min(topLeft.X, wa.Right - Width)), Math.Max(wa.Top, y), Width, h);
+      popup.UpdateRegion();
       popup.Pick = (i) => { if (i >= 0 && i < Items.Count && i != index) { index = i; if (SelectedChanged != null) SelectedChanged(this, EventArgs.Empty); } ClosePopup(); Invalidate(); };
       popup.ClosedByUser = ClosePopup;
       popup.Show(this);
@@ -507,8 +507,8 @@ namespace ChronoKeySetup
     }
 
     public int NaturalHeight { get { return pad * 2 + items.Count * itemH; } }
-    public int ViewHeight { set { Height = value; } }
-    protected override void OnSizeChanged(EventArgs e) { base.OnSizeChanged(e); Region = new Region(Theme.Round(new RectangleF(0, 0, Width, Height), Theme.S(10))); }
+    public void UpdateRegion() { Region = new Region(Theme.Round(new RectangleF(0, 0, ClientSize.Width, ClientSize.Height), Theme.S(10))); }
+    protected override void OnSizeChanged(EventArgs e) { base.OnSizeChanged(e); UpdateRegion(); }
     int VisibleRows { get { return Math.Max(1, (Height - pad * 2) / itemH); } }
 
     public void Step(int d) { hover = Math.Max(0, Math.Min(items.Count - 1, hover + d)); EnsureVisible(); Invalidate(); }
@@ -829,7 +829,7 @@ namespace ChronoKeySetup
     readonly string source;
     readonly SidePanel side = new SidePanel();
     readonly CaptionButton btnMin = new CaptionButton(false), btnClose = new CaptionButton(true);
-    readonly Rectangle content;
+    Rectangle content;
     Page current;
     volatile bool cancel;
     bool busy, cancellable, finished;
@@ -864,25 +864,22 @@ namespace ChronoKeySetup
 
       FormBorderStyle = FormBorderStyle.None;
       StartPosition = FormStartPosition.Manual; // 在 OnLoad 中按鼠标所在屏幕的工作区居中
-      ClientSize = new Size(Theme.S(760), Theme.S(480));
+      ClientSize = new Size(Theme.S(760), Theme.S(560));
       BackColor = Theme.Bg;
       Text = uninstall ? L.T("卸载 ChronoKey", "Uninstall ChronoKey", "Удаление ChronoKey") : L.T("安装 ChronoKey", "Install ChronoKey", "Установка ChronoKey");
       DoubleBuffered = true;
       KeyPreview = true;
       try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
-      side.Bounds = new Rectangle(0, 0, Theme.S(240), ClientSize.Height);
+      LayoutChrome();
       side.Steps = uninstall ? new[] { L.T("确认", "Confirm", "Подтверждение"), L.T("卸载", "Uninstall", "Удаление"), L.T("完成", "Done", "Готово") } : new[] { L.T("选择位置", "Location", "Папка"), L.T("下载", "Download", "Загрузка"), L.T("安装", "Install", "Установка"), L.T("完成", "Done", "Готово") };
       side.Version = uninstall ? L.T("卸载程序", "Uninstaller", "Удаление") : L.T("安装程序 v", "Installer v", "Установка v") + Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
       Controls.Add(side);
 
-      btnClose.Location = new Point(ClientSize.Width - btnClose.Width, 0);
-      btnMin.Location = new Point(btnClose.Left - btnMin.Width, 0);
       btnClose.Click += (s, e) => Close();
       btnMin.Click += (s, e) => WindowState = FormWindowState.Minimized;
       Controls.Add(btnClose); Controls.Add(btnMin);
 
-      content = new Rectangle(side.Width + Theme.S(48), Theme.S(56), ClientSize.Width - side.Width - Theme.S(96), ClientSize.Height - Theme.S(56) - Theme.S(40));
 
       if (uninstall) BuildUninstall(); else BuildInstall();
       BuildCommon();
@@ -955,7 +952,7 @@ namespace ChronoKeySetup
       pLocation.Add(new Txt(L.T("应用界面语言 (App language)", "App language (应用界面语言)", "Язык приложения (应用界面语言)"), 14, true, Theme.Text2), 24);
       langBox = new Combo();
       pLocation.Add(langBox, 6);
-      pLocation.Add(new Txt(L.T("内置:简体中文 · English · Русский。选择其他语言会在安装时从 GitHub 自动下载。\nBuilt-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", "Built-in: Chinese · English · Russian. Other languages are downloaded automatically during install.", "Встроено: 中文 · English · Русский. Остальные языки загружаются автоматически во время установки."), 12, false, Theme.Text3), 6);
+      pLocation.Add(new Txt(L.T("内置:中文 / English / Русский;其他语言在安装时自动下载", "Built-in: Chinese / English / Russian; others download during install", "Встроено: 中文 / English / Русский; остальные — при установке"), 12, false, Theme.Text3), 6);
       InitLangList();
       // 自动化测试(/auto):不建快捷方式、不启动应用,只验证安装流程本身
       if (Auto) { chkDesktop.Checked = false; chkStart.Checked = false; }
@@ -1591,13 +1588,56 @@ namespace ChronoKeySetup
     // ---------- 窗口外观与关闭 ----------
     protected override CreateParams CreateParams
     {
-      get { var p = base.CreateParams; p.ClassStyle |= 0x20000; return p; } // CS_DROPSHADOW
+      get { var p = base.CreateParams; p.ClassStyle |= 0x20000; p.ExStyle |= 0x02000000; return p; } // CS_DROPSHADOW + WS_EX_COMPOSITED(拉伸时不留残影)
     }
+
+    struct MINMAXINFO { public Point ptReserved, ptMaxSize, ptMaxPosition, ptMinTrackSize, ptMaxTrackSize; }
 
     protected override void WndProc(ref Message m)
     {
+      // 无边框窗口的缩放热区(8 个方向,6px)
+      if (m.Msg == 0x84) // WM_NCHITTEST
+      {
+        var lp = m.LParam.ToInt64();
+        var pt = PointToClient(new Point((short)(lp & 0xFFFF), (short)((lp >> 16) & 0xFFFF)));
+        int e = Theme.S(6);
+        bool l = pt.X <= e, r = pt.X >= ClientSize.Width - e, t = pt.Y <= e, b = pt.Y >= ClientSize.Height - e;
+        if (t && l) { m.Result = (IntPtr)13; return; } // HTTOPLEFT
+        if (t && r) { m.Result = (IntPtr)14; return; } // HTTOPRIGHT
+        if (b && l) { m.Result = (IntPtr)16; return; } // HTBOTTOMLEFT
+        if (b && r) { m.Result = (IntPtr)17; return; } // HTBOTTOMRIGHT
+        if (l) { m.Result = (IntPtr)10; return; }      // HTLEFT
+        if (r) { m.Result = (IntPtr)11; return; }      // HTRIGHT
+        if (t) { m.Result = (IntPtr)12; return; }      // HTTOP
+        if (b) { m.Result = (IntPtr)15; return; }      // HTBOTTOM
+      }
       base.WndProc(ref m);
       if (m.Msg == 0x84 && (int)m.Result == 1) m.Result = (IntPtr)2; // 空白处拖动窗口
+      if (m.Msg == 0x24) // WM_GETMINMAXINFO:限制最小尺寸
+      {
+        var mmi = (MINMAXINFO)Marshal.PtrToStructure(m.LParam, typeof(MINMAXINFO));
+        mmi.ptMinTrackSize = new Point(Theme.S(640), Theme.S(500));
+        Marshal.StructureToPtr(mmi, m.LParam, false);
+        m.Result = IntPtr.Zero;
+      }
+    }
+
+    // 无边框窗口的Chrome布局:侧栏、标题按钮、内容区随窗口尺寸重排
+    void LayoutChrome()
+    {
+      side.Bounds = new Rectangle(0, 0, Theme.S(240), ClientSize.Height);
+      btnClose.Location = new Point(ClientSize.Width - btnClose.Width, 0);
+      btnMin.Location = new Point(btnClose.Left - btnMin.Width, 0);
+      content = new Rectangle(side.Width + Theme.S(48), Theme.S(56), ClientSize.Width - side.Width - Theme.S(96), ClientSize.Height - Theme.S(56) - Theme.S(40));
+      foreach (Control c in Controls) { if (c is Page) c.Bounds = content; }
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+      base.OnResize(e);
+      if (content.Width > 0) LayoutChrome();
+      if (langBox != null) langBox.ClosePopup(); // 窗口变化时弹层位置失效,直接收起
+      Invalidate(true);
     }
 
     protected override void OnLoad(EventArgs e)

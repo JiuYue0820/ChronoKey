@@ -1,83 +1,83 @@
 {
-  "version": "0.3.0",
+  "version": "0.3.1",
   "languages": [
     {
       "code": "de",
       "label": "Deutsch",
       "file": "de.json",
-      "sha256": "ce8ca5f03f0e6a273df5612550df9a59a2e1125a3da591887a73bf12c68f6beb"
+      "sha256": "01bc392cf276807f950f9c376895d0af06d0b321584288d31c8836b1f8746cc2"
     },
     {
       "code": "es",
       "label": "Español",
       "file": "es.json",
-      "sha256": "04ea75b95c0cb9055ce3a21034c14c0af39b792143c59f0536578eed9fb92938"
+      "sha256": "2ba8be59f5f62413de3f5ed863c4b2e1eb6997fab69ab1e5afcc65aea223df1e"
     },
     {
       "code": "fr",
       "label": "Français",
       "file": "fr.json",
-      "sha256": "a1424f09ef0302670076d5eb1ba91466f2a5fa801cd6eb7df077a3243c9f6c79"
+      "sha256": "7030a86a0f4c72e72083c93e4fc1bea11c08bc4fa742f42a5cd720db4ace1432"
     },
     {
       "code": "id",
       "label": "Bahasa Indonesia",
       "file": "id.json",
-      "sha256": "6f9d624a30ae2cc939618eaa48410ad80b60c0a54262cddc8153cc723c3c9aea"
+      "sha256": "7f56b2db11161603e4784d0c138df6e16784eae9065b61f764dac7f06a22a6b2"
     },
     {
       "code": "it",
       "label": "Italiano",
       "file": "it.json",
-      "sha256": "4b9d9525766e8a04e56e2103b57b4c81fa55d0cbdbc385c32dddcd457a34f75f"
+      "sha256": "fcdd4d3ba3a88e90d989f3922eff0b80a1e618f43852075f162ef89b20c70978"
     },
     {
       "code": "ja",
       "label": "日本語",
       "file": "ja.json",
-      "sha256": "dbb9705b1af1ed3c70fc8fdb8d1571b510d45e761440711d984dcf017b27433f"
+      "sha256": "2621d59587b7b7403c0ea97371077840651b6632b4e405acd739c83f3fd0a55f"
     },
     {
       "code": "ko",
       "label": "한국어",
       "file": "ko.json",
-      "sha256": "76ed932a6f5de64d80abc25e4fc9f8d082787cfb8ac14f9085d69e50e65e99b0"
+      "sha256": "93efb90fc760c33873ccf375970e3c06abaa0c13b73694fadda0526423855d2f"
     },
     {
       "code": "nl",
       "label": "Nederlands",
       "file": "nl.json",
-      "sha256": "2252520d8115eddfbdf694bb4e2a69ca1284f5ec46341356b272e591ca26d5db"
+      "sha256": "494a2a7d6a15f7388ee4169f3d3f6eb4fb2b69387925723692587afbd8a7bfcd"
     },
     {
       "code": "pl",
       "label": "Polski",
       "file": "pl.json",
-      "sha256": "ad71829aa4e22905624cea5fb3d796653c932aa67aa4859b2cfd41c9743e2310"
+      "sha256": "5933c6156fe3cc9154edee46b38082bf89145c5db63e545c1750aa22fa6df810"
     },
     {
       "code": "pt",
       "label": "Português",
       "file": "pt.json",
-      "sha256": "517ac1831adf8970258e5d81a5f0cc787d365700fbd6474f91a49557f714eb49"
+      "sha256": "8ab372d23ba4aafd2b7df1fe54bd575612000372ebf3e1588d5638ba698073d4"
     },
     {
       "code": "tr",
       "label": "Türkçe",
       "file": "tr.json",
-      "sha256": "0149fbe933b207f5ee94434f8446f2387a5f247d7c4b8ca16b79d12b5a5466e0"
+      "sha256": "1f3034dc0ef2f90642277af105f0d891720221cd2ca402208390cf92bbf43b57"
     },
     {
       "code": "uk",
       "label": "Українська",
       "file": "uk.json",
-      "sha256": "fee40566321c5e3e0d5e5ca6c4386d817ba214da0129dfc2b7040f85a9ae3832"
+      "sha256": "9d96edf062ee238b27acd0ee8c3852e69601e96c2fc36593078266fcd6b36746"
     },
     {
       "code": "vi",
       "label": "Tiếng Việt",
       "file": "vi.json",
-      "sha256": "5ff4e4841b024f93c8f7a6dec6e8f26a868ae72b95e5c8b491970c3e5053584c"
+      "sha256": "df1d6266bd07ce8374be14ac20cdc9a2af5aaa3b033416f19b62670b8ab37a39"
     }
   ]
 }
