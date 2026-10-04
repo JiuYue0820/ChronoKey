@@ -86,11 +86,7 @@
       ],
       "category": "Utility",
       "icon": "build/icon.png",
-      "artifactName": "ChronoKey-${version}-linux-${arch}.${ext}",
-      "desktop": {
-        "Name": "ChronoKey",
-        "Comment": "Offline password manager"
-      }
+      "artifactName": "ChronoKey-${version}-linux-${arch}.${ext}"
     }
   },
   "author": "JiuYue0820",
