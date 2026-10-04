@@ -47,7 +47,8 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y xvfb
           npx vite build
-          # Electron 的 SUID 沙箱在 CI 容器里需要这个权限修正,否则直接 abort
+          # 先确保 Electron 二进制已下载(惰性),再修 SUID 沙箱权限,保持沙箱开启以贴近真实运行
+          node node_modules/electron/install.js
           sudo chown root node_modules/electron/dist/chrome-sandbox
           sudo chmod 4755 node_modules/electron/dist/chrome-sandbox
           xvfb-run -a npx electron tests/electron-smoke.cjs
